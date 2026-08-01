@@ -35,6 +35,7 @@
   .headerbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;position:relative;z-index:2;}
   .brand{display:flex;flex-direction:column;gap:2px;}
   .brand .brand-title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;}
+  .brand .src-note{font-size:11px;font-weight:400;opacity:0.7;margin-left:10px;}
   .brand .logo-mark{height:26px;width:auto;flex:none;}
   .brand .brand-sub{font-size:12px;opacity:0.8;margin-left:22px;}
   #tabListBtn{margin-top:14px;width:100%;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
@@ -112,7 +113,7 @@
 <header>
   <div class="headerbar">
     <div class="brand">
-      <div class="brand-title">국가유산지도</div>
+      <div class="brand-title">국가유산지도<span class="src-note">데이터 출처: 국가유산청</span></div>
     </div>
   </div>
 </header>
@@ -149,7 +150,6 @@
   </div>
 </main>
 
-<footer>데이터 출처: 국가유산청 국가유산정보 Open API · 사진 출처: 국가유산청(www.khs.go.kr), 공공누리 이용조건에 따름 · 좌표가 없는 약 5,499건은 추후 보완 예정 · 무형유산은 왼쪽 메뉴의 "무형유산 목록 보기"에서 확인하세요.</footer>
 
 <div class="msg-overlay" id="msgOverlay"><div class="msg-box"><p id="msgText"></p><button onclick="document.getElementById('msgOverlay').style.display='none'">확인</button></div></div>
 
@@ -491,7 +491,6 @@ document.getElementById('sidebarToggle').addEventListener('click', () => {
   aside.classList.toggle('collapsed');
   const isCollapsed = aside.classList.contains('collapsed');
   toggle.textContent = isCollapsed ? '▶' : '◀';
-  header.classList.toggle('header-hidden', isCollapsed);
   setTimeout(() => { if(map) map.invalidateSize(); }, 260);
 });
 
