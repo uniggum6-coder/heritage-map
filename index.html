@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대한민국 유산지도 — 전국 국가유산 위치 안내</title>
-<link rel="icon" type="image/png" href="favicon.png" />
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#0f3d3e" />
-<link rel="apple-touch-icon" href="icon-192.png" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="유산지도" />
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3d3e">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-64.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="국가유산지도">
+<title>국가유산지도 — 전국 국가유산 위치 안내</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
@@ -26,7 +26,7 @@
   .headerbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;position:relative;z-index:2;}
   .brand{display:flex;flex-direction:column;gap:2px;}
   .brand .brand-title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;}
-  .brand .logo-dot{width:12px;height:12px;border-radius:50%;background:#fff;opacity:0.9;}
+  .brand .logo-mark{height:26px;width:auto;flex:none;}
   .brand .brand-sub{font-size:12px;opacity:0.8;margin-left:22px;}
   #tabListBtn{margin-top:14px;width:100%;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
   #tabListBtn:hover{background:var(--navy);}
@@ -36,6 +36,42 @@
   #view-map{display:flex;width:100%;height:100%;position:relative;}
   aside{width:300px;min-width:260px;background:var(--card);border-right:1px solid var(--line);padding:18px;overflow-y:auto;transition:margin-left .25s ease;position:relative;}
   aside.collapsed{margin-left:-300px;}
+  .sheet-handle{display:none;}
+  .sidebar-logo-card{
+    display:flex;align-items:center;gap:12px;
+    background:var(--sand);border-radius:10px;
+    padding:14px;margin-bottom:18px;
+  }
+  .sidebar-logo-card img{height:88px;width:auto;flex:none;}
+  .sidebar-logo-card span{font-weight:700;font-size:15px;color:var(--navy);}
+  .sidebar-logo-card .catchphrase{display:flex;flex-direction:column;gap:8px;}
+  .sidebar-logo-card .catchphrase strong{font-size:23px;font-weight:700;color:var(--navy);}
+  .sidebar-logo-card .catchphrase{font-size:14px;font-weight:500;color:var(--navy);}
+
+  @media (max-width: 768px){
+    main{height:calc(100vh - 62px);}
+    #view-map{position:relative;display:block;}
+    #map{position:absolute;inset:0;width:100%;height:100%;}
+    #sidebarToggle{display:none;}
+    aside{
+      position:absolute;left:0;right:0;bottom:0;
+      width:auto;min-width:0;
+      height:230px;
+      max-height:78vh;
+      border-radius:16px 16px 0 0;
+      border-right:none;border-top:1px solid var(--line);
+      box-shadow:0 -6px 20px rgba(0,0,0,.18);
+      transition:height .25s ease;
+      z-index:900;
+      padding-top:6px;
+    }
+    aside.collapsed{margin-left:0;}
+    aside.sheet-expanded{height:78vh;}
+    .sheet-handle{
+      display:block;width:40px;height:4px;border-radius:2px;
+      background:var(--line);margin:0 auto 12px;cursor:pointer;
+    }
+  }
   #sidebarToggle{
     position:absolute;top:50%;left:300px;transform:translateY(-50%);z-index:1000;
     width:26px;height:50px;background:#fff;border:1px solid var(--line);border-left:none;
@@ -91,7 +127,7 @@
 <header>
   <div class="headerbar">
     <div class="brand">
-      <div class="brand-title"><span class="logo-dot"></span> 대한민국 유산지도</div>
+      <div class="brand-title">국가유산지도</div>
       <div class="brand-sub">전국 국가유산 위치 안내 — 문화유산·자연유산 <span id="heroCount">0</span>건</div>
     </div>
   </div>
@@ -100,7 +136,11 @@
 <main>
   <div id="view-map">
     <aside>
-      <img src="logo.png" alt="대한민국 유산지도" style="width:100%;max-width:220px;display:block;margin:0 auto 16px;">
+      <div class="sheet-handle" id="sheetHandle"></div>
+      <div class="sidebar-logo-card">
+        <img src="logo.png" alt="국가유산지도 로고">
+        <span class="catchphrase"><strong>국가유산</strong>어디까지 가봤니?</span>
+      </div>
       <h3>검색</h3>
       <input type="text" id="searchBox" placeholder="이름 또는 주소로 검색">
 
@@ -129,7 +169,7 @@
   </div>
 </main>
 
-<footer>데이터 출처: 국가유산청 국가유산정보 Open API · 좌표가 없는 약 5,499건은 추후 보완 예정 · 무형유산은 왼쪽 메뉴의 "무형유산 목록 보기"에서 확인하세요.</footer>
+<footer>데이터 출처: 국가유산청 국가유산정보 Open API · 사진 출처: 국가유산청(www.khs.go.kr), 공공누리 이용조건에 따름 · 좌표가 없는 약 5,499건은 추후 보완 예정 · 무형유산은 왼쪽 메뉴의 "무형유산 목록 보기"에서 확인하세요.</footer>
 
 <div class="msg-overlay" id="msgOverlay"><div class="msg-box"><p id="msgText"></p><button onclick="document.getElementById('msgOverlay').style.display='none'">확인</button></div></div>
 
@@ -263,10 +303,12 @@ function initMap(){
 }
 
 function buildPopup(d){
+  const img = d.i ? `<img class="popup-img" src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
   return `<div>
     <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
     <div class="popup-title">${escapeHtml(d.n)}</div>
     <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}</div>
+    ${img}
     <div class="popup-desc">${escapeHtml(d.a||'')}${d.e ? '<br><br>'+escapeHtml(d.e) : ''}</div>
   </div>`;
 }
@@ -436,6 +478,7 @@ function renderIntangible(){
     const div = document.createElement('div');
     div.className = 'icard';
     div.innerHTML = `
+      ${d.i ? `<img src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : ''}
       <span class="tag">${escapeHtml(d.c)}</span>
       <h4>${escapeHtml(d.n)}</h4>
       <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}${d.o ? ' · '+escapeHtml(d.o) : ''}</div>
@@ -470,6 +513,12 @@ document.getElementById('sidebarToggle').addEventListener('click', () => {
   setTimeout(() => { if(map) map.invalidateSize(); }, 260);
 });
 
+document.getElementById('sheetHandle').addEventListener('click', () => {
+  const aside = document.querySelector('#view-map aside');
+  aside.classList.toggle('sheet-expanded');
+  setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+});
+
 // ---- INIT ----
 try{
   populateFilters();
@@ -479,11 +528,11 @@ try{
   showMsg('페이지를 불러오는 중 오류가 발생했습니다: ' + err.message);
   console.error(err);
 }
-
-// ---- PWA: SERVICE WORKER ----
+</script>
+<script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW 등록 실패:', err));
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW 등록 실패', err));
   });
 }
 </script>
