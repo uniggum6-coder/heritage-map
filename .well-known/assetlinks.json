@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.uniggum6_coder.twa",
-        "sha256_cert_fingerprints": ["C5:72:4E:04:00:C5:BC:92:73:57:4D:B8:C6:B4:32:0F:5A:8C:85:78:BA:2A:6E:6C:23:2C:8C:B5:E1:09:8A:4F"]
+        "sha256_cert_fingerprints": ["D3:E5:AE:81:66:F4:BB:1F:9A:9E:F6:76:F2:16:50:D3:E2:D5:72:60:F8:7A:CF:86:B8:E2:6D:D5:7E:9F:A1:10"]
       }
     }]
