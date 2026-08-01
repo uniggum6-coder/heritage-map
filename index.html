@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="국가유산지도">
+<meta property="og:description" content="전국 국가유산 위치 안내 — 문화유산·자연유산을 지도에서 확인하세요">
+<meta property="og:image" content="logo.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f3d3e">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -21,8 +26,9 @@
     --ink:#1c2b2b; --muted:#6b7d7c; --line:#e2ddd2; --card:#ffffff;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--sand);}
-  header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;padding:0;position:relative;overflow:hidden;}
+  body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--sand);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;padding:0;position:relative;overflow:hidden;flex:none;max-height:200px;transition:max-height .25s ease,opacity .2s ease;}
+  header.header-hidden{max-height:0;opacity:0;}
   .headerbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;position:relative;z-index:2;}
   .brand{display:flex;flex-direction:column;gap:2px;}
   .brand .brand-title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;}
@@ -32,7 +38,7 @@
   #tabListBtn:hover{background:var(--navy);}
   #tabMapBtn{margin:20px 28px 4px;padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;}
   #tabMapBtn:hover{background:var(--teal);}
-  main{display:flex;height:calc(100vh - 62px);}
+  main{display:flex;flex:1;min-height:0;}
   #view-map{display:flex;width:100%;height:100%;position:relative;}
   aside{width:300px;min-width:260px;background:var(--card);border-right:1px solid var(--line);padding:18px;overflow-y:auto;transition:margin-left .25s ease;position:relative;}
   aside.collapsed{margin-left:-300px;}
@@ -48,35 +54,11 @@
   .sidebar-logo-card .catchphrase strong{font-size:23px;font-weight:700;color:var(--navy);}
   .sidebar-logo-card .catchphrase{font-size:14px;font-weight:500;color:var(--navy);}
 
-  @media (max-width: 768px){
-    main{height:calc(100vh - 62px);}
-    #view-map{position:relative;display:block;}
-    #map{position:absolute;inset:0;width:100%;height:100%;}
-    #sidebarToggle{display:none;}
-    aside{
-      position:absolute;left:0;right:0;bottom:0;
-      width:auto;min-width:0;
-      height:230px;
-      max-height:78vh;
-      border-radius:16px 16px 0 0;
-      border-right:none;border-top:1px solid var(--line);
-      box-shadow:0 -6px 20px rgba(0,0,0,.18);
-      transition:height .25s ease;
-      z-index:900;
-      padding-top:6px;
-    }
-    aside.collapsed{margin-left:0;}
-    aside.sheet-expanded{height:78vh;}
-    .sheet-handle{
-      display:block;width:40px;height:4px;border-radius:2px;
-      background:var(--line);margin:0 auto 12px;cursor:pointer;
-    }
-  }
   #sidebarToggle{
     position:absolute;top:50%;left:300px;transform:translateY(-50%);z-index:1000;
-    width:26px;height:50px;background:#fff;border:1px solid var(--line);border-left:none;
-    border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    box-shadow:2px 0 5px rgba(0,0,0,.15);transition:left .25s ease;font-size:14px;color:var(--navy);
+    width:28px;height:90px;background:#fff;border:1px solid var(--line);border-left:none;
+    border-radius:0 10px 10px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    box-shadow:2px 0 6px rgba(0,0,0,.18);transition:left .25s ease;font-size:18px;color:#e0392b;font-weight:700;
   }
   aside.collapsed ~ #sidebarToggle{left:0;}
   aside h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 8px;}
@@ -128,7 +110,6 @@
   <div class="headerbar">
     <div class="brand">
       <div class="brand-title">국가유산지도</div>
-      <div class="brand-sub">전국 국가유산 위치 안내 — 문화유산·자연유산 <span id="heroCount">0</span>건</div>
     </div>
   </div>
 </header>
@@ -137,10 +118,6 @@
   <div id="view-map">
     <aside>
       <div class="sheet-handle" id="sheetHandle"></div>
-      <div class="sidebar-logo-card">
-        <img src="logo.png" alt="국가유산지도 로고">
-        <span class="catchphrase"><strong>국가유산</strong>어디까지 가봤니?</span>
-      </div>
       <h3>검색</h3>
       <input type="text" id="searchBox" placeholder="이름 또는 주소로 검색">
 
@@ -298,7 +275,6 @@ function initMap(){
       cluster.zoomToBounds({padding:[20,20]});
     }
   });
-  document.getElementById('heroCount').textContent = MAP_DATA.length.toLocaleString();
   updateCount(MAP_DATA.length);
 }
 
@@ -508,8 +484,11 @@ document.getElementById('tabListBtn').addEventListener('click', () => {
 document.getElementById('sidebarToggle').addEventListener('click', () => {
   const aside = document.querySelector('#view-map aside');
   const toggle = document.getElementById('sidebarToggle');
+  const header = document.querySelector('header');
   aside.classList.toggle('collapsed');
-  toggle.textContent = aside.classList.contains('collapsed') ? '▶' : '◀';
+  const isCollapsed = aside.classList.contains('collapsed');
+  toggle.textContent = isCollapsed ? '▶' : '◀';
+  header.classList.toggle('header-hidden', isCollapsed);
   setTimeout(() => { if(map) map.invalidateSize(); }, 260);
 });
 
