@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
 <meta property="og:title" content="국가유산지도">
 <meta property="og:description" content="전국 국가유산 위치 안내 — 문화유산·자연유산을 지도에서 확인하세요">
-<meta property="og:image" content="logo.png">
+<meta property="og:image" content="https://uniggum6-coder.github.io/heritage-map/logo.png">
+<meta property="og:url" content="https://uniggum6-coder.github.io/heritage-map/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.json">
@@ -26,6 +28,7 @@
     --ink:#1c2b2b; --muted:#6b7d7c; --line:#e2ddd2; --card:#ffffff;
   }
   *{box-sizing:border-box;}
+  html{color-scheme:light;}
   body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--sand);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
   header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;padding:0;position:relative;overflow:hidden;flex:none;max-height:200px;transition:max-height .25s ease,opacity .2s ease;}
   header.header-hidden{max-height:0;opacity:0;}
