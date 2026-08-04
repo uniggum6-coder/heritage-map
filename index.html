@@ -85,6 +85,8 @@
   .popup-meta{font-size:12px;color:var(--muted);margin:0 0 6px;}
   .popup-img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:6px;}
   .popup-desc{font-size:12.5px;line-height:1.5;color:#333;}
+  .popup-transit-btn{display:block;margin-top:10px;padding:8px 10px;background:var(--navy);color:#fff;text-align:center;text-decoration:none;border-radius:6px;font-size:12.5px;font-weight:600;}
+  .popup-transit-btn:hover{background:var(--teal);}
   .cluster-pick:hover{background:#f4efe6;}
   .cluster-pick:last-child{border-bottom:none;}
   .marker-tip{background:var(--navy);color:#fff;border:none;font-size:12px;padding:5px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);line-height:1.3;text-align:center;}
@@ -285,12 +287,14 @@ function initMap(){
 
 function buildPopup(d){
   const img = d.i ? `<img class="popup-img" src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
+  const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
   return `<div>
     <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
     <div class="popup-title">${escapeHtml(d.n)}</div>
     <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}</div>
     ${img}
     <div class="popup-desc">${escapeHtml(d.a||'')}${d.e ? '<br><br>'+escapeHtml(d.e) : ''}</div>
+    <a class="popup-transit-btn" href="${kakaoUrl}" target="_blank" rel="noopener">🚌 카카오맵으로 대중교통 길찾기</a>
   </div>`;
 }
 function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
