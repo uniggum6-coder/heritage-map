@@ -453,7 +453,7 @@ function initMap(){
     const m = list[idx];
     if(!m) return;
     map.closePopup();
-    const detailHtml = buildPopup(m._d, m._hid, visitedIds.has(m._hid));
+    const detailHtml = buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid));
     setTimeout(() => {
       L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(detailHtml).openOn(map);
     }, 10);
@@ -787,6 +787,7 @@ function haversineMeters(lat1, lon1, lat2, lon2){
 
 let currentUser = null;
 let visitedIds = new Set();
+window.visitedIds = visitedIds;
 let currentNickname = '';
 
 function updateAuthUI(total, rank){
@@ -924,6 +925,7 @@ onAuthStateChanged(auth, async (user) => {
     const q = query(collection(db, 'visits'), where('userId', '==', user.uid));
     const snap = await getDocs(q);
     visitedIds = new Set(snap.docs.map(docSnap => docSnap.data().heritageId));
+    window.visitedIds = visitedIds;
     updateAuthUI(total, rank);
     visitedIds.forEach(hid => window.markVisitedOnMap && window.markVisitedOnMap(hid));
     if(!currentNickname){
@@ -931,7 +933,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   } else {
     visitedIds = new Set();
-    currentNickname = '';
+    window.visitedIds = visitedIds;
     updateAuthUI(0, rankFor(0));
     window.clearVisitedMarks && window.clearVisitedMarks();
   }
