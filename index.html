@@ -385,6 +385,10 @@ function initMap(){
     maxZoom: 18, minZoom:6, noWrap:true,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+  // spiderfy(부채꼴 펼치기) 효과를 어떤 경우에도 절대 사용하지 않도록 완전히 비활성화
+  // (겹친 곳은 목록 팝업으로만 안내하므로 부채꼴은 불필요)
+  L.MarkerCluster.prototype.spiderfy = function(){};
+  L.MarkerCluster.prototype.unspiderfy = function(){};
   clusterGroup = L.markerClusterGroup({
     maxClusterRadius:50,
     zoomToBoundsOnClick:false,
@@ -428,31 +432,30 @@ function initMap(){
   clusterGroup.on('clusterclick', function(e){
     const cluster = e.layer;
     const children = cluster.getAllChildMarkers();
-    if(children.length <= 10){
-      const items = children.map((m,i) => {
-        const d = m._d;
-        return `<div class="cluster-pick" data-idx="${i}" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
-          <span class="popup-cat" style="background:${markerColorFor(d)};font-size:10px;">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
-          <div style="font-size:13px;font-weight:600;">${escapeHtml(d.n)}</div>
-        </div>`;
-      }).join('');
-      const html = `<div style="max-height:220px;overflow-y:auto;min-width:200px;">
-        <div style="font-size:12px;color:#888;margin-bottom:4px;">이 위치에 ${children.length}건이 있어요. 항목을 선택하세요.</div>
-        ${items}
+    // 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우(예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
+    // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
+    const items = children.map((m,i) => {
+      const d = m._d;
+      return `<div class="cluster-pick" data-idx="${i}" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
+        <span class="popup-cat" style="background:${markerColorFor(d)};font-size:10px;">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
+        <div style="font-size:13px;font-weight:600;">${escapeHtml(d.n)}</div>
       </div>`;
-      const popup = L.popup({maxWidth:260}).setLatLng(cluster.getLatLng()).setContent(html).openOn(map);
-      setTimeout(() => {
-        document.querySelectorAll('.cluster-pick').forEach(el => {
-          el.addEventListener('click', () => {
-            const m = children[parseInt(el.dataset.idx)];
-            map.closePopup();
-            clusterGroup.zoomToShowLayer(m, () => m.openPopup());
-          });
+    }).join('');
+    const html = `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
+      <div style="font-size:12px;color:#888;margin-bottom:4px;">이 위치에 ${children.length}건이 있어요. 항목을 선택하세요.</div>
+      ${items}
+    </div>`;
+    const popup = L.popup({maxWidth:280}).setLatLng(cluster.getLatLng()).setContent(html).openOn(map);
+    setTimeout(() => {
+      document.querySelectorAll('.cluster-pick').forEach(el => {
+        el.addEventListener('click', () => {
+          const m = children[parseInt(el.dataset.idx)];
+          map.closePopup();
+          const detailHtml = buildPopup(m._d, m._hid, visitedIds.has(m._hid));
+          L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(detailHtml).openOn(map);
         });
-      }, 0);
-    } else {
-      cluster.zoomToBounds({padding:[20,20]});
-    }
+      });
+    }, 0);
   });
   updateCount(MAP_DATA.length);
 }
