@@ -433,6 +433,7 @@ function initMap(){
     const cluster = e.layer;
     const children = cluster.getAllChildMarkers();
     window.__hmClusterChildren = children; // 현재 열린 목록의 항목들을 전역에 저장해두고 클릭 시 참조
+    window.__hmClusterPopupInfo = null; // 아래에서 채움
     // 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우(예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
     // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
     const items = children.map((m,i) => {
@@ -446,14 +447,24 @@ function initMap(){
       <div style="font-size:12px;color:#888;margin-bottom:4px;">이 위치에 ${children.length}건이 있어요. 항목을 선택하세요.</div>
       ${items}
     </div>`;
+    window.__hmClusterPopupInfo = { latlng: cluster.getLatLng(), html: html };
     L.popup({maxWidth:280}).setLatLng(cluster.getLatLng()).setContent(html).openOn(map);
   });
+  window.hmBackToClusterList = function(){
+    const info = window.__hmClusterPopupInfo;
+    if(!info) return;
+    map.closePopup();
+    setTimeout(() => {
+      L.popup({maxWidth:280}).setLatLng(info.latlng).setContent(info.html).openOn(map);
+    }, 10);
+  };
   window.hmPickCluster = function(idx){
     const list = window.__hmClusterChildren || [];
     const m = list[idx];
     if(!m) return;
     map.closePopup();
-    const detailHtml = buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid));
+    const fromList = !!window.__hmClusterPopupInfo;
+    const detailHtml = buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid), fromList);
     setTimeout(() => {
       L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(detailHtml).openOn(map);
     }, 10);
@@ -461,13 +472,17 @@ function initMap(){
   updateCount(MAP_DATA.length);
 }
 
-function buildPopup(d, hid, visited){
+function buildPopup(d, hid, visited, fromList){
   const img = d.i ? `<img class="popup-img" src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
   const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
   const verifyBtn = visited
     ? `<div class="popup-verified">✅ 인증 완료</div>`
     : `<button class="popup-verify-btn" onclick="window.hmVerifyVisit && window.hmVerifyVisit('${hid}', ${d.la}, ${d.lo})">📍 현장 인증</button>`;
+  const backBtn = fromList
+    ? `<div onclick="window.hmBackToClusterList && window.hmBackToClusterList()" style="cursor:pointer;font-size:12px;color:var(--teal,#1f6f6b);font-weight:600;margin-bottom:6px;">← 목록으로</div>`
+    : '';
   return `<div>
+    ${backBtn}
     <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
     <div class="popup-title">${escapeHtml(d.n)}</div>
     <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}</div>
