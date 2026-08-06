@@ -177,6 +177,8 @@
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
     .user-chip{flex-wrap:wrap;}
+    .leaflet-popup-content{max-width:calc(100vw - 70px) !important;min-width:0;}
+    .leaflet-popup-content-wrapper{max-width:calc(100vw - 50px);}
   }
 </style>
 </head>
@@ -431,15 +433,23 @@ function initMap(){
   // large clusters zoom in toward their bounds.
   clusterGroup.on('clusterclick', function(e){
     const cluster = e.layer;
-    const children = cluster.getAllChildMarkers();
+    const children = cluster.getAllChildMarkers().slice().sort((a,b) => {
+      const ca = a._d.c || '', cb = b._d.c || '';
+      if(ca !== cb) return ca.localeCompare(cb, 'ko');
+      return (a._d.n||'').localeCompare(b._d.n||'', 'ko');
+    }); // 유산 종류(지정종목)별로 묶고, 같은 종류 안에서는 이름순 정렬
     window.__hmClusterChildren = children; // 현재 열린 목록의 항목들을 전역에 저장해두고 클릭 시 참조
     window.__hmClusterPopupInfo = null; // 아래에서 채움
     // 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우(예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
     // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
+    let lastCat = null;
     const items = children.map((m,i) => {
       const d = m._d;
-      return `<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
-        <span class="popup-cat" style="background:${markerColorFor(d)};font-size:10px;">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
+      const groupHeader = d.c !== lastCat
+        ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(d.c)} (${children.filter(c=>c._d.c===d.c).length}건)</div>`
+        : '';
+      lastCat = d.c;
+      return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
         <div style="font-size:13px;font-weight:600;">${escapeHtml(d.n)}</div>
       </div>`;
     }).join('');
