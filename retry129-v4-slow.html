@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국가유산지도 - 좌표 채우기 도구 (4차, 저속 안전모드)</title>
+<style>
+  :root{
+    --navy:#0f3d3e; --teal:#1f6f6b; --sand:#f4efe6;
+    --ok:#2e7d32; --fail:#c62828; --pending:#8a8a8a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;
+    background:var(--sand); color:#222; padding:24px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+  h1{font-size:22px;color:var(--navy);margin:0 0 4px;}
+  .sub{color:#666;font-size:13px;margin-bottom:20px;}
+  .card{
+    background:#fff;border-radius:10px;padding:20px;margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+  input[type=password], input[type=text]{
+    width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:6px;font-size:14px;
+  }
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+  button{
+    padding:10px 18px;border:none;border-radius:6px;font-size:14px;font-weight:700;
+    cursor:pointer;color:#fff;background:var(--teal);
+  }
+  button:hover{background:var(--navy);}
+  button:disabled{background:#bbb;cursor:not-allowed;}
+  button.secondary{background:#fff;color:var(--teal);border:1px solid var(--teal);}
+  button.secondary:hover{background:#f0f7f6;}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:13px;}
+  .stat{background:var(--sand);padding:8px 14px;border-radius:8px;}
+  .stat b{display:block;font-size:18px;color:var(--navy);}
+  .barOuter{height:10px;background:#eee;border-radius:6px;overflow:hidden;margin-top:12px;}
+  .barInner{height:100%;background:var(--teal);width:0%;transition:width .2s;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px;}
+  th,td{padding:6px 8px;border-bottom:1px solid #eee;text-align:left;}
+  th{color:#888;font-weight:600;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;color:#fff;}
+  .tag.ok{background:var(--ok);}
+  .tag.fail{background:var(--fail);}
+  .tag.pending{background:var(--pending);}
+  .logbox{max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:8px;}
+  .note{font-size:12px;color:#888;margin-top:8px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>국가유산지도 — 좌표 채우기 도구 (4차, 저속 안전모드)</h1>
+  <div class="sub">1차 시도에서 실패했거나 새로 주소를 찾은 유산 398건을 다시 시도합니다. 이번엔 요청 간격을 늘려 실패율을 낮췄어요. 이 창을 켜둔 채로 진행됩니다.</div>
+
+  <div class="card">
+    <label for="apiKey">카카오 JavaScript 키</label>
+    <input type="text" id="apiKey" placeholder="developers.kakao.com 플랫폼 키 화면에서 복사한 JavaScript 키를 붙여넣으세요">
+    <div class="note">REST API 키가 아닌 <b>JavaScript 키</b>를 써야 해요. 이 키는 이 브라우저 안에서만 쓰이고 어디로도 전송되지 않습니다.</div>
+    <div class="row"><button id="loadSdkBtn" class="secondary">1. 키 적용(SDK 불러오기)</button><span id="sdkStatus" class="note" style="margin:0;"></span></div>
+    <div class="row">
+      <button id="startBtn" disabled>2. 시작</button>
+      <button id="pauseBtn" class="secondary" disabled>일시정지</button>
+      <button id="resetBtn" class="secondary">처음부터 다시</button>
+      <button id="downloadCsvBtn" class="secondary" disabled>결과 CSV 다운로드</button>
+      <button id="downloadJsonBtn" class="secondary" disabled>결과 JSON 다운로드</button>
+    </div>
+    <div class="stats">
+      <div class="stat">전체<b id="statTotal">0</b></div>
+      <div class="stat">완료<b id="statDone">0</b></div>
+      <div class="stat">성공<b id="statOk">0</b></div>
+      <div class="stat">실패(수동확인 필요)<b id="statFail">0</b></div>
+      <div class="stat">남음<b id="statLeft">0</b></div>
+    </div>
+    <div class="barOuter"><div class="barInner" id="bar"></div></div>
+    <div class="note" id="statusLine">대기 중…</div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;color:var(--navy);margin-bottom:8px;">최근 처리 로그 (최신순, 최대 200개 표시)</div>
+    <div class="logbox">
+      <table>
+        <thead><tr><th>이름</th><th>주소</th><th>결과</th><th>위도</th><th>경도</th></tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const ITEMS = [{"id": "1333204460000", "n": "영월 정양산성", "a": "강원 영월군 영월읍 정양리 산1-1번지 외 8필"}, {"id": "1363202470000", "n": "향로봉·건봉산 천연보호구역", "a": "강원특별자치도 인제군 서화면 일부, 고성군 수동면·간성읍 일부"}, {"id": "1363203480000", "n": "정선 반론산 철쭉나무 및 분취류 자생지", "a": "강원 정선군 여량면 고양리,여양리,봉정리"}, {"id": "4413200220000", "n": "철원 노동당사", "a": "강원 철원군 철원읍 금강산로 265, 외 3필지 (관전리)"}, {"id": "2555100030000", "n": "춘천삼악산", "a": "강원 춘천시 서면 덕두원리 산164-3번지 외 4필지"}, {"id": "4423100010000", "n": "한국전쟁 피난민 태극기", "a": "경기도 동두천시 평화로2910번길 96-63 (상봉암동, 자유수호평화박물관)"}, {"id": "2332606080003", "n": "용인 석성산성", "a": "경기도 용인시 처인구 포곡읍 마성리 산 78"}, {"id": "3413101440000", "n": "파주 검단사 목조관음보살좌상", "a": "경기도 파주시 탄현면 성동리 산 406"}, {"id": "3413101790000", "n": "불법총론", "a": "경기도 포천시 호병골길 193 (신읍동)"}, {"id": "2113102650000", "n": "고령신씨 북백공파 고문서 85건", "a": "경기도 화성시 토화길 70-1 (향남읍)"}, {"id": "2113102640000", "n": "백자청화정부인영광정씨 묘지및 지석함", "a": "경기도 화성시 토화길 70-1 (향남읍)"}, {"id": "2553100020000", "n": "연주대", "a": "경기 과천시 중앙동 산12-4번지"}, {"id": "4413105530000", "n": "현대자동차 포니1", "a": "경기도 여주시 대신로 244"}, {"id": "4413105630000", "n": "삼성전자 64K DRAM", "a": "경기도 용인시 기흥구 삼성2로 95- (주)삼성전자"}, {"id": "2553100050000", "n": "파주교하물푸레나무", "a": "경기 파주시 교하면 다율리 산122-4외"}, {"id": "1332511100001", "n": "거제 수정산성", "a": "경남 거제시 거제면 동상리 산28번지"}, {"id": "2333802980000", "n": "거제 방하리 고분군", "a": "경상남도 거제시 둔덕면 방하리 산 84-5 외 4필지"}, {"id": "3413806370000", "n": "선무원종공신녹권(이희급)", "a": "경상남도 남해군 화전로 78 (남해읍) 13"}, {"id": "3413806270000", "n": "진성이씨 남해문중 고문서", "a": "경상남도 남해군 남해읍 평리 207"}, {"id": "3413806300000", "n": "양산 안적암 아미타불회도", "a": "경상남도 양산시 평산로 138-2011 (하북면)"}, {"id": "1121105691500", "n": "안중근의사 유묵 - 청초당", "a": "경상남도 창원시 진해구 중원로 1 (남빈동, 해군사관학교 박물관) 사서함88-2-6"}, {"id": "2333803020000", "n": "통영 추봉도와 용호도 포로수용소", "a": "경상남도 통영시 한산면 용호리 산 110-1 , 추봉리 642 외"}, {"id": "1113700260000", "n": "경주 불국사 금동비로자나불좌상", "a": "경북 경주시 진현동 15번지 불국사"}, {"id": "2113704100000", "n": "신라 경순왕 영정", "a": "경상북도 경주시 포석로 1050 (황남동, (국립경주박물관 보관)) 39-11"}, {"id": "1112412260002", "n": "김천 직지사 석가여래삼불회도", "a": "경북 김천시 대항면 북암길 89, 직지사 성보박물관 (운수리)"}, {"id": "1123711410000", "n": "예천 한천사 금동 자물쇠 및 쇠북", "a": "경북 김천시 대항면 북암길 89, 직지사 성보박물관 (운수리)"}, {"id": "1123716660000", "n": "봉화 청량사 목조지장보살삼존상", "a": "경북 봉화군 명호면 북곡리 청량사"}, {"id": "1123704600000", "n": "유성룡 종가 유물", "a": "경북 안동시 풍천면 종가길 69, 영모각 (일부 국학진흥원 위탁보관) (하회리)"}, {"id": "3413705280000", "n": "영덕 사존재", "a": "경상북도 영덕군 지품면 신안리 23-1"}, {"id": "3413703550000", "n": "흑석사마애삼존불상", "a": "경북 영주시 이산면 석포리 산1380-1번지"}, {"id": "3413706880000", "n": "예천 봉산서당", "a": "경상북도 예천군 현내2길 26-1 (감천면, 재실) 361"}, {"id": "1123716370000", "n": "예천 용문사 목조아미타여래좌상", "a": "경북 예천군 용문면 내지리 381번지 용문사"}, {"id": "2333700670200", "n": "금오산성", "a": "경상북도 칠곡군 북삼읍 숭오리 산 31-2"}, {"id": "2552504080017", "n": "거창 원천 느티나무", "a": "경상남도 거창군 가조면 장기리 772-1"}, {"id": "2552504080003", "n": "남해 당항리 느티나무", "a": "경상남도 남해군 남면 당항리 1503-4번지 3필지"}, {"id": "2552504080004", "n": "남해 죽전 비자나무", "a": "경상남도 남해군 남면 당항리 1997외 4필지"}, {"id": "2552504090006", "n": "산청 실매리 왕버드나무군", "a": "경상남도 산청군 차황면 실매리 881-49 외 9필지"}, {"id": "4413807770300", "n": "통영 중앙동 근대상가주택 1", "a": "경상남도 통영시 중앙로 151-8 (중앙동, 금강제화의류점) 78-1 및 78-4"}, {"id": "2552504140004", "n": "하동 청룡리 은행나무", "a": "경상남도 하동군 옥종면 청룡리 266 267"}, {"id": "2552504100006", "n": "함안 사촌리 공룡발자국 화석산지", "a": "경상남도 함안군 군북면 사촌리 175"}, {"id": "2662504100004", "n": "함안 명관리 공룡발자국 화석", "a": "경상남도 함안군 군북면 명관리 618 외 2필지"}, {"id": "2552504100001", "n": "함양 개평리 소나무 군락지", "a": "경상남도 함양군 지곡면 개평리 231 257-2,542,256,255,251,250,산14-1"}, {"id": "2553700230000", "n": "경산자인의계정숲", "a": "경북 경산시 자인면 서부리 68번지 외 12필지"}, {"id": "2553700100000", "n": "경주동부동은행나무", "a": "경북 경주시 동부동 193외 3필"}, {"id": "4413705740000", "n": "기와 생산도구", "a": "경상북도 고령군 개진면 구곡리 393-0"}, {"id": "2553700110000", "n": "상주 두곡리 은행나무", "a": "경북 상주시 은척면 두곡리 640외 4필"}, {"id": "2553700060000", "n": "안동송리동은행나무", "a": "경북 안동시 일직면 송리 650-2번지 2필"}, {"id": "4413707620200", "n": "영덕 영해양조장 및 사택", "a": "경상북도 영덕군 예주길 40-1 (영해면) 및 성내리 675-15, 675-16"}, {"id": "2553700090000", "n": "임고서원은행나무", "a": "경북 영천시 임고면 양항리 161번지"}, {"id": "2553700220000", "n": "청도상리돌배나무", "a": "경북 청도군 청도읍 상리 574-4번지"}, {"id": "2552504180001", "n": "건들바위(대구입암)", "a": "대구광역시 중구 대봉동 731-9 외"}, {"id": "3412500540000", "n": "백운루", "a": "대전광역시 유성구 둔곡길 228 (둔곡동, 백운사)"}, {"id": "4412508260000", "n": "대전 구 충청남도 경찰청 상무관", "a": "대전광역시 중구 보문로 287 (선화동)"}, {"id": "1122118240000", "n": "기장 장안사 석조석가여래삼불좌상", "a": "부산광역시 기장군 장안읍 장안로 482 (장안리, 장안사)"}, {"id": "2442100100000", "n": "장안사 명부전 삼번상", "a": "부산광역시 기장군 장안로 482 (장안읍, 장안사)"}, {"id": "2112101060000", "n": "장안사 명부전", "a": "부산광역시 기장군 장안로 482 (장안읍, 장안사)"}, {"id": "2112101890000", "n": "장안사 명부전 석조지장삼존 및 시왕상 복장유물", "a": "부산광역시 기장군 장안로 482 (장안읍, 장안사)"}, {"id": "2112101070000", "n": "장안사 응진전", "a": "부산광역시 기장군 장안로 482 (장안읍, 장안사)"}, {"id": "2112101970000", "n": "해동용궁사 목조보살좌상", "a": "부산광역시 기장군 기장읍 시랑리 418-3 해동용궁사"}, {"id": "3412100080000", "n": "동래부사 유심 선정비", "a": "부산 남구 대연동 시립박물관"}, {"id": "1112102490200", "n": "동궐도(1995)", "a": "부산광역시 서구 구덕로 (부민동2가, 동아대학교부민캠퍼스) 동아대학교박물관"}, {"id": "1122119290000", "n": "김윤겸 필 영남기행화첩", "a": "부산광역시 서구 구덕로 (부민동2가, 동아대학교부민캠퍼스) 동아대학교박물관"}, {"id": "1122119210000", "n": "양산 금조총 출토 유물 일괄", "a": "부산광역시 서구 구덕로 (부민동2가, 동아대학교부민캠퍼스) 동아대학교박물관"}, {"id": "3412100880000", "n": "구 부산 임시측후소 청사", "a": "부산광역시 중구 흑교로59번길 16-4 (보수동3가)"}, {"id": "4421100010000", "n": "한강대교", "a": "서울특별시 용산구 이촌동 302-11 등 20필지"}, {"id": "2111105240000", "n": "채용신 필 황석 초상", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군사관학교 육군박물관)"}, {"id": "2111103360000", "n": "학림사 석조약사여래삼불좌상 및 복장유물", "a": "서울특별시 노원구 상계3.4동 산 1 학림사"}, {"id": "2111103500000", "n": "석굴암 천룡도", "a": "서울특별시 도봉구 도봉1동 산 29-1 석굴암"}, {"id": "2441100340000", "n": "행당동 아기씨당 무신도", "a": "서울특별시 성동구 왕십리로19나길 29-18 (행당동, 아기씨당)"}, {"id": "2111103370000", "n": "심곡사 목조보살좌상", "a": "서울특별시 성북구 정릉3동 산 1-1 심곡사"}, {"id": "3411100520000", "n": "‘병인가례시’명백자청화수복문호", "a": "새문안길 55 서울역사박물관"}, {"id": "1331105730000", "n": "탕춘대성", "a": "서울특별시 종로구 부암동 산 22-1 외 35필지"}, {"id": "2551100050000", "n": "허가바위", "a": "서울특별시 강서구 가양동 26-5 26-5, 26-28, 1469-2"}, {"id": "4411105431000", "n": "군의 부위 예복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430800", "n": "기병 정위 예복 및 상복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430400", "n": "보병 부령 상복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430600", "n": "보병 부위 예복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430700", "n": "보병 부위 예복 및 상복(황석)", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430200", "n": "보병 부장 예복(이도재)", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430500", "n": "보병 정위 예복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430100", "n": "전(傳) 대원수 상복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430300", "n": "참장 예복", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "4411105430900", "n": "헌병 부위 예복 및 상복(홍철유)", "a": "서울특별시 노원구 화랑로 574 (공릉동, 육군박물관)"}, {"id": "2551100070000", "n": "방학동 은행나무", "a": "서울특별시 도봉구 방학동 546, 546-1"}, {"id": "4411105270000", "n": "국문연구안", "a": "서울특별시 동대문구 안암로 145 고려대학교"}, {"id": "2551100060000", "n": "인왕산 수성동 계곡", "a": "옥인동 179-1외 8필지"}, {"id": "4412308580000", "n": "부평 미쓰비시 줄사택", "a": "인천광역시 부평구 부영로 21-169 (부평동) 외 33필지"}, {"id": "2112507090001", "n": "곡성향교", "a": "전남광주통합특별시 곡성군 곡성읍 교촌리 190"}, {"id": "2112504240001", "n": "순천 환선정 현판", "a": "전남광주통합특별시 순천시 연향동 667-2 순천팔마종합운동장 국궁장 환선정"}, {"id": "2332601080002", "n": "신안 두류단과 바위글씨", "a": "전남광주통합특별시 신안군 지도읍 감정리 산 216-18 외 1필지"}, {"id": "2332601120001", "n": "여수 거문도 항일 유적", "a": "전남광주통합특별시 여수시 삼산면 덕촌리 661-1 661-1, 661-2, 삼산면 거문리 산28"}, {"id": "1363600530000", "n": "진도의 진도개", "a": "전남광주통합특별시 진도군 진도읍 진도본도"}, {"id": "2662507010001", "n": "수완동 왕버들", "a": "전남광주통합특별시 광산구 수완동 700-12 /870-1번지"}, {"id": "4413607860000", "n": "구 목포세관 본관 터 및 창고", "a": "전남광주통합특별시 목포시 항동 6-8 6-33"}, {"id": "4413607180900", "n": "목포 해안로 교차로 상가주택", "a": "전남광주통합특별시 목포시 대의동1가 3-7"}, {"id": "4413608330000", "n": "보성 오봉산 구들장 채석지", "a": "전남광주통합특별시 보성군 득량면 해평리 산 63-1 63-4"}, {"id": "4413608540000", "n": "여수 거문도 근대역사문화공간", "a": "전라남도 여수시 삼산면 거문리 35번지 외 113필지"}, {"id": "1333505630000", "n": "고창 무장기포지", "a": "전라북도 고창군 공음면 구암리 590 외 18필지"}, {"id": "1123522080000", "n": "남원 실상사 편운화상탑", "a": "전라북도 남원시 산내면 입석리 50"}, {"id": "1123518530000", "n": "완주 정수사 목조아미타여래삼존좌상", "a": "전라북도 완주군 상관면 마치리 137 정수사"}, {"id": "2332412160001", "n": "전주 서고산성", "a": "전북특별자치도 전주시 완산구 효자동3가 산 96 외 5필지"}, {"id": "2332506240001", "n": "전주 종광대 토성", "a": "전북특별자치도 전주시 완산구 중노송동 산 80-1 외 282필지"}, {"id": "2552412160003", "n": "팔효사의은행나무", "a": "전북특별자치도 김제시 신풍동 508-1 외 2필지"}, {"id": "2552412160001", "n": "구천동 주목군총", "a": "전북특별자치도 무주군 설천면 삼공리 산 109번지 외 3필지"}, {"id": "2333900024300", "n": "화순리 지석묘", "a": "안덕면 화순리 703-2번지 외 3필지"}, {"id": "2555000130000", "n": "식산봉의황근자생지및상록활엽수림", "a": "제주 서귀포시 성산읍 오조리 313번지 외 12필지"}, {"id": "2555000090000", "n": "신흥동백나무군락", "a": "제주 서귀포시 남원읍 신흥리 1159번지-1"}, {"id": "2555000120000", "n": "위미동백나무군락", "a": "제주특별자치도 서귀포시 위미중앙로300번길 23-7 (남원읍)"}, {"id": "2555000080000", "n": "광령귤나무", "a": "제주 제주시 애월읍 광령1리 1165번지"}, {"id": "2555000140000", "n": "비양도의비양나무자생지", "a": "제주 제주시 한림읍 협재리 산89번지 외 8필"}, {"id": "2113402270000", "n": "공주 보림사 소장 묘볍연화경 권4", "a": "충청남도 공주시 반포면 마암리 666-2"}, {"id": "2113402200000", "n": "아산 용화사 석조여래입상", "a": "충청남도 아산시 송악면 외암리 375-8"}, {"id": "1123415430100", "n": "상교정본자비도량참법 권9~10", "a": "충남 예산군 덕산면 사천리 20번지 수덕사 성보박물관"}, {"id": "2113303600000", "n": "이문건 부부묘 출토 유물", "a": "충청북도 청주시 서원구 내수동로 52-1 (개신동, 충북대학교 박물관)"}, {"id": "2113303610000", "n": "이문건가 족보", "a": "충청북도 청주시 서원구 내수동로 52-1 (개신동, 충북대학교 박물관)"}, {"id": "2333301670000", "n": "증평 남하리 사지", "a": "충청북도 증평군 증평읍 남하리 1037-7 외 20필지"}, {"id": "3413300650000", "n": "청주 곽훈 효자비", "a": "충청북도 청주시 청원구 오창공원로 311 (오창읍)"}, {"id": "2662504150001", "n": "형제송", "a": "충청남도 아산시 인주면 해암리 산 63-1"}, {"id": "4413404760000", "n": "안익태 대한국애국가 자필악보", "a": "충청남도 천안시 동남구 목천읍 남화리 230 독립기념관"}, {"id": "4413405040000", "n": "애국가 유성기 음반", "a": "충청남도 천안시 동남구 삼방로 95 독립기념관"}, {"id": "4413307900000", "n": "6·25 전쟁 군사 기록물(공군 전투비행단)", "a": "충청북도 청주시 상당구 단재로 635(남일면) 국립공군박물관"}, {"id": "4413308140000", "n": "공군사관학교 제1기 졸업생 첫 출격 서명문 태극기", "a": "충청북도 청주시 상당구 단재로 635(남일면, 국립공군박물관)"}, {"id": "4413306670000", "n": "국민성금 헌납기(T-6 건국기)", "a": "충청북도 청주시 상당구 단재로 635 (남일면, 공군사관학교) 공군박물관"}, {"id": "4413306660000", "n": "대한민국 최초 운용 전투기(F-51D 무스탕)", "a": "충청북도 청주시 상당구 단재로 635 (남일면, 공군사관학교) 공군박물관"}, {"id": "2443100130000", "n": "전 월산대군 요여", "a": "경기도 고양시 덕양구 호국로 1243-39"}, {"id": "2113103570000", "n": "북한 승도절목", "a": "경기도 고양시 덕양구 북한산성로 262"}, {"id": "1123213080000", "n": "홍진 호성공신교서", "a": "강원특별자치도 홍천군 북방면 능평리 154"}, {"id": "3413101730000", "n": "가평 현등사 지장시왕도", "a": "경기도 가평군 조종면 하관리 산163 (현등사)"}, {"id": "2113603120000", "n": "여수 흥국사 중수사적비", "a": "전라남도 여수시 흥국사길 149 (중흥동)"}];
+
+const STORAGE_KEY = 'hm_geocode_progress_v4_slow';
+let results = {}; // id -> {status, lat, lon}
+let idx = 0;
+let running = false;
+let timer = null;
+
+const el = id => document.getElementById(id);
+const apiKeyInput = el('apiKey');
+const startBtn = el('startBtn');
+const pauseBtn = el('pauseBtn');
+const resetBtn = el('resetBtn');
+const downloadCsvBtn = el('downloadCsvBtn');
+const downloadJsonBtn = el('downloadJsonBtn');
+const logBody = el('logBody');
+const bar = el('bar');
+const statusLine = el('statusLine');
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      results = parsed.results || {};
+      idx = parsed.idx || 0;
+    }
+  }catch(e){}
+}
+function saveProgress(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({results, idx}));
+  }catch(e){}
+}
+
+function updateStats(){
+  const total = ITEMS.length;
+  const doneKeys = Object.keys(results);
+  const done = doneKeys.length;
+  const ok = doneKeys.filter(k => results[k].status === 'ok').length;
+  const fail = doneKeys.filter(k => results[k].status === 'fail').length;
+  el('statTotal').textContent = total;
+  el('statDone').textContent = done;
+  el('statOk').textContent = ok;
+  el('statFail').textContent = fail;
+  el('statLeft').textContent = total - done;
+  bar.style.width = (total ? (done/total*100) : 0) + '%';
+  downloadCsvBtn.disabled = done === 0;
+  downloadJsonBtn.disabled = done === 0;
+}
+
+function prependLog(item, status, lat, lon){
+  const tr = document.createElement('tr');
+  const tag = status === 'ok'
+    ? '<span class="tag ok">성공</span>'
+    : '<span class="tag fail">실패</span>';
+  tr.innerHTML = `<td>${escapeHtml(item.n)}</td><td>${escapeHtml(item.a)}</td><td>${tag}</td><td>${lat!=null?lat.toFixed(6):''}</td><td>${lon!=null?lon.toFixed(6):''}</td>`;
+  logBody.prepend(tr);
+  while(logBody.children.length > 200){ logBody.removeChild(logBody.lastChild); }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let geocoder = null;
+let sdkLoaded = false;
+
+function loadKakaoSdk(){
+  const key = apiKeyInput.value.trim();
+  if(!key){ alert('먼저 JavaScript 키를 입력해주세요.'); return; }
+  const sdkStatus = el('sdkStatus');
+  sdkStatus.textContent = '불러오는 중…';
+  const script = document.createElement('script');
+  script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + encodeURIComponent(key) + '&libraries=services&autoload=false';
+  script.onload = () => {
+    kakao.maps.load(() => {
+      geocoder = new kakao.maps.services.Geocoder();
+      sdkLoaded = true;
+      sdkStatus.textContent = '✅ 준비 완료! 이제 "시작" 버튼을 누르세요.';
+      startBtn.disabled = false;
+    });
+  };
+  script.onerror = () => {
+    sdkStatus.textContent = '❌ 불러오기 실패. 키를 다시 확인해주세요.';
+  };
+  document.body.appendChild(script);
+}
+el('loadSdkBtn').addEventListener('click', loadKakaoSdk);
+
+function simplifyAddress(address, level){
+  let a = address;
+  if(level >= 1){
+    // "외", "일원", "일대" 등 뒤에 붙는 불필요한 꼬리표 제거
+    a = a.replace(/\s*(외|일원|일대)\s*$/,'').trim();
+  }
+  if(level >= 2){
+    // 중첩/부가 설명 괄호 통째로 제거 (보관, 위탁, 박물관 등 지오코딩에 방해되는 안내문)
+    a = a.replace(/\([^()]*\)/g, m => /보관|위탁|국학진흥원|박물관/.test(m) ? '' : m);
+    a = a.replace(/\s{2,}/g,' ').trim();
+  }
+  if(level >= 3){
+    // 괄호 자체를 전부 제거
+    a = a.replace(/\([^()]*\)/g, '').replace(/\s{2,}/g,' ').trim();
+  }
+  if(level >= 4){
+    // 콤마 앞부분(첫 번째 지번/도로명)만 사용
+    a = a.split(',')[0].trim();
+  }
+  return a;
+}
+
+function geocodeOne(address){
+  return new Promise((resolve, reject) => {
+    if(!geocoder){ reject(new Error('SDK 준비 안됨')); return; }
+    geocoder.addressSearch(address, (result, status) => {
+      if(status === kakao.maps.services.Status.OK && result.length > 0){
+        resolve({ lat: parseFloat(result[0].y), lon: parseFloat(result[0].x) });
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
+
+async function geocodeCascade(address){
+  let lastAddr = address;
+  for(let level = 0; level <= 4; level++){
+    const a = level === 0 ? address : simplifyAddress(address, level);
+    if(!a || a === lastAddr && level > 0){ continue; }
+    lastAddr = a;
+    const geo = await geocodeOne(a);
+    if(geo) return { geo, usedAddress: a, level };
+    await new Promise(r => setTimeout(r, 600));
+  }
+  return null;
+}
+
+async function step(){
+  if(!running) return;
+  if(idx >= ITEMS.length){
+    running = false;
+    statusLine.textContent = '완료되었습니다! 결과를 다운로드해주세요.';
+    startBtn.disabled = false; pauseBtn.disabled = true;
+    return;
+  }
+  const item = ITEMS[idx];
+  const key = String(item.id);
+  if(results[key]){
+    idx++;
+    timer = setTimeout(step, 0);
+    return;
+  }
+  try{
+    const found = await geocodeCascade(item.a);
+    if(found){
+      results[key] = { status:'ok', lat: found.geo.lat, lon: found.geo.lon, usedAddress: found.usedAddress, level: found.level };
+      prependLog(item, found.level > 0 ? 'ok(단순화)' : 'ok', found.geo.lat, found.geo.lon);
+    } else {
+      results[key] = { status:'fail', lat:null, lon:null };
+      prependLog(item, 'fail', null, null);
+    }
+  }catch(e){
+    results[key] = { status:'fail', lat:null, lon:null };
+    prependLog(item, 'fail', null, null);
+  }
+  idx++;
+  updateStats();
+  saveProgress();
+  statusLine.textContent = `처리 중… (${idx}/${ITEMS.length}) ${item.n}`;
+  timer = setTimeout(step, 900); // 카카오 API 과호출 방지용 대기(단계별 재시도라 더 넉넉하게)
+}
+
+startBtn.addEventListener('click', () => {
+  if(!apiKeyInput.value.trim()){
+    alert('먼저 카카오 REST API 키를 입력해주세요.');
+    return;
+  }
+  running = true;
+  startBtn.disabled = true;
+  pauseBtn.disabled = false;
+  statusLine.textContent = '시작합니다…';
+  step();
+});
+pauseBtn.addEventListener('click', () => {
+  running = false;
+  clearTimeout(timer);
+  startBtn.disabled = false;
+  pauseBtn.disabled = true;
+  statusLine.textContent = '일시정지됨. 다시 "시작"을 누르면 이어서 진행됩니다.';
+});
+resetBtn.addEventListener('click', () => {
+  if(!confirm('지금까지의 진행 상황을 전부 지우고 처음부터 다시 시작할까요?')) return;
+  running = false;
+  clearTimeout(timer);
+  results = {}; idx = 0;
+  localStorage.removeItem(STORAGE_KEY);
+  logBody.innerHTML = '';
+  updateStats();
+  startBtn.disabled = false; pauseBtn.disabled = true;
+  statusLine.textContent = '초기화되었습니다.';
+});
+downloadCsvBtn.addEventListener('click', () => {
+  let csv = '고유키,이름,주소,상태,위도,경도,실제사용주소\n';
+  ITEMS.forEach(item => {
+    const r = results[String(item.id)];
+    if(!r) return;
+    const row = [item.id, item.n, item.a, r.status, r.lat ?? '', r.lon ?? '', r.usedAddress ?? ''];
+    csv += row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',') + '\n';
+  });
+  downloadBlob(csv, 'geocode_results.csv', 'text/csv;charset=utf-8');
+});
+downloadJsonBtn.addEventListener('click', () => {
+  const out = ITEMS.filter(item => results[String(item.id)]).map(item => {
+    const r = results[String(item.id)];
+    return { id: item.id, n: item.n, a: item.a, status: r.status, lat: r.lat, lon: r.lon };
+  });
+  downloadBlob(JSON.stringify(out, null, 2), 'geocode_results.json', 'application/json;charset=utf-8');
+});
+function downloadBlob(content, filename, mime){
+  const blob = new Blob(["\uFEFF" + content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+loadProgress();
+updateStats();
+if(idx > 0 && idx < ITEMS.length){
+  statusLine.textContent = `이전 진행 상황을 불러왔습니다 (${idx}/${ITEMS.length}). API 키를 입력하고 "시작"을 누르면 이어서 진행됩니다.`;
+}
+</script>
+</body>
+</html>
