@@ -292,6 +292,7 @@ const CAT_COLORS = {
   "시도기념물":"#5dade2", "문화유산자료":"#a9cce3"
 };
 function colorFor(cat){ return CAT_COLORS[cat] || "#555"; }
+function uniqCount(filterFn){ return new Set(MAP_DATA.filter(filterFn).map(d=>d.n)).size; }
 
 const TN_SUB_COLORS = {
   "동물":"#1b4332", "식물":"#52b788", "지질·지형":"#b08968", "천연보호구역":"#264653", "미분류":"#8d99ae"
@@ -520,7 +521,7 @@ function populateFilters(){
   Object.entries(CAT_GROUPS).forEach(([groupName, groupCats]) => {
     const present = groupCats.filter(c => cats.includes(c));
     if(present.length === 0) return;
-    const groupTotal = present.reduce((sum,c) => sum + MAP_DATA.filter(d=>d.c===c).length, 0);
+    const groupTotal = present.reduce((sum,c) => sum + uniqCount(d=>d.c===c), 0);
 
     const heading = document.createElement('div');
     heading.className = 'group-heading';
@@ -539,7 +540,7 @@ function populateFilters(){
     present.forEach(c => {
       const label = document.createElement('label');
       label.style.paddingLeft = '10px';
-      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}" checked> <span class="cat-swatch" style="background:${colorFor(c)}"></span> ${c} <span style="color:#999">(${MAP_DATA.filter(d=>d.c===c).length})</span>`;
+      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}" checked> <span class="cat-swatch" style="background:${colorFor(c)}"></span> ${c} <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
       subWrap.appendChild(label);
 
       if(c === '천연기념물'){
@@ -552,7 +553,7 @@ function populateFilters(){
         const natWrap = document.createElement('div');
         natWrap.style.cssText = 'display:none;padding:2px 0 4px 26px;';
         TN_SUBCATS.forEach(nc => {
-          const ncCount = MAP_DATA.filter(d => d.c === '천연기념물' && d.nc === nc).length;
+          const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           if(ncCount === 0) return;
           const ncLabel = document.createElement('label');
           ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> ${nc} <span style="color:#999">(${ncCount})</span>`;
