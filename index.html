@@ -565,7 +565,7 @@ function populateFilters(){
         const natWrap = document.createElement('div');
         natWrap.style.cssText = 'display:none;padding:2px 0 4px 26px;';
 
-        const SUB_LABELS = { '동물':'서식지·번식지·도래지', '식물':'자생지·군락지' };
+        const SUB_LABELS = { '동물':'서식지·번식지·도래지·사육지', '식물':'자생지·군락지' };
         ['동물','식물'].forEach(nc => {
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           const spCount = (typeof SPECIES_DATA !== 'undefined') ? SPECIES_DATA.filter(s => s.g === nc).length : 0;
