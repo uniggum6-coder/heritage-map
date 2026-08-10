@@ -217,7 +217,6 @@
       <h3>지정종목</h3>
       <div class="cat-list" id="catList"></div>
 
-      <button id="resetBtn">필터 초기화</button>
       <button id="tabListBtn">무형유산 목록 보기 →</button>
       <div id="count">표시 중</div>
     </aside>
@@ -233,6 +232,18 @@
       <select id="ilistCat"><option value="">전체 종목</option></select>
     </div>
     <div class="icards" id="icards"></div>
+  </div>
+
+  <div id="view-species" style="display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;">
+    <button id="tabMapBtnFromSpecies">← 지도로 돌아가기</button>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;">
+      이곳에 있는 유산들은 특정 장소가 아니라 <b>종(種) 자체</b>가 천연기념물로 지정되어 있어서, 지도에 위치를 표시할 수 없어요.
+    </div>
+    <div class="ilist-controls">
+      <input type="text" id="slistSearch" placeholder="이름으로 검색">
+      <select id="slistType"><option value="">전체(동물+식물)</option><option value="동물">동물</option><option value="식물">식물</option></select>
+    </div>
+    <div class="icards" id="scards"></div>
   </div>
 </main>
 
@@ -280,6 +291,7 @@
 <script src="data_intangible.js"></script>
 <script src="data_map_additions.js"></script>
 <script>MAP_DATA.push(...MAP_DATA_ADDITIONS);</script>
+<script src="data_species.js"></script>
 <script>
 const CAT_COLORS = {
   // 자연유산 (green family)
@@ -552,13 +564,41 @@ function populateFilters(){
 
         const natWrap = document.createElement('div');
         natWrap.style.cssText = 'display:none;padding:2px 0 4px 26px;';
-        TN_SUBCATS.forEach(nc => {
+
+        const SUB_LABELS = { '동물':'서식지·번식지·도래지', '식물':'자생지·군락지' };
+        ['동물','식물'].forEach(nc => {
+          const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
+          const spCount = (typeof SPECIES_DATA !== 'undefined') ? SPECIES_DATA.filter(s => s.g === nc).length : 0;
+          if(ncCount === 0 && spCount === 0) return;
+
+          const header = document.createElement('div');
+          header.style.cssText = 'font-weight:600;font-size:12.5px;color:var(--navy);margin:6px 0 2px;';
+          header.textContent = nc;
+          natWrap.appendChild(header);
+
+          if(ncCount > 0){
+            const ncLabel = document.createElement('label');
+            ncLabel.style.paddingLeft = '10px';
+            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> ${SUB_LABELS[nc]} <span style="color:#999">(${ncCount})</span>`;
+            natWrap.appendChild(ncLabel);
+          }
+          if(spCount > 0){
+            const spLabel = document.createElement('label');
+            spLabel.style.cssText = 'padding-left:10px;cursor:pointer;';
+            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> 종자체 지정 <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
+            spLabel.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); window.showSpeciesList(nc); });
+            natWrap.appendChild(spLabel);
+          }
+        });
+
+        ['지질·지형','천연보호구역'].forEach(nc => {
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           if(ncCount === 0) return;
           const ncLabel = document.createElement('label');
           ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> ${nc} <span style="color:#999">(${ncCount})</span>`;
           natWrap.appendChild(ncLabel);
         });
+
         subWrap.appendChild(natWrap);
 
         const toggleNat = (e) => {
@@ -651,13 +691,6 @@ document.getElementById('regionSelect').addEventListener('change', () => {
   applyFilters();
 });
 document.getElementById('subRegionSelect').addEventListener('change', applyFilters);
-document.getElementById('resetBtn').addEventListener('click', () => {
-  document.getElementById('searchBox').value='';
-  document.getElementById('regionSelect').value='';
-  populateSubRegions('');
-  document.querySelectorAll('.catChk').forEach(c=>c.checked=true);
-  applyFilters();
-});
 
 // ---- INTANGIBLE LIST VIEW ----
 function initIntangibleList(){
@@ -717,6 +750,50 @@ document.getElementById('tabListBtn').addEventListener('click', () => {
   document.getElementById('view-map').style.display='none';
   document.getElementById('view-list').style.display='block';
 });
+
+window.showSpeciesList = function(type){
+  document.getElementById('view-map').style.display='none';
+  document.getElementById('view-list').style.display='none';
+  document.getElementById('view-species').style.display='block';
+  document.getElementById('slistType').value = type || '';
+  renderSpecies();
+};
+function backToMapFromSpecies(){
+  document.getElementById('view-species').style.display='none';
+  document.getElementById('view-map').style.display='flex';
+  setTimeout(()=>map.invalidateSize(), 50);
+}
+document.getElementById('tabMapBtnFromSpecies').addEventListener('click', backToMapFromSpecies);
+function renderSpecies(){
+  const q = document.getElementById('slistSearch').value.trim().toLowerCase();
+  const type = document.getElementById('slistType').value;
+  const wrap = document.getElementById('scards');
+  wrap.innerHTML = '';
+  const filtered = (typeof SPECIES_DATA !== 'undefined' ? SPECIES_DATA : []).filter(d => {
+    if(type && d.g !== type) return false;
+    if(q && !(d.n && d.n.toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a,b) => (a.n||'').localeCompare(b.n||'', 'ko'));
+  filtered.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'icard';
+    div.innerHTML = `
+      <span class="tag" style="background:${TN_SUB_COLORS[d.g]||'#8d99ae'}">${escapeHtml(d.c)} · ${escapeHtml(d.g)}</span>
+      <h4>${escapeHtml(d.n)}</h4>
+      <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')}</div>
+      <div class="desc">${escapeHtml(d.e||'')}</div>
+    `;
+    wrap.appendChild(div);
+  });
+  if(filtered.length === 0){
+    const note = document.createElement('div');
+    note.style.cssText = 'grid-column:1/-1;text-align:center;color:#888;font-size:13px;padding:20px;';
+    note.textContent = '해당하는 항목이 없어요.';
+    wrap.appendChild(note);
+  }
+}
+document.getElementById('slistSearch').addEventListener('input', renderSpecies);
+document.getElementById('slistType').addEventListener('change', renderSpecies);
 
 document.getElementById('sidebarToggle').addEventListener('click', () => {
   const aside = document.querySelector('#view-map aside');
