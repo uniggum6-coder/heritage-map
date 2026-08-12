@@ -353,7 +353,11 @@ window.dismissIntroBanner = function(){
 (function(){
   let seen = false;
   try{ seen = localStorage.getItem('hm_intro_seen') === '1'; }catch(e){}
-  if(!seen){ document.getElementById('introBanner').style.display = 'flex'; }
+  if(!seen){
+    document.getElementById('introBanner').style.display = 'flex';
+    document.getElementById('helpOverlay').style.display = 'flex';
+    try{ localStorage.setItem('hm_intro_seen', '1'); }catch(e){}
+  }
 })();
 
 // ---- 방문 인증: 유산별 고유 ID (이름+좌표 기반 안정적 해시, 데이터 순서가 바뀌어도 동일하게 유지됨) ----
