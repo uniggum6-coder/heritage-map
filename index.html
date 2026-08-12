@@ -154,7 +154,8 @@
   .user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);padding:5px 12px 5px 6px;border-radius:20px;color:#fff;}
   .user-chip img{width:26px;height:26px;border-radius:50%;flex:none;}
   .user-chip .u-name{font-weight:600;font-size:12.5px;}
-  .user-chip .u-rank{font-weight:700;font-size:12px;opacity:.95;white-space:nowrap;}
+  .user-chip .u-rank{font-weight:700;font-size:12px;opacity:.95;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+  .user-chip .u-rank:hover{opacity:1;}
   .mapae-badge{display:inline-flex;align-items:center;justify-content:center;gap:1px;height:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:10px;font-weight:700;margin-right:4px;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.2) inset;}
   .user-chip #logoutBtn{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0;}
   .user-chip #logoutBtn:hover{opacity:1;}
@@ -284,6 +285,12 @@
   <h3>🏆 명예의 전당 · 방문 인증 TOP 30</h3>
   <div id="rankListArea"><div class="rank-empty">불러오는 중…</div></div>
   <button onclick="document.getElementById('rankOverlay').style.display='none'">닫기</button>
+</div></div>
+
+<div class="msg-overlay" id="myVisitsOverlay"><div class="rank-box">
+  <h3>📍 내가 다녀온 곳</h3>
+  <div id="myVisitsArea"><div class="rank-empty">불러오는 중…</div></div>
+  <button onclick="document.getElementById('myVisitsOverlay').style.display='none'">닫기</button>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -920,7 +927,7 @@ function updateAuthUI(placeCount, rank, itemCount){
     const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
     const nick = (currentNickname || '닉네임 없음').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
-    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank">· ${mapaeHTML(rankLevel(placeCount))}${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">닉네임 변경</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">로그아웃</button></div>`;
+    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${mapaeHTML(rankLevel(placeCount))}${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">닉네임 변경</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">로그아웃</button></div>`;
   } else {
     area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>`;
   }
@@ -980,6 +987,36 @@ window.showHallOfFame = async () => {
   }catch(err){
     area.innerHTML = '<div class="rank-empty">순위를 불러오지 못했어요.</div>';
   }
+};
+
+window.showMyVisits = () => {
+  document.getElementById('myVisitsOverlay').style.display = 'flex';
+  const area = document.getElementById('myVisitsArea');
+  if(!currentUser){
+    area.innerHTML = '<div class="rank-empty">로그인 후 이용할 수 있어요.</div>';
+    return;
+  }
+  if(visitedIds.size === 0){
+    area.innerHTML = '<div class="rank-empty">아직 인증한 곳이 없어요. 지도에서 유산을 눌러 "현장 인증"을 해보세요!</div>';
+    return;
+  }
+  // 장소(좌표)별로 묶어서, 한 장소에 여러 유산이 있으면 대표 이름 + 나머지 건수로 표시
+  const places = {};
+  visitedIds.forEach(hid => {
+    const m = markerByHid[hid];
+    if(!m) return;
+    const key = placeKeyFor(m._d);
+    if(!places[key]) places[key] = [];
+    places[key].push(m._d);
+  });
+  const groups = Object.values(places).sort((a,b) => (a[0].n||'').localeCompare(b[0].n||'', 'ko'));
+  let html = '';
+  groups.forEach(items => {
+    const rep = items[0];
+    const extra = items.length > 1 ? ` 외 ${items.length-1}건` : '';
+    html += `<div class="rank-row"><div class="rank-info"><div class="rank-name">${escapeHtml(rep.n)}${extra}</div><div class="rank-title">${escapeHtml(rep.r||'')} ${escapeHtml(rep.s||'')}</div></div></div>`;
+  });
+  area.innerHTML = html;
 };
 
 window.hmVerifyVisit = (hid, targetLat, targetLon) => {
