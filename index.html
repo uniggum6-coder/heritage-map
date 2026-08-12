@@ -277,7 +277,7 @@
       <div class="rg-row"><span>120곳</span><span>정1품 영의정</span></div>
     </div>
   </div>
-  <div class="rank-note" style="margin-top:10px">구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
+  <div class="rank-note" style="margin-top:10px">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
   <button onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -927,7 +927,7 @@ function updateAuthUI(placeCount, rank, itemCount){
     const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
     const nick = (currentNickname || '닉네임 없음').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
-    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${mapaeHTML(rankLevel(placeCount))}${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">닉네임 변경</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">로그아웃</button></div>`;
+    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">닉네임 변경</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">로그아웃</button></div>`;
   } else {
     area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>`;
   }
@@ -1093,7 +1093,9 @@ window.hmBulkVerify = () => {
       window.showMsg('현재 위치 200m 이내에 아직 인증 안 한 유산이 없어요.');
       return;
     }
-    // 중복 유산명 방지용으로 안내만 하고, 실제로는 서로 다른 유산(마커)이라 전부 인증 대상
+    document.getElementById('msgOverlay').style.display = 'none';
+    const proceed = window.confirm(`이 주변에서 ${nearby.length}건을 찾았어요.\n\n한 번에 인증하면 ${nearby.length}건 모두 "인증 완료" 표시는 되지만, 등급 계산상으로는 같은 위치라 "1곳"으로만 카운트돼요.\n\n계속할까요?`);
+    if(!proceed) return;
     window.showLoadingMsg(`📍 ${nearby.length}건 인증하는 중…`);
     try{
       const batch = writeBatch(db);
