@@ -736,7 +736,9 @@ function renderIntangible(){
   filtered.forEach(d => {
     const div = document.createElement('div');
     div.className = 'icard';
+    const img = d.i ? `<img src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
     div.innerHTML = `
+      ${img}
       <span class="tag">${escapeHtml(d.c)}</span>
       <h4>${escapeHtml(d.n)}</h4>
       <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}${d.o ? ' · '+escapeHtml(d.o) : ''}</div>
