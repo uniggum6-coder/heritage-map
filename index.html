@@ -191,7 +191,7 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.12); }
   }
-  .hm-my-location{ position:relative; width:56px; height:70px; }
+  .hm-my-location{ position:relative; width:56px; height:70px; transform-origin:50% 100%; transition:transform .2s ease-out; }
   .hm-my-location .hm-ring{
     position:absolute; top:24px; left:10px; width:36px; height:36px; border-radius:50%;
     background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
@@ -510,21 +510,25 @@ function initMap(){
   let myLocationWatchId = null;
   let myLocPrev = null; // {lat, lon, t}
 
+  // 달리는 자세 하나만 정확하게 그리고, 반대쪽 자세는 좌표를 다시 계산하지 않고
+  // SVG 전체를 좌우로 뒤집는(mirror) 방식으로 만들어서 모양이 절대 깨지지 않게 함
   function buildPersonSvg(mirrored){
-    // frame-a: 오른발 앞으로, frame-b(mirrored): 왼발 앞으로 — 두 프레임을 번갈아 보여주면 뛰는 것처럼 보임
-    const s = mirrored ? -1 : 1; // x축 반전으로 반대쪽 자세 생성
-    const t = (x,y) => `${(12 + (x-12)*s).toFixed(1)} ${y}`;
-    return `<svg viewBox="0 0 24 24" fill="none" stroke="#ff5a1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="15" cy="4" r="2" fill="#ff5a1f" stroke="white" stroke-width="1"/>
-      <path d="M13.3 6.5 ${t(10.5,9.5)} ${t(12,12.5)} ${t(10,15.5)} ${t(6.5,18)}" stroke="white" stroke-width="4.6"/>
-      <path d="M13.3 6.5 ${t(10.5,9.5)} ${t(12,12.5)} ${t(10,15.5)} ${t(6.5,18)}"/>
-      <path d="M12 12.5 ${t(15.5,13)} ${t(18,10)}" stroke="white" stroke-width="4.6"/>
-      <path d="M12 12.5 ${t(15.5,13)} ${t(18,10)}"/>
-      <path d="M10.5 9.5 ${t(6.5,8)}" stroke="white" stroke-width="4.6"/>
-      <path d="M10.5 9.5 ${t(6.5,8)}"/>
-      <path d="M10 15.5 ${t(13.5,20)}" stroke="white" stroke-width="4.6"/>
-      <path d="M10 15.5 ${t(13.5,20)}"/>
-    </svg>`;
+    const poseGroup = `
+      <!-- 전통 갓: 넓은 챙 + 둥근 정수리(갓모자) -->
+      <ellipse cx="12" cy="1.6" rx="4.6" ry="0.9" fill="#1a1a1a" stroke="#000" stroke-width="0.3"/>
+      <path d="M9.4 1.6 C9.4 -1.5 10.4 -2.6 12 -2.6 C13.6 -2.6 14.6 -1.5 14.6 1.6 Z" fill="#1a1a1a" stroke="#000" stroke-width="0.3"/>
+      <circle cx="12" cy="4" r="2.1" fill="#ff5a1f" stroke="white" stroke-width="1"/>
+      <path d="M12 6.3 11 10 13 13.5 11.5 17 8 19.5" stroke="white" stroke-width="4.6"/>
+      <path d="M12 6.3 11 10 13 13.5 11.5 17 8 19.5"/>
+      <path d="M13 13.5 16.5 14 18.5 11" stroke="white" stroke-width="4.6"/>
+      <path d="M13 13.5 16.5 14 18.5 11"/>
+      <path d="M11 10 7 8.5" stroke="white" stroke-width="4.6"/>
+      <path d="M11 10 7 8.5"/>
+      <path d="M11.5 17 15 21" stroke="white" stroke-width="4.6"/>
+      <path d="M11.5 17 15 21"/>
+    `;
+    const transform = mirrored ? ' transform="translate(24,0) scale(-1,1)"' : '';
+    return `<svg viewBox="0 -3 24 27" fill="none" stroke="#ff5a1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><g${transform}>${poseGroup}</g></svg>`;
   }
 
   function haversineMetersLoc(lat1, lon1, lat2, lon2){
@@ -559,13 +563,15 @@ function initMap(){
 
     const duration = speedToDuration(speedMps);
 
+    const isFirstFix = !myLocationMarker;
     if(!myLocationMarker){
       const html = '<div class="hm-my-location"><div class="hm-ring"></div>' +
         '<div class="hm-figure"><span class="hm-frame-a">' + buildPersonSvg(false) + '</span><span class="hm-frame-b">' + buildPersonSvg(true) + '</span></div>' +
         '<div class="hm-label">내 위치</div></div>';
       const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,70], iconAnchor:[28,44] });
       myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000}).addTo(map);
-      map.setView([lat, lon], 15);
+      // 처음 위치를 찾았을 때만 지도를 그쪽으로 이동(그 뒤로는 사용자가 보던 화면을 강제로 옮기지 않음)
+      if(map.getZoom() < 13) map.setView([lat, lon], 15);
     } else {
       myLocationMarker.setLatLng([lat, lon]);
     }
@@ -574,28 +580,49 @@ function initMap(){
       const fig = el.querySelector('.hm-figure');
       if(fig) fig.style.setProperty('--run-speed', duration + 's');
     }
+    updateMyLocationScale();
   }
 
+  // 줌 아웃(전국 지도)일 땐 내 위치를 크게 키워서 한눈에 찾기 쉽게, 줌인할수록 원래(1배) 크기로 줄어듦
+  function updateMyLocationScale(){
+    if(!myLocationMarker) return;
+    const el = myLocationMarker.getElement();
+    if(!el) return;
+    const z = map.getZoom(); // minZoom 6 ~ 대략 18
+    const scale = Math.max(1, Math.min(2.6, 1 + (13 - z) * 0.22));
+    el.style.transform += ''; // Leaflet이 위치 이동에 쓰는 transform은 건드리지 않고, 안쪽 wrapper만 확대
+    const wrap = el.querySelector('.hm-my-location');
+    if(wrap) wrap.style.transform = 'scale(' + scale.toFixed(2) + ')';
+  }
+  map.on('zoomend', updateMyLocationScale);
+
+  function startMyLocationTracking(silent){
+    if(!navigator.geolocation || myLocationWatchId !== null) return;
+    const btn = document.getElementById('myLocationBtn');
+    myLocationWatchId = navigator.geolocation.watchPosition(updateMyLocation, () => {
+      // 페이지 열자마자 조용히 시도하는 경우엔, 허락 안 했다고 오류창을 띄우지 않음(부담 없게)
+      if(!silent) window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
+      myLocationWatchId = null;
+      btn.style.background = '#fff';
+    }, {enableHighAccuracy:true, timeout:15000, maximumAge:2000});
+    btn.style.background = '#ffe4d6';
+  }
+  function stopMyLocationTracking(){
+    if(myLocationWatchId !== null){ navigator.geolocation.clearWatch(myLocationWatchId); myLocationWatchId = null; }
+    myLocPrev = null;
+    if(myLocationMarker){ map.removeLayer(myLocationMarker); myLocationMarker = null; }
+    document.getElementById('myLocationBtn').style.background = '#fff';
+  }
   document.getElementById('myLocationBtn').addEventListener('click', () => {
     if(!navigator.geolocation){
       window.showMsg('이 브라우저에서는 위치 정보를 사용할 수 없어요.');
       return;
     }
-    const btn = document.getElementById('myLocationBtn');
-    if(myLocationWatchId !== null){
-      // 이미 추적 중이면 눌렀을 때 추적 중지
-      navigator.geolocation.clearWatch(myLocationWatchId);
-      myLocationWatchId = null;
-      myLocPrev = null;
-      if(myLocationMarker){ map.removeLayer(myLocationMarker); myLocationMarker = null; }
-      btn.style.background = '#fff';
-      return;
-    }
-    myLocationWatchId = navigator.geolocation.watchPosition(updateMyLocation, () => {
-      window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
-    }, {enableHighAccuracy:true, timeout:15000, maximumAge:2000});
-    btn.style.background = '#ffe4d6';
+    if(myLocationWatchId !== null){ stopMyLocationTracking(); }
+    else{ startMyLocationTracking(false); }
   });
+  // 지도를 열면(권한이 이미 허용돼 있는 경우) 조용히 자동으로 내 위치 표시 시작 — 거부해도 오류창 안 띄움
+  startMyLocationTracking(true);
 
   // Custom cluster click: small clusters show a pick-list (more reliable than spiderfy legs),
   // large clusters zoom in toward their bounds.
