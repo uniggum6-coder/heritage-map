@@ -514,9 +514,8 @@ function initMap(){
   // SVG 전체를 좌우로 뒤집는(mirror) 방식으로 만들어서 모양이 절대 깨지지 않게 함
   function buildPersonSvg(mirrored){
     const poseGroup = `
-      <!-- 전통 갓: 넓은 챙 + 둥근 정수리(갓모자) -->
-      <ellipse cx="12" cy="1.6" rx="4.6" ry="0.9" fill="#1a1a1a" stroke="#000" stroke-width="0.3"/>
-      <path d="M9.4 1.6 C9.4 -1.5 10.4 -2.6 12 -2.6 C13.6 -2.6 14.6 -1.5 14.6 1.6 Z" fill="#1a1a1a" stroke="#000" stroke-width="0.3"/>
+      <!-- 전통 갓: 머리 위에 얇고 넓은 챙만 (정수리 둥근 부분은 머리처럼 보여서 제거) -->
+      <ellipse cx="12" cy="2.4" rx="4.6" ry="0.75" fill="#1a1a1a" stroke="#000" stroke-width="0.3"/>
       <circle cx="12" cy="4" r="2.1" fill="#ff5a1f" stroke="white" stroke-width="1"/>
       <path d="M12 6.3 11 10 13 13.5 11.5 17 8 19.5" stroke="white" stroke-width="4.6"/>
       <path d="M12 6.3 11 10 13 13.5 11.5 17 8 19.5"/>
@@ -528,7 +527,7 @@ function initMap(){
       <path d="M11.5 17 15 21"/>
     `;
     const transform = mirrored ? ' transform="translate(24,0) scale(-1,1)"' : '';
-    return `<svg viewBox="0 -3 24 27" fill="none" stroke="#ff5a1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><g${transform}>${poseGroup}</g></svg>`;
+    return `<svg viewBox="0 -1 24 25" fill="none" stroke="#ff5a1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><g${transform}>${poseGroup}</g></svg>`;
   }
 
   function haversineMetersLoc(lat1, lon1, lat2, lon2){
