@@ -1330,6 +1330,38 @@ onAuthStateChanged(auth, async (user) => {
     const q = query(collection(db, 'visits'), where('userId', '==', user.uid));
     const snap = await getDocs(q);
     visitedIds = new Set(snap.docs.map(docSnap => docSnap.data().heritageId));
+
+    // ---- 좌표 이전(마이그레이션): 천연기념물센터 4건이 전시관→표본동으로 좌표가 바뀌면서
+    // 예전 좌표 기준으로 계산된 인증기록(hid)이 새 hid와 달라져 "미인증"처럼 보이는 문제를 자동 복구.
+    // 예전 좌표로 인증한 기록이 있으면, 지금 이 계정으로 로그인하는 순간 새 hid로 된 인증기록을 자동 생성해줌.
+    try{
+      // 유산 좌표를 나중에 수정할 때마다, 아래 목록에 {이름, 예전좌표} 한 줄만 추가하면
+      // "예전 좌표 기준으로 인증했던 사람"의 인증 기록이 새 좌표로 자동 복사됨.
+      // 여러 번 옮긴 유산은 여러 줄(예전1, 예전2...)을 다 추가해두면 전부 커버됨.
+      const COORD_MIGRATIONS = [
+        // 2026-08-14: 포항 두호층 3건+나무화석 — 천연기념물센터 전시관 → 표본동으로 이동
+        {n:'포항 금광리 신생대 나무화석', oldLa:36.3676596, oldLo:127.3925611},
+        {n:'포항 신생대 두호층 결핵체', oldLa:36.3676596, oldLo:127.3925611},
+        {n:'포항 신생대 두호층 결핵체(2025-2)', oldLa:36.3676596, oldLo:127.3925611},
+        {n:'포항 신생대 두호층 고래화석', oldLa:36.3676596, oldLo:127.3925611},
+      ];
+      let migrated = false;
+      for(const item of COORD_MIGRATIONS){
+        const oldHid = computeHeritageId({n:item.n, la:item.oldLa, lo:item.oldLo});
+        const newMarker = Object.values(markerByHid).find(m => m._d.n === item.n);
+        if(!newMarker) continue;
+        const newHid = newMarker._hid;
+        if(visitedIds.has(oldHid) && !visitedIds.has(newHid)){
+          await setDoc(doc(db, 'visits', user.uid + '_' + newHid), {
+            userId: user.uid, heritageId: newHid, visitedAt: new Date().toISOString(), migratedFrom: oldHid
+          });
+          visitedIds.add(newHid);
+          migrated = true;
+        }
+      }
+      if(migrated){ window.visitedIds = visitedIds; }
+    }catch(e){ console.warn('좌표 이전 마이그레이션 실패:', e); }
+
     window.visitedIds = visitedIds;
     const placeCount = computePlaceCount();
     const itemCount = visitedIds.size;
