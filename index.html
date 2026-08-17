@@ -260,7 +260,7 @@
     <div style="display:flex;gap:8px;margin-bottom:16px;">
       <input type="text" id="boardTitleInput" placeholder="제목" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;">
     </div>
-    <textarea id="boardContentInput" placeholder="내용을 입력하세요" rows="3" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;margin-bottom:8px;"></textarea>
+    <textarea id="boardContentInput" placeholder="내용을 입력하세요" rows="10" style="width:100%;min-height:220px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;resize:vertical;margin-bottom:8px;box-sizing:border-box;"></textarea>
     <button id="boardSubmitBtn" style="padding:9px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;">글쓰기</button>
     <div id="boardListArea" style="margin-top:24px;"></div>
   </div>
@@ -1018,7 +1018,7 @@ window.hmChangeNickname = async () => {
   }
 };
 
-const ADMIN_EMAIL = 'uniggum73@gmail.com';
+const ADMIN_EMAIL = 'uniggum6@gmail.com';
 
 window.showHallOfFame = async () => {
   document.getElementById('rankOverlay').style.display = 'flex';
