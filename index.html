@@ -1043,7 +1043,7 @@ window.showHallOfFame = async () => {
       const cls = medalCls[i-1] || '';
       const uid = docSnap.id;
       const name = (d.nickname || '닉네임 미설정').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-      const adminBtn = isAdmin ? `<button onclick="window.hmAdminViewUserVisits('${uid}', '${name.replace(/'/g,"")}')" style="margin-left:8px;font-size:11px;padding:3px 8px;border-radius:10px;border:none;background:#eee;cursor:pointer;">방문기록</button>` : '';
+      const adminBtn = isAdmin ? `<button onclick="window.hmAdminViewUserVisits('${uid}', '${name.replace(/'/g,"")}')" style="margin-left:8px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px;border:none;background:var(--navy);color:#fff;cursor:pointer;">방문기록</button>` : '';
       html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${d.rank || ''}</div></div><div class="rank-count">${total}곳${adminBtn}</div></div>`;
     });
     area.innerHTML = html || '<div class="rank-empty">아직 인증 기록이 없어요. 첫 번째 인증자가 되어보세요!</div>';
@@ -1052,7 +1052,7 @@ window.showHallOfFame = async () => {
   }
 };
 
-// ---- 관리자 전용: 다른 사람의 방문기록 보기 (uniggum73@gmail.com 로그인시에만 버튼 노출) ----
+// ---- 관리자 전용: 다른 사람의 방문기록 보기 (ADMIN_EMAIL 계정 로그인시에만 버튼 노출) ----
 window.hmAdminViewUserVisits = async (uid, nickname) => {
   if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
   document.getElementById('myVisitsOverlay').style.display = 'flex';
