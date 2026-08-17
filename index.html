@@ -191,18 +191,28 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.12); }
   }
-  .hm-my-location{ position:relative; width:34px; height:34px; }
+  .hm-my-location{ position:relative; width:56px; height:70px; }
   .hm-my-location .hm-ring{
-    position:absolute; top:5px; left:5px; width:24px; height:24px; border-radius:50%;
-    background:rgba(255,90,31,.5); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
+    position:absolute; top:24px; left:10px; width:36px; height:36px; border-radius:50%;
+    background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
   }
-  .hm-my-location .hm-badge{
-    position:absolute; top:2px; left:2px; width:30px; height:30px; border-radius:50%;
-    background:#ff5a1f; border:2.5px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,.5);
+  .hm-my-location .hm-figure{
+    position:absolute; top:0; left:8px; width:40px; height:40px;
     display:flex; align-items:center; justify-content:center; z-index:2;
-    animation:hm-pulse-badge 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,.6));
+    --run-speed: 0.9s;
   }
-  .hm-my-location .hm-badge svg{ width:17px; height:17px; }
+  .hm-my-location .hm-figure svg{ width:40px; height:40px; position:absolute; top:0; left:0; }
+  @keyframes hm-frame-a{ 0%,49.9%{opacity:1;} 50%,100%{opacity:0;} }
+  @keyframes hm-frame-b{ 0%,49.9%{opacity:0;} 50%,100%{opacity:1;} }
+  .hm-my-location .hm-frame-a{ animation: hm-frame-a var(--run-speed,0.9s) steps(1) infinite; }
+  .hm-my-location .hm-frame-b{ animation: hm-frame-b var(--run-speed,0.9s) steps(1) infinite; }
+  .hm-my-location .hm-label{
+    position:absolute; top:44px; left:0; width:56px; text-align:center; z-index:3;
+    font-size:11px; font-weight:800; color:#fff;
+    text-shadow: -1px -1px 0 #ff5a1f, 1px -1px 0 #ff5a1f, -1px 1px 0 #ff5a1f, 1px 1px 0 #ff5a1f, 0 0 4px rgba(0,0,0,.5);
+    white-space:nowrap;
+  }
 </style>
 </head>
 <body>
@@ -494,26 +504,97 @@ function initMap(){
   checkLayer = L.layerGroup().addTo(map);
 
   // ---- 내 위치 표시 (로그인 여부와 무관, 저장 없이 화면에만 표시) ----
+  // 실시간으로 위치를 계속 추적(watchPosition)하면서, 실제 이동 속도를 계산해
+  // 달리는 애니메이션의 빠르기를 자동으로 바꿔줌 (차량 이동=빠르게, 도보=느리게)
   let myLocationMarker = null;
+  let myLocationWatchId = null;
+  let myLocPrev = null; // {lat, lon, t}
+
+  function buildPersonSvg(mirrored){
+    // frame-a: 오른발 앞으로, frame-b(mirrored): 왼발 앞으로 — 두 프레임을 번갈아 보여주면 뛰는 것처럼 보임
+    const s = mirrored ? -1 : 1; // x축 반전으로 반대쪽 자세 생성
+    const t = (x,y) => `${(12 + (x-12)*s).toFixed(1)} ${y}`;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="#ff5a1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="15" cy="4" r="2" fill="#ff5a1f" stroke="white" stroke-width="1"/>
+      <path d="M13.3 6.5 ${t(10.5,9.5)} ${t(12,12.5)} ${t(10,15.5)} ${t(6.5,18)}" stroke="white" stroke-width="4.6"/>
+      <path d="M13.3 6.5 ${t(10.5,9.5)} ${t(12,12.5)} ${t(10,15.5)} ${t(6.5,18)}"/>
+      <path d="M12 12.5 ${t(15.5,13)} ${t(18,10)}" stroke="white" stroke-width="4.6"/>
+      <path d="M12 12.5 ${t(15.5,13)} ${t(18,10)}"/>
+      <path d="M10.5 9.5 ${t(6.5,8)}" stroke="white" stroke-width="4.6"/>
+      <path d="M10.5 9.5 ${t(6.5,8)}"/>
+      <path d="M10 15.5 ${t(13.5,20)}" stroke="white" stroke-width="4.6"/>
+      <path d="M10 15.5 ${t(13.5,20)}"/>
+    </svg>`;
+  }
+
+  function haversineMetersLoc(lat1, lon1, lat2, lon2){
+    const R = 6371000, toRad = v => v*Math.PI/180;
+    const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // 속도(m/s) -> 애니메이션 한 걸음 주기(초). 느릴수록 길게(느긋한 걸음), 빠를수록 짧게(빠른 뜀박질)
+  function speedToDuration(speedMps){
+    const clamped = Math.max(0, Math.min(speedMps, 12));
+    const duration = 1.4 - clamped * 0.11; // 0m/s→1.4s(느긋), 12m/s(약 43km/h, 차량)→약 0.08s
+    return Math.max(0.28, duration);
+  }
+
+  function updateMyLocation(pos){
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    const now = pos.timestamp || Date.now();
+
+    // 속도 계산: 기기가 제공하는 speed값이 있으면 우선 사용, 없으면 이전 위치와의 거리/시간으로 직접 계산
+    let speedMps = (typeof pos.coords.speed === 'number' && pos.coords.speed >= 0) ? pos.coords.speed : null;
+    if(speedMps === null && myLocPrev){
+      const dt = (now - myLocPrev.t) / 1000;
+      if(dt > 0.5){
+        const dist = haversineMetersLoc(myLocPrev.lat, myLocPrev.lon, lat, lon);
+        speedMps = dist / dt;
+      }
+    }
+    if(speedMps === null) speedMps = 0;
+    myLocPrev = {lat, lon, t: now};
+
+    const duration = speedToDuration(speedMps);
+
+    if(!myLocationMarker){
+      const html = '<div class="hm-my-location"><div class="hm-ring"></div>' +
+        '<div class="hm-figure"><span class="hm-frame-a">' + buildPersonSvg(false) + '</span><span class="hm-frame-b">' + buildPersonSvg(true) + '</span></div>' +
+        '<div class="hm-label">내 위치</div></div>';
+      const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,70], iconAnchor:[28,44] });
+      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000}).addTo(map);
+      map.setView([lat, lon], 15);
+    } else {
+      myLocationMarker.setLatLng([lat, lon]);
+    }
+    const el = myLocationMarker.getElement();
+    if(el){
+      const fig = el.querySelector('.hm-figure');
+      if(fig) fig.style.setProperty('--run-speed', duration + 's');
+    }
+  }
+
   document.getElementById('myLocationBtn').addEventListener('click', () => {
     if(!navigator.geolocation){
       window.showMsg('이 브라우저에서는 위치 정보를 사용할 수 없어요.');
       return;
     }
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const lat = pos.coords.latitude, lon = pos.coords.longitude;
-      if(myLocationMarker) map.removeLayer(myLocationMarker);
-      const personSvg = '<svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" /></svg>';
-      const myLocIcon = L.divIcon({
-        html: '<div class="hm-my-location"><div class="hm-ring"></div><div class="hm-badge">' + personSvg + '</div></div>',
-        className: '', iconSize:[34,34], iconAnchor:[17,17]
-      });
-      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000}).addTo(map);
-      myLocationMarker.bindTooltip('📍 내 위치', {direction:'top', offset:[0,-18], permanent:false});
-      map.setView([lat, lon], 15);
-    }, () => {
+    const btn = document.getElementById('myLocationBtn');
+    if(myLocationWatchId !== null){
+      // 이미 추적 중이면 눌렀을 때 추적 중지
+      navigator.geolocation.clearWatch(myLocationWatchId);
+      myLocationWatchId = null;
+      myLocPrev = null;
+      if(myLocationMarker){ map.removeLayer(myLocationMarker); myLocationMarker = null; }
+      btn.style.background = '#fff';
+      return;
+    }
+    myLocationWatchId = navigator.geolocation.watchPosition(updateMyLocation, () => {
       window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
-    }, {enableHighAccuracy:true, timeout:10000});
+    }, {enableHighAccuracy:true, timeout:15000, maximumAge:2000});
+    btn.style.background = '#ffe4d6';
   });
 
   // Custom cluster click: small clusters show a pick-list (more reliable than spiderfy legs),
