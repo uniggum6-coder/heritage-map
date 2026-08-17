@@ -114,6 +114,8 @@
   #helpBtn:hover, #bulkVerifyBtn:hover{background:rgba(255,255,255,.28);}
   #rankBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #rankBtn:hover{background:rgba(255,255,255,.28);}
+  #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #boardBtn:hover{background:rgba(255,255,255,.28);}
   .rank-box{background:#fff;padding:22px;border-radius:12px;max-width:400px;text-align:left;max-height:80vh;overflow-y:auto;}
   .rank-box h3{margin:0 0 14px;font-size:16px;color:var(--navy);}
   .rank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee;}
@@ -174,7 +176,7 @@
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
     .headerbar > div[style*="display:flex"]{flex:1 1 100%;flex-wrap:wrap;gap:6px;justify-content:flex-start;}
-    #helpBtn, #rankBtn, #bulkVerifyBtn{padding:6px 10px;font-size:11.5px;}
+    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn{padding:6px 10px;font-size:11.5px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
     .user-chip{flex-wrap:wrap;}
@@ -194,6 +196,7 @@
       <button id="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
       <button id="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
       <button id="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
+      <button id="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
       <div class="auth-area" id="authArea">
         <button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
       </div>
@@ -223,6 +226,7 @@
       <div id="count">표시 중</div>
     </aside>
     <div id="sidebarToggle">◀</div>
+    <button id="myLocationBtn" title="내 위치 표시" style="position:absolute;right:14px;bottom:90px;z-index:999;width:42px;height:42px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 1px 5px rgba(0,0,0,.3);font-size:19px;cursor:pointer;">📍</button>
     <div id="map"></div>
   </div>
 
@@ -246,6 +250,19 @@
       <select id="slistType"><option value="">전체(동물+식물)</option><option value="동물">동물</option><option value="식물">식물</option></select>
     </div>
     <div class="icards" id="scards"></div>
+  </div>
+
+  <div id="view-board" style="display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;">
+    <button id="tabMapBtnFromBoard">← 지도로 돌아가기</button>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;">
+      💬 방문 후기, 질문 등을 자유롭게 남겨보세요. 글쓰기는 로그인 후 가능해요.
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="boardTitleInput" placeholder="제목" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;">
+    </div>
+    <textarea id="boardContentInput" placeholder="내용을 입력하세요" rows="3" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;margin-bottom:8px;"></textarea>
+    <button id="boardSubmitBtn" style="padding:9px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;">글쓰기</button>
+    <div id="boardListArea" style="margin-top:24px;"></div>
   </div>
 </main>
 
@@ -455,6 +472,26 @@ function initMap(){
   });
   map.addLayer(clusterGroup);
   checkLayer = L.layerGroup().addTo(map);
+
+  // ---- 내 위치 표시 (로그인 여부와 무관, 저장 없이 화면에만 표시) ----
+  let myLocationMarker = null;
+  document.getElementById('myLocationBtn').addEventListener('click', () => {
+    if(!navigator.geolocation){
+      window.showMsg('이 브라우저에서는 위치 정보를 사용할 수 없어요.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      if(myLocationMarker) map.removeLayer(myLocationMarker);
+      myLocationMarker = L.circleMarker([lat, lon], {
+        radius:9, fillColor:'#4285F4', color:'#fff', weight:3, fillOpacity:1, opacity:1
+      }).addTo(map);
+      myLocationMarker.bindTooltip('📍 내 위치', {direction:'top', offset:[0,-8], permanent:false});
+      map.setView([lat, lon], 15);
+    }, () => {
+      window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
+    }, {enableHighAccuracy:true, timeout:10000});
+  });
 
   // Custom cluster click: small clusters show a pick-list (more reliable than spiderfy legs),
   // large clusters zoom in toward their bounds.
@@ -852,7 +889,7 @@ import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, limit, writeBatch
+  getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, limit, writeBatch, addDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -981,10 +1018,13 @@ window.hmChangeNickname = async () => {
   }
 };
 
+const ADMIN_EMAIL = 'uniggum73@gmail.com';
+
 window.showHallOfFame = async () => {
   document.getElementById('rankOverlay').style.display = 'flex';
   const area = document.getElementById('rankListArea');
   area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
+  const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
   try{
     const q = query(collection(db, 'users'), orderBy('totalVisits', 'desc'), limit(30));
     const snap = await getDocs(q);
@@ -1001,12 +1041,58 @@ window.showHallOfFame = async () => {
       if(total <= 0) return;
       i++;
       const cls = medalCls[i-1] || '';
+      const uid = docSnap.id;
       const name = (d.nickname || '닉네임 미설정').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-      html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${d.rank || ''}</div></div><div class="rank-count">${total}곳</div></div>`;
+      const adminBtn = isAdmin ? `<button onclick="window.hmAdminViewUserVisits('${uid}', '${name.replace(/'/g,"")}')" style="margin-left:8px;font-size:11px;padding:3px 8px;border-radius:10px;border:none;background:#eee;cursor:pointer;">방문기록</button>` : '';
+      html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${d.rank || ''}</div></div><div class="rank-count">${total}곳${adminBtn}</div></div>`;
     });
     area.innerHTML = html || '<div class="rank-empty">아직 인증 기록이 없어요. 첫 번째 인증자가 되어보세요!</div>';
   }catch(err){
     area.innerHTML = '<div class="rank-empty">순위를 불러오지 못했어요.</div>';
+  }
+};
+
+// ---- 관리자 전용: 다른 사람의 방문기록 보기 (uniggum73@gmail.com 로그인시에만 버튼 노출) ----
+window.hmAdminViewUserVisits = async (uid, nickname) => {
+  if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  document.getElementById('myVisitsOverlay').style.display = 'flex';
+  const area = document.getElementById('myVisitsArea');
+  document.querySelector('#myVisitsOverlay h3').textContent = `📍 ${nickname}님이 다녀온 곳`;
+  area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
+  try{
+    const q = query(collection(db, 'visits'), where('userId', '==', uid));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      area.innerHTML = '<div class="rank-empty">인증 기록이 없어요.</div>';
+      return;
+    }
+    const hids = snap.docs.map(d => d.data().heritageId);
+    const pts = [];
+    hids.forEach(hid => {
+      const m = markerByHid[hid];
+      if(m) pts.push(m._d);
+    });
+    const n = pts.length;
+    const parent = pts.map((_, i) => i);
+    function find(i){ while(parent[i] !== i){ parent[i] = parent[parent[i]]; i = parent[i]; } return i; }
+    function union(i, j){ const ri = find(i), rj = find(j); if(ri !== rj) parent[ri] = rj; }
+    for(let i = 0; i < n; i++){
+      for(let j = i + 1; j < n; j++){
+        if(haversineMeters(pts[i].la, pts[i].lo, pts[j].la, pts[j].lo) <= 400) union(i, j);
+      }
+    }
+    const groups = {};
+    for(let i = 0; i < n; i++){ const r = find(i); if(!groups[r]) groups[r] = []; groups[r].push(pts[i]); }
+    const clusters = Object.values(groups).sort((a,b) => (a[0].n||'').localeCompare(b[0].n||'', 'ko'));
+    let html = '';
+    clusters.forEach(items => {
+      const rep = items[0];
+      const extra = items.length > 1 ? ` 외 ${items.length-1}건` : '';
+      html += `<div class="rank-row"><div class="rank-info"><div class="rank-name">${escapeHtml(rep.n)}${extra}</div><div class="rank-title">${escapeHtml(rep.r||'')} ${escapeHtml(rep.s||'')}</div></div></div>`;
+    });
+    area.innerHTML = html || '<div class="rank-empty">지도에서 찾을 수 없는 유산이에요.</div>';
+  }catch(err){
+    area.innerHTML = '<div class="rank-empty">불러오지 못했어요: ' + err.message + '</div>';
   }
 };
 
@@ -1030,6 +1116,88 @@ window.showMyVisits = () => {
     html += `<div class="rank-row"><div class="rank-info"><div class="rank-name">${escapeHtml(rep.n)}${extra}</div><div class="rank-title">${escapeHtml(rep.r||'')} ${escapeHtml(rep.s||'')}</div></div></div>`;
   });
   area.innerHTML = html;
+};
+
+window.showBoard = () => {
+  document.getElementById('view-map').style.display='none';
+  document.getElementById('view-list').style.display='none';
+  document.getElementById('view-species').style.display='none';
+  document.getElementById('view-board').style.display='block';
+  renderBoard();
+};
+function backToMapFromBoard(){
+  document.getElementById('view-board').style.display='none';
+  document.getElementById('view-map').style.display='flex';
+  setTimeout(()=>map.invalidateSize(), 50);
+}
+document.getElementById('tabMapBtnFromBoard').addEventListener('click', backToMapFromBoard);
+
+async function renderBoard(){
+  const area = document.getElementById('boardListArea');
+  area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
+  try{
+    const q = query(collection(db, 'boardPosts'), orderBy('createdAt', 'desc'), limit(100));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      area.innerHTML = '<div class="rank-empty">아직 글이 없어요. 첫 글을 남겨보세요!</div>';
+      return;
+    }
+    let html = '';
+    snap.forEach(docSnap => {
+      const p = docSnap.data();
+      const id = docSnap.id;
+      const date = p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      const nick = escapeHtml(p.authorNick || '익명');
+      const canDelete = currentUser && p.authorUid === currentUser.uid;
+      const delBtn = canDelete ? `<button onclick="window.hmDeleteBoardPost('${id}')" style="margin-left:8px;font-size:11.5px;color:#c0392b;background:none;border:none;cursor:pointer;text-decoration:underline;">삭제</button>` : '';
+      html += `<div class="icard" style="margin-bottom:10px;">
+        <h4 style="margin:0 0 4px;">${escapeHtml(p.title||'')}</h4>
+        <div class="meta">${nick} · ${date}${delBtn}</div>
+        <div class="desc" style="white-space:pre-wrap;">${escapeHtml(p.content||'')}</div>
+      </div>`;
+    });
+    area.innerHTML = html;
+  }catch(err){
+    area.innerHTML = '<div class="rank-empty">불러오지 못했어요: ' + err.message + '</div>';
+  }
+}
+
+document.getElementById('boardSubmitBtn').addEventListener('click', async () => {
+  if(!currentUser){
+    window.showMsg('글쓰기는 로그인 후 이용할 수 있어요. (오른쪽 위 로그인 버튼)');
+    return;
+  }
+  const title = document.getElementById('boardTitleInput').value.trim();
+  const content2 = document.getElementById('boardContentInput').value.trim();
+  if(!title || !content2){
+    window.showMsg('제목과 내용을 모두 입력해주세요.');
+    return;
+  }
+  try{
+    await addDoc(collection(db, 'boardPosts'), {
+      title: title,
+      content: content2,
+      authorUid: currentUser.uid,
+      authorNick: currentNickname || currentUser.displayName || '익명',
+      createdAt: Date.now()
+    });
+    document.getElementById('boardTitleInput').value = '';
+    document.getElementById('boardContentInput').value = '';
+    renderBoard();
+  }catch(err){
+    window.showMsg('글 등록에 실패했어요: ' + err.message);
+  }
+});
+
+window.hmDeleteBoardPost = async (postId) => {
+  if(!currentUser) return;
+  if(!window.confirm('이 글을 삭제할까요?')) return;
+  try{
+    await deleteDoc(doc(db, 'boardPosts', postId));
+    renderBoard();
+  }catch(err){
+    window.showMsg('삭제에 실패했어요: ' + err.message);
+  }
 };
 
 window.hmVerifyVisit = (hid, targetLat, targetLon) => {
