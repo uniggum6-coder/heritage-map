@@ -519,7 +519,7 @@ function initMap(){
     return Math.max(0.28, duration);
   }
 
-  function updateMyLocation(pos){
+  function updateMyLocation(pos, moveMap){
     const lat = pos.coords.latitude, lon = pos.coords.longitude;
     const now = pos.timestamp || Date.now();
 
@@ -542,8 +542,9 @@ function initMap(){
         '<div class="hm-label">내 위치</div></div>';
       const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
       myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000}).addTo(map);
-      // 처음 위치를 찾았을 때만 지도를 그쪽으로 이동(그 뒤로는 사용자가 보던 화면을 강제로 옮기지 않음)
-      if(map.getZoom() < 13) map.setView([lat, lon], 15);
+      // 사용자가 "내 위치" 버튼을 직접 눌렀을 때만 지도를 그쪽으로 이동(페이지를 열자마자
+      // 조용히 자동 감지될 때는 첫 화면이 전국 지도로 유지되도록 지도를 건드리지 않음)
+      if(moveMap && map.getZoom() < 13) map.setView([lat, lon], 15);
     } else {
       myLocationMarker.setLatLng([lat, lon]);
     }
@@ -566,7 +567,7 @@ function initMap(){
   function startMyLocationTracking(silent){
     if(!navigator.geolocation || myLocationWatchId !== null) return;
     const btn = document.getElementById('myLocationBtn');
-    myLocationWatchId = navigator.geolocation.watchPosition(updateMyLocation, () => {
+    myLocationWatchId = navigator.geolocation.watchPosition((pos) => updateMyLocation(pos, !silent), () => {
       // 페이지 열자마자 조용히 시도하는 경우엔, 허락 안 했다고 오류창을 띄우지 않음(부담 없게)
       if(!silent) window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
       myLocationWatchId = null;
