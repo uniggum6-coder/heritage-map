@@ -191,24 +191,19 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.12); }
   }
-  .hm-my-location{ position:relative; width:56px; height:70px; transform-origin:50% 100%; transition:transform .2s ease-out; }
+  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; }
   .hm-my-location .hm-ring{
-    position:absolute; top:24px; left:10px; width:36px; height:36px; border-radius:50%;
+    position:absolute; top:52px; left:10px; width:36px; height:36px; border-radius:50%;
     background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
   }
   .hm-my-location .hm-figure{
-    position:absolute; top:0; left:8px; width:40px; height:40px;
-    display:flex; align-items:center; justify-content:center; z-index:2;
+    position:absolute; top:0; left:6px; width:44px; height:78px;
+    display:flex; align-items:flex-end; justify-content:center; z-index:2;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.6));
-    --run-speed: 0.9s;
   }
-  .hm-my-location .hm-figure svg{ width:40px; height:40px; position:absolute; top:0; left:0; }
-  @keyframes hm-frame-a{ 0%,49.9%{opacity:1;} 50%,100%{opacity:0;} }
-  @keyframes hm-frame-b{ 0%,49.9%{opacity:0;} 50%,100%{opacity:1;} }
-  .hm-my-location .hm-frame-a{ animation: hm-frame-a var(--run-speed,0.9s) steps(1) infinite; }
-  .hm-my-location .hm-frame-b{ animation: hm-frame-b var(--run-speed,0.9s) steps(1) infinite; }
+  .hm-my-location .hm-figure img{ width:44px; height:78px; display:block; }
   .hm-my-location .hm-label{
-    position:absolute; top:44px; left:0; width:56px; text-align:center; z-index:3;
+    position:absolute; top:72px; left:0; width:56px; text-align:center; z-index:3;
     font-size:11px; font-weight:800; color:#fff;
     text-shadow: -1px -1px 0 #ff5a1f, 1px -1px 0 #ff5a1f, -1px 1px 0 #ff5a1f, 1px 1px 0 #ff5a1f, 0 0 4px rgba(0,0,0,.5);
     white-space:nowrap;
@@ -510,26 +505,6 @@ function initMap(){
   let myLocationWatchId = null;
   let myLocPrev = null; // {lat, lon, t}
 
-  // 달리는 자세 하나만 정확하게 그리고, 반대쪽 자세는 좌표를 다시 계산하지 않고
-  // SVG 전체를 좌우로 뒤집는(mirror) 방식으로 만들어서 모양이 절대 깨지지 않게 함
-  function buildPersonSvg(mirrored){
-    const poseGroup = `
-      <!-- 전통 갓: 머리에 겹쳐서 얹힌 넓고 두꺼운 챙(원이 아니라 확실한 납작한 챙 모양) -->
-      <ellipse cx="12" cy="2.7" rx="5" ry="1.4" fill="#1a1a1a" stroke="white" stroke-width="0.6"/>
-      <circle cx="12" cy="4.3" r="2.1" fill="#ff5a1f" stroke="white" stroke-width="1"/>
-      <path d="M12 6.3 11 10 13 13.5 11.5 17 8 19.5" stroke="white" stroke-width="4.6"/>
-      <path d="M12 6.3 11 10 13 13.5 11.5 17 8 19.5"/>
-      <path d="M13 13.5 16.5 14 18.5 11" stroke="white" stroke-width="4.6"/>
-      <path d="M13 13.5 16.5 14 18.5 11"/>
-      <path d="M11 10 7 8.5" stroke="white" stroke-width="4.6"/>
-      <path d="M11 10 7 8.5"/>
-      <path d="M11.5 17 15 21" stroke="white" stroke-width="4.6"/>
-      <path d="M11.5 17 15 21"/>
-    `;
-    const transform = mirrored ? ' transform="translate(24,0) scale(-1,1)"' : '';
-    return `<svg viewBox="0 -1 24 25" fill="none" stroke="#ff5a1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><g${transform}>${poseGroup}</g></svg>`;
-  }
-
   function haversineMetersLoc(lat1, lon1, lat2, lon2){
     const R = 6371000, toRad = v => v*Math.PI/180;
     const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
@@ -560,24 +535,17 @@ function initMap(){
     if(speedMps === null) speedMps = 0;
     myLocPrev = {lat, lon, t: now};
 
-    const duration = speedToDuration(speedMps);
-
     const isFirstFix = !myLocationMarker;
     if(!myLocationMarker){
       const html = '<div class="hm-my-location"><div class="hm-ring"></div>' +
-        '<div class="hm-figure"><span class="hm-frame-a">' + buildPersonSvg(false) + '</span><span class="hm-frame-b">' + buildPersonSvg(true) + '</span></div>' +
+        '<div class="hm-figure"><img src="my-location-icon.png?v=4" alt="내 위치"></div>' +
         '<div class="hm-label">내 위치</div></div>';
-      const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,70], iconAnchor:[28,44] });
+      const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
       myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000}).addTo(map);
       // 처음 위치를 찾았을 때만 지도를 그쪽으로 이동(그 뒤로는 사용자가 보던 화면을 강제로 옮기지 않음)
       if(map.getZoom() < 13) map.setView([lat, lon], 15);
     } else {
       myLocationMarker.setLatLng([lat, lon]);
-    }
-    const el = myLocationMarker.getElement();
-    if(el){
-      const fig = el.querySelector('.hm-figure');
-      if(fig) fig.style.setProperty('--run-speed', duration + 's');
     }
     updateMyLocationScale();
   }
