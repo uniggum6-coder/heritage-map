@@ -202,7 +202,9 @@
     position:absolute; top:52px; left:10px; width:36px; height:36px; border-radius:50%;
     background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
     cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
   }
+  .hm-ring-pin{ font-size:18px; line-height:1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); pointer-events:none; }
   .hm-my-location .hm-figure{
     position:absolute; top:0; left:6px; width:44px; height:78px;
     display:flex; align-items:flex-end; justify-content:center; z-index:2;
@@ -565,27 +567,25 @@ function initMap(){
     const src = getMyLocationIconSrc();
     return src ? ('<div class="hm-figure"><img src="' + src + '" alt="내 위치"></div>') : '';
   }
+  // 캐릭터를 아직 안 골랐을 때, 원 안에 위치 핀(📍) 표시를 넣어서 "여기 누르면 된다"는 게
+  // 눈에 잘 띄게 함(사람 캐릭터 그림이 아니라 그냥 위치 핀 아이콘이라 예전 캐릭터와는 다름).
+  function myLocationRingHtml(){
+    const hasChar = !!getMyLocationIconSrc();
+    return '<div class="hm-ring">' + (hasChar ? '' : '<span class="hm-ring-pin">📍</span>') + '</div>';
+  }
   function applyMyLocationIcon(){
     if(!myLocationMarker) return;
     const el = myLocationMarker.getElement();
     if(!el) return;
     const wrap = el.querySelector('.hm-my-location');
     if(!wrap) return;
-    const existing = wrap.querySelector('.hm-figure');
-    const src = getMyLocationIconSrc();
-    if(src){
-      if(existing){
-        existing.querySelector('img').src = src;
-      } else {
-        wrap.insertAdjacentHTML('afterbegin', myLocationFigureHtml());
-        // hm-ring 바로 뒤(위)에 오도록: ring 다음에 삽입
-        const ring = wrap.querySelector('.hm-ring');
-        const fig = wrap.querySelector('.hm-figure');
-        if(ring && fig) ring.insertAdjacentElement('afterend', fig);
-      }
-    } else if(existing){
-      existing.remove();
-    }
+    // 매번 통째로 다시 그려서(부분 수정으로 인한 누락/버그를 피함) 항상 최신 상태를 반영함
+    const ring = wrap.querySelector('.hm-ring');
+    if(ring) ring.outerHTML = myLocationRingHtml();
+    const existingFig = wrap.querySelector('.hm-figure');
+    if(existingFig) existingFig.remove();
+    const newRing = wrap.querySelector('.hm-ring');
+    if(newRing) newRing.insertAdjacentHTML('afterend', myLocationFigureHtml());
   }
   // 로그인 시(별도 <script type="module"> 블록)에서 계정에 저장된 캐릭터를 적용할 수 있도록 전역에 노출
   window.applyMyLocationIcon = applyMyLocationIcon;
@@ -661,7 +661,7 @@ function initMap(){
 
     const isFirstFix = !myLocationMarker;
     if(!myLocationMarker){
-      const html = '<div class="hm-my-location"><div class="hm-ring"></div>' +
+      const html = '<div class="hm-my-location">' + myLocationRingHtml() +
         myLocationFigureHtml() +
         '<div class="hm-label">내 위치</div></div>';
       const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
