@@ -695,7 +695,8 @@ function initMap(){
     const el = myLocationMarker.getElement();
     if(!el) return;
     const z = map.getZoom(); // minZoom 6 ~ 대략 18
-    const scale = Math.max(1, Math.min(2.6, 1 + (13 - z) * 0.22));
+    // 줌인했을 때(z>=13) 크기는 그대로 1배 유지, 줌 아웃(전국 지도)일 때 커지는 정도만 절반으로 줄임
+    const scale = Math.max(1, Math.min(1.8, 1 + (13 - z) * 0.11));
     el.style.transform += ''; // Leaflet이 위치 이동에 쓰는 transform은 건드리지 않고, 안쪽 wrapper만 확대
     const wrap = el.querySelector('.hm-my-location');
     if(wrap) wrap.style.transform = 'scale(' + scale.toFixed(2) + ')';
