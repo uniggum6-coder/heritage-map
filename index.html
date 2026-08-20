@@ -366,7 +366,7 @@
 
 <div class="msg-overlay" id="charOverlay"><div class="rank-box">
   <h3>🎎 내 캐릭터 고르기</h3>
-  <p style="font-size:12.5px;color:#888;margin:-8px 0 14px;">현장 방문 인증을 쌓으면 새 캐릭터가 하나씩 열려요. 안 고르면 기본 모습 그대로예요.</p>
+  <p style="font-size:12.5px;color:#888;margin:-8px 0 14px;">원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.</p>
   <div class="char-picker-grid" id="charPickerGrid"></div>
   <button onclick="document.getElementById('charOverlay').style.display='none'">닫기</button>
 </div></div>
@@ -592,21 +592,17 @@ function initMap(){
   function renderCharPicker(){
     const grid = document.getElementById('charPickerGrid');
     if(!grid) return;
-    const placeCount = window.hmPlaceCount || 0;
     const selected = localStorage.getItem('hmMyCharacter');
     let html = `<div class="char-card${!selected ? ' selected' : ''}" onclick="window.hmSelectCharacter(null)">
       <div class="char-card-noimg">📍</div>
       <div class="char-name">기본(그림 없음)</div>
     </div>`;
+    // 잠금 없이 5개 캐릭터 전부 바로 고를 수 있게 함
     CHARACTERS.forEach(c => {
-      const unlocked = placeCount >= c.unlockAt;
-      const cls = 'char-card' + (unlocked ? '' : ' locked') + (selected === c.id ? ' selected' : '');
-      const onclick = unlocked ? ` onclick="window.hmSelectCharacter('${c.id}')"` : '';
-      const note = unlocked ? '' : `<div class="char-unlock-note">${c.unlockAt}곳 인증 시 해제</div>`;
-      html += `<div class="${cls}"${onclick}>
+      const cls = 'char-card' + (selected === c.id ? ' selected' : '');
+      html += `<div class="${cls}" onclick="window.hmSelectCharacter('${c.id}')">
         <img src="${c.file}" alt="${c.name}">
         <div class="char-name">${c.name}</div>
-        ${note}
       </div>`;
     });
     grid.innerHTML = html;
@@ -618,8 +614,7 @@ function initMap(){
   window.hmSelectCharacter = function(id){
     if(id){
       const c = CHARACTERS.find(x => x.id === id);
-      const placeCount = window.hmPlaceCount || 0;
-      if(!c || placeCount < c.unlockAt) return; // 잠긴 캐릭터는 무시 (안전장치)
+      if(!c) return;
       localStorage.setItem('hmMyCharacter', id);
     } else {
       localStorage.removeItem('hmMyCharacter');
