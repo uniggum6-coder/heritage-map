@@ -675,6 +675,10 @@ function initMap(){
         myLocEl.style.pointerEvents = 'auto';
         myLocEl.addEventListener('click', (ev) => { ev.stopPropagation(); window.showCharPicker(); });
         myLocEl.addEventListener('touchend', (ev) => { ev.stopPropagation(); window.showCharPicker(); });
+        // 안전장치: 위치 추적을 껐다 다시 켤 때(마커를 지웠다 새로 만들 때), 새로 만든 마커가
+        // 화면에 바로 그려지지 않고 지도를 한 번 건드려야(클릭 등) 나타나는 경우가 있어서,
+        // 강제로 리플로우를 한 번 발생시켜 곧바로 화면에 그려지도록 함.
+        void myLocEl.offsetHeight;
       }
       // 사용자가 "내 위치" 버튼을 직접 눌렀을 때만 지도를 그쪽으로 이동(페이지를 열자마자
       // 조용히 자동 감지될 때는 첫 화면이 전국 지도로 유지되도록 지도를 건드리지 않음)
