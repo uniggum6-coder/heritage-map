@@ -195,10 +195,11 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.12); }
   }
-  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; }
+  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; cursor:pointer; }
   .hm-my-location .hm-ring{
     position:absolute; top:52px; left:10px; width:36px; height:36px; border-radius:50%;
     background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
+    cursor:pointer;
   }
   .hm-my-location .hm-figure{
     position:absolute; top:0; left:6px; width:44px; height:78px;
@@ -228,6 +229,7 @@
   .char-card.locked:hover{ border-color:#e8e4d8; }
   .char-card img{ width:100%; max-width:64px; height:76px; object-fit:contain; display:block; margin:0 auto 4px; }
   .char-card.locked img{ filter:grayscale(1); }
+  .char-card-noimg{ width:100%; height:76px; display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 4px; }
   .char-card .char-name{ font-size:12.5px; font-weight:700; color:#333; }
   .char-card .char-unlock-note{ font-size:10.5px; color:#999; margin-top:2px; line-height:1.3; }
 </style>
@@ -481,6 +483,10 @@ function initMap(){
     maxBounds: koreaBounds,
     maxBoundsViscosity: 0.7
   }).setView([36.2, 127.8], 7);
+  // "내 위치" 마커 전용 pane: 항상 다른 마커/클러스터보다 위에 그려지고, 클릭도 항상 이쪽이 먼저
+  // 받도록(겹쳐 있어도 캐릭터 고르기가 확실히 열리도록) 별도 pane의 z-index를 markerPane(600)보다 높게 둠.
+  map.createPane('myLocPane');
+  map.getPane('myLocPane').style.zIndex = 650;
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18, minZoom:6, noWrap:true,
     attribution: '&copy; OpenStreetMap contributors'
@@ -538,7 +544,6 @@ function initMap(){
   // 방문 인증 개수(placeCount, 등급 계산에 쓰는 것과 동일한 값)가 unlockAt 이상이면 해제됨.
   // 로그인 여부와 무관하게 기기(localStorage)에 저장되고, 로그인한 경우 Firestore에도 동기화되어
   // 다른 기기에서도 유지됨. 인증 카운트는 updateAuthUI가 호출될 때마다 window.hmPlaceCount로 갱신됨.
-  const DEFAULT_CHAR_ICON = 'my-location-icon.png?v=4';
   const CHARACTERS = [
     {id:'eobu',     file:'characters/char-eobu.png',     name:'어부',  unlockAt:1},
     {id:'siin',     file:'characters/char-siin.png',     name:'시인',  unlockAt:7},
@@ -547,16 +552,37 @@ function initMap(){
     {id:'miin',     file:'characters/char-miin.png',     name:'미인',  unlockAt:60},
   ];
   function getMyLocationIconSrc(){
+    // 캐릭터를 아직 고르지 않았으면 그림 없이 원+글씨만 보이도록 null을 반환
+    // (예전 기본 캐릭터 그림은 더 이상 지도에 표시하지 않음)
     const sel = localStorage.getItem('hmMyCharacter');
     const found = CHARACTERS.find(c => c.id === sel);
-    return found ? found.file : DEFAULT_CHAR_ICON;
+    return found ? found.file : null;
+  }
+  function myLocationFigureHtml(){
+    const src = getMyLocationIconSrc();
+    return src ? ('<div class="hm-figure"><img src="' + src + '" alt="내 위치"></div>') : '';
   }
   function applyMyLocationIcon(){
     if(!myLocationMarker) return;
     const el = myLocationMarker.getElement();
     if(!el) return;
-    const img = el.querySelector('.hm-figure img');
-    if(img) img.src = getMyLocationIconSrc();
+    const wrap = el.querySelector('.hm-my-location');
+    if(!wrap) return;
+    const existing = wrap.querySelector('.hm-figure');
+    const src = getMyLocationIconSrc();
+    if(src){
+      if(existing){
+        existing.querySelector('img').src = src;
+      } else {
+        wrap.insertAdjacentHTML('afterbegin', myLocationFigureHtml());
+        // hm-ring 바로 뒤(위)에 오도록: ring 다음에 삽입
+        const ring = wrap.querySelector('.hm-ring');
+        const fig = wrap.querySelector('.hm-figure');
+        if(ring && fig) ring.insertAdjacentElement('afterend', fig);
+      }
+    } else if(existing){
+      existing.remove();
+    }
   }
   // 로그인 시(별도 <script type="module"> 블록)에서 계정에 저장된 캐릭터를 적용할 수 있도록 전역에 노출
   window.applyMyLocationIcon = applyMyLocationIcon;
@@ -566,8 +592,8 @@ function initMap(){
     const placeCount = window.hmPlaceCount || 0;
     const selected = localStorage.getItem('hmMyCharacter');
     let html = `<div class="char-card${!selected ? ' selected' : ''}" onclick="window.hmSelectCharacter(null)">
-      <img src="${DEFAULT_CHAR_ICON}" alt="기본 모습">
-      <div class="char-name">기본</div>
+      <div class="char-card-noimg">📍</div>
+      <div class="char-name">기본(그림 없음)</div>
     </div>`;
     CHARACTERS.forEach(c => {
       const unlocked = placeCount >= c.unlockAt;
@@ -633,11 +659,13 @@ function initMap(){
     const isFirstFix = !myLocationMarker;
     if(!myLocationMarker){
       const html = '<div class="hm-my-location"><div class="hm-ring"></div>' +
-        '<div class="hm-figure"><img src="' + getMyLocationIconSrc() + '" alt="내 위치"></div>' +
+        myLocationFigureHtml() +
         '<div class="hm-label">내 위치</div></div>';
       const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
       // interactive:true로 눌러서 캐릭터를 고를 수 있게 함(안 눌러도 그만, 기본 모습 유지)
-      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:true, zIndexOffset:2000}).addTo(map);
+      // 전용 pane(myLocPane)에 올려서 다른 마커/클러스터에 가려지거나 클릭이 다른 곳으로
+      // 새지 않고 항상 이 마커가 클릭을 받도록 함.
+      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:true, zIndexOffset:2000, pane:'myLocPane'}).addTo(map);
       myLocationMarker.on('click', (e) => {
         L.DomEvent.stopPropagation(e);
         window.showCharPicker();
