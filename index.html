@@ -120,6 +120,8 @@
   #rankBtn:hover{background:rgba(255,255,255,.28);}
   #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #boardBtn:hover{background:rgba(255,255,255,.28);}
+  #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #charPickerBtn:hover{background:rgba(255,255,255,.28);}
   .rank-box{background:#fff;padding:22px;border-radius:12px;max-width:400px;text-align:left;max-height:80vh;overflow-y:auto;}
   .rank-box h3{margin:0 0 14px;font-size:16px;color:var(--navy);}
   .rank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee;}
@@ -180,7 +182,7 @@
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
     .headerbar > div[style*="display:flex"]{flex:1 1 100%;flex-wrap:wrap;gap:6px;justify-content:flex-start;}
-    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn{padding:6px 10px;font-size:11.5px;}
+    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
     .user-chip{flex-wrap:wrap;}
@@ -245,6 +247,7 @@
       <button id="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
       <button id="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
       <button id="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
+      <button id="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
       <button id="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
       <div class="auth-area" id="authArea">
         <button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
