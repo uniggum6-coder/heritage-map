@@ -668,6 +668,14 @@ function initMap(){
         L.DomEvent.stopPropagation(e);
         window.showCharPicker();
       });
+      // 안전장치: 혹시 Leaflet 마커의 클릭 인식이 브라우저/환경에 따라 씹히는 경우를 대비해,
+      // 실제 DOM 요소에도 직접 클릭 리스너를 하나 더 걸어둠(두 번 실행돼도 문제 없음).
+      const myLocEl = myLocationMarker.getElement();
+      if(myLocEl){
+        myLocEl.style.pointerEvents = 'auto';
+        myLocEl.addEventListener('click', (ev) => { ev.stopPropagation(); window.showCharPicker(); });
+        myLocEl.addEventListener('touchend', (ev) => { ev.stopPropagation(); window.showCharPicker(); });
+      }
       // 사용자가 "내 위치" 버튼을 직접 눌렀을 때만 지도를 그쪽으로 이동(페이지를 열자마자
       // 조용히 자동 감지될 때는 첫 화면이 전국 지도로 유지되도록 지도를 건드리지 않음)
       if(moveMap && map.getZoom() < 13) map.setView([lat, lon], 15);
