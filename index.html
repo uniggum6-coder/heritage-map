@@ -204,6 +204,7 @@
     position:absolute; top:0; left:6px; width:44px; height:78px;
     display:flex; align-items:flex-end; justify-content:center; z-index:2;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.6));
+    cursor:pointer;
   }
   .hm-my-location .hm-figure img{ width:44px; height:78px; display:block; }
   .hm-my-location .hm-label{
@@ -211,7 +212,24 @@
     font-size:11px; font-weight:800; color:#fff;
     text-shadow: -1px -1px 0 #ff5a1f, 1px -1px 0 #ff5a1f, -1px 1px 0 #ff5a1f, 1px 1px 0 #ff5a1f, 0 0 4px rgba(0,0,0,.5);
     white-space:nowrap;
+    cursor:pointer;
   }
+  /* ---- 내 위치 캐릭터 선택 ---- */
+  .char-picker-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:4px;
+  }
+  .char-card{
+    border:1px solid #e8e4d8; border-radius:10px; padding:8px 6px 10px; text-align:center;
+    cursor:pointer; background:#fbf9f4; transition:border-color .15s, background .15s;
+  }
+  .char-card:hover{ border-color:var(--teal, #0f3d3e); }
+  .char-card.selected{ border-color:var(--teal, #0f3d3e); background:#eaf3f1; border-width:2px; }
+  .char-card.locked{ cursor:default; opacity:.55; }
+  .char-card.locked:hover{ border-color:#e8e4d8; }
+  .char-card img{ width:100%; max-width:64px; height:76px; object-fit:contain; display:block; margin:0 auto 4px; }
+  .char-card.locked img{ filter:grayscale(1); }
+  .char-card .char-name{ font-size:12.5px; font-weight:700; color:#333; }
+  .char-card .char-unlock-note{ font-size:10.5px; color:#999; margin-top:2px; line-height:1.3; }
 </style>
 </head>
 <body>
@@ -337,6 +355,13 @@
   <h3>📍 내가 다녀온 곳</h3>
   <div id="myVisitsArea"><div class="rank-empty">불러오는 중…</div></div>
   <button onclick="document.getElementById('myVisitsOverlay').style.display='none'">닫기</button>
+</div></div>
+
+<div class="msg-overlay" id="charOverlay"><div class="rank-box">
+  <h3>🎎 내 캐릭터 고르기</h3>
+  <p style="font-size:12.5px;color:#888;margin:-8px 0 14px;">현장 방문 인증을 쌓으면 새 캐릭터가 하나씩 열려요. 안 고르면 기본 모습 그대로예요.</p>
+  <div class="char-picker-grid" id="charPickerGrid"></div>
+  <button onclick="document.getElementById('charOverlay').style.display='none'">닫기</button>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -509,6 +534,72 @@ function initMap(){
   let myLocationWatchId = null;
   let myLocPrev = null; // {lat, lon, t}
 
+  // ---- 내 위치 캐릭터 선택 (남승도 컨셉) ----
+  // 방문 인증 개수(placeCount, 등급 계산에 쓰는 것과 동일한 값)가 unlockAt 이상이면 해제됨.
+  // 로그인 여부와 무관하게 기기(localStorage)에 저장되고, 로그인한 경우 Firestore에도 동기화되어
+  // 다른 기기에서도 유지됨. 인증 카운트는 updateAuthUI가 호출될 때마다 window.hmPlaceCount로 갱신됨.
+  const DEFAULT_CHAR_ICON = 'my-location-icon.png?v=4';
+  const CHARACTERS = [
+    {id:'eobu',     file:'characters/char-eobu.png',     name:'어부',  unlockAt:1},
+    {id:'siin',     file:'characters/char-siin.png',     name:'시인',  unlockAt:7},
+    {id:'jung',     file:'characters/char-jung.png',     name:'중',    unlockAt:18},
+    {id:'hallyang', file:'characters/char-hallyang.png', name:'한량',  unlockAt:35},
+    {id:'miin',     file:'characters/char-miin.png',     name:'미인',  unlockAt:60},
+  ];
+  function getMyLocationIconSrc(){
+    const sel = localStorage.getItem('hmMyCharacter');
+    const found = CHARACTERS.find(c => c.id === sel);
+    return found ? found.file : DEFAULT_CHAR_ICON;
+  }
+  function applyMyLocationIcon(){
+    if(!myLocationMarker) return;
+    const el = myLocationMarker.getElement();
+    if(!el) return;
+    const img = el.querySelector('.hm-figure img');
+    if(img) img.src = getMyLocationIconSrc();
+  }
+  // 로그인 시(별도 <script type="module"> 블록)에서 계정에 저장된 캐릭터를 적용할 수 있도록 전역에 노출
+  window.applyMyLocationIcon = applyMyLocationIcon;
+  function renderCharPicker(){
+    const grid = document.getElementById('charPickerGrid');
+    if(!grid) return;
+    const placeCount = window.hmPlaceCount || 0;
+    const selected = localStorage.getItem('hmMyCharacter');
+    let html = `<div class="char-card${!selected ? ' selected' : ''}" onclick="window.hmSelectCharacter(null)">
+      <img src="${DEFAULT_CHAR_ICON}" alt="기본 모습">
+      <div class="char-name">기본</div>
+    </div>`;
+    CHARACTERS.forEach(c => {
+      const unlocked = placeCount >= c.unlockAt;
+      const cls = 'char-card' + (unlocked ? '' : ' locked') + (selected === c.id ? ' selected' : '');
+      const onclick = unlocked ? ` onclick="window.hmSelectCharacter('${c.id}')"` : '';
+      const note = unlocked ? '' : `<div class="char-unlock-note">${c.unlockAt}곳 인증 시 해제</div>`;
+      html += `<div class="${cls}"${onclick}>
+        <img src="${c.file}" alt="${c.name}">
+        <div class="char-name">${c.name}</div>
+        ${note}
+      </div>`;
+    });
+    grid.innerHTML = html;
+  }
+  window.showCharPicker = function(){
+    renderCharPicker();
+    document.getElementById('charOverlay').style.display = 'flex';
+  };
+  window.hmSelectCharacter = function(id){
+    if(id){
+      const c = CHARACTERS.find(x => x.id === id);
+      const placeCount = window.hmPlaceCount || 0;
+      if(!c || placeCount < c.unlockAt) return; // 잠긴 캐릭터는 무시 (안전장치)
+      localStorage.setItem('hmMyCharacter', id);
+    } else {
+      localStorage.removeItem('hmMyCharacter');
+    }
+    applyMyLocationIcon();
+    renderCharPicker();
+    window.hmSyncCharacterToFirestore && window.hmSyncCharacterToFirestore(id);
+  };
+
   function haversineMetersLoc(lat1, lon1, lat2, lon2){
     const R = 6371000, toRad = v => v*Math.PI/180;
     const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
@@ -542,10 +633,15 @@ function initMap(){
     const isFirstFix = !myLocationMarker;
     if(!myLocationMarker){
       const html = '<div class="hm-my-location"><div class="hm-ring"></div>' +
-        '<div class="hm-figure"><img src="my-location-icon.png?v=4" alt="내 위치"></div>' +
+        '<div class="hm-figure"><img src="' + getMyLocationIconSrc() + '" alt="내 위치"></div>' +
         '<div class="hm-label">내 위치</div></div>';
       const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
-      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000}).addTo(map);
+      // interactive:true로 눌러서 캐릭터를 고를 수 있게 함(안 눌러도 그만, 기본 모습 유지)
+      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:true, zIndexOffset:2000}).addTo(map);
+      myLocationMarker.on('click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        window.showCharPicker();
+      });
       // 사용자가 "내 위치" 버튼을 직접 눌렀을 때만 지도를 그쪽으로 이동(페이지를 열자마자
       // 조용히 자동 감지될 때는 첫 화면이 전국 지도로 유지되도록 지도를 건드리지 않음)
       if(moveMap && map.getZoom() < 13) map.setView([lat, lon], 15);
@@ -1083,6 +1179,9 @@ window.visitedIds = visitedIds;
 let currentNickname = '';
 
 function updateAuthUI(placeCount, rank, itemCount){
+  // 내 위치 캐릭터 잠금 해제 판단에 쓰는 인증 개수를 항상 최신으로 유지
+  // (로그인/로그아웃/단일 인증/주변 일괄 인증 등 모든 경로가 이 함수를 거쳐감)
+  window.hmPlaceCount = placeCount || 0;
   const area = document.getElementById('authArea');
   if(currentUser){
     const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
@@ -1417,6 +1516,14 @@ window.hmBulkVerify = () => {
   }, {enableHighAccuracy:true, timeout:10000});
 };
 
+// 내 위치 캐릭터 선택을 로그인 계정에도 저장(다른 기기에서도 이어서 보이도록). 실패해도 조용히 무시.
+window.hmSyncCharacterToFirestore = async (charId) => {
+  if(!currentUser) return;
+  try{
+    await setDoc(doc(db, 'users', currentUser.uid), {myCharacter: charId || null}, {merge:true});
+  }catch(e){ console.warn('캐릭터 저장 실패:', e); }
+};
+
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if(user){
@@ -1426,6 +1533,11 @@ onAuthStateChanged(auth, async (user) => {
     if(uSnap.exists()){
       rank = uSnap.data().rank || rank;
       currentNickname = uSnap.data().nickname || '';
+      // 이 계정으로 저장해둔 캐릭터가 있으면(다른 기기 포함) 이어서 보이게 동기화
+      const savedChar = uSnap.data().myCharacter;
+      if(savedChar){ localStorage.setItem('hmMyCharacter', savedChar); }
+      else{ localStorage.removeItem('hmMyCharacter'); }
+      window.applyMyLocationIcon && window.applyMyLocationIcon();
     } else {
       await setDoc(uRef, {displayName:user.displayName, email:user.email, totalVisits:0, totalPlaces:0, rank}, {merge:true});
       currentNickname = '';
