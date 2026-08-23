@@ -197,11 +197,10 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.12); }
   }
-  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; cursor:pointer; }
+  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; }
   .hm-my-location .hm-ring{
     position:absolute; top:52px; left:10px; width:36px; height:36px; border-radius:50%;
     background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
-    cursor:pointer;
     display:flex; align-items:center; justify-content:center;
   }
   .hm-ring-pin{ font-size:18px; line-height:1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); pointer-events:none; }
@@ -209,7 +208,6 @@
     position:absolute; top:0; left:6px; width:44px; height:78px;
     display:flex; align-items:flex-end; justify-content:center; z-index:2;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.6));
-    cursor:pointer;
   }
   .hm-my-location .hm-figure img{ width:44px; height:78px; display:block; }
   .hm-my-location .hm-label{
@@ -217,7 +215,6 @@
     font-size:11px; font-weight:800; color:#fff;
     text-shadow: -1px -1px 0 #ff5a1f, 1px -1px 0 #ff5a1f, -1px 1px 0 #ff5a1f, 1px 1px 0 #ff5a1f, 0 0 4px rgba(0,0,0,.5);
     white-space:nowrap;
-    cursor:pointer;
   }
   /* ---- 내 위치 캐릭터 선택 ---- */
   .char-picker-grid{
@@ -660,26 +657,16 @@ function initMap(){
         myLocationFigureHtml() +
         '<div class="hm-label">내 위치</div></div>';
       const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
-      // interactive:true로 눌러서 캐릭터를 고를 수 있게 함(안 눌러도 그만, 기본 모습 유지)
-      // 전용 pane(myLocPane)에 올려서 다른 마커/클러스터에 가려지거나 클릭이 다른 곳으로
-      // 새지 않고 항상 이 마커가 클릭을 받도록 함.
-      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:true, zIndexOffset:2000, pane:'myLocPane'}).addTo(map);
-      myLocationMarker.on('click', (e) => {
-        L.DomEvent.stopPropagation(e);
-        window.showCharPicker();
-      });
-      // 안전장치: 혹시 Leaflet 마커의 클릭 인식이 브라우저/환경에 따라 씹히는 경우를 대비해,
-      // 실제 DOM 요소에도 직접 클릭 리스너를 하나 더 걸어둠(두 번 실행돼도 문제 없음).
+      // 지도 위 마커를 눌러서 캐릭터를 고르는 동작은 없앰(터치할 때마다 창이 떠서 불편하다는
+      // 피드백) — 캐릭터는 이제 상단 바의 "🎎 내 캐릭터" 버튼으로만 바꿀 수 있음.
+      // interactive:false로 둬서 이 마커는 클릭에 반응하지 않고, 클릭은 그대로 지도(또는
+      // 그 아래 다른 마커)로 전달됨.
+      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000, pane:'myLocPane'}).addTo(map);
+      // 안전장치: 위치 추적을 껐다 다시 켤 때(마커를 지웠다 새로 만들 때), 새로 만든 마커가
+      // 화면에 바로 그려지지 않고 지도를 한 번 건드려야 나타나는 경우가 있어서,
+      // 강제로 리플로우를 한 번 발생시켜 곧바로 화면에 그려지도록 함.
       const myLocEl = myLocationMarker.getElement();
-      if(myLocEl){
-        myLocEl.style.pointerEvents = 'auto';
-        myLocEl.addEventListener('click', (ev) => { ev.stopPropagation(); window.showCharPicker(); });
-        myLocEl.addEventListener('touchend', (ev) => { ev.stopPropagation(); window.showCharPicker(); });
-        // 안전장치: 위치 추적을 껐다 다시 켤 때(마커를 지웠다 새로 만들 때), 새로 만든 마커가
-        // 화면에 바로 그려지지 않고 지도를 한 번 건드려야(클릭 등) 나타나는 경우가 있어서,
-        // 강제로 리플로우를 한 번 발생시켜 곧바로 화면에 그려지도록 함.
-        void myLocEl.offsetHeight;
-      }
+      if(myLocEl){ void myLocEl.offsetHeight; }
       // 사용자가 "내 위치" 버튼을 직접 눌렀을 때만 지도를 그쪽으로 이동(페이지를 열자마자
       // 조용히 자동 감지될 때는 첫 화면이 전국 지도로 유지되도록 지도를 건드리지 않음)
       if(moveMap && map.getZoom() < 13) map.setView([lat, lon], 15);
