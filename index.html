@@ -122,6 +122,8 @@
   #boardBtn:hover{background:rgba(255,255,255,.28);}
   #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #charPickerBtn:hover{background:rgba(255,255,255,.28);}
+  #langToggleBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #langToggleBtn:hover{background:rgba(255,255,255,.28);}
   .rank-box{background:#fff;padding:22px;border-radius:12px;max-width:400px;text-align:left;max-height:80vh;overflow-y:auto;}
   .rank-box h3{margin:0 0 14px;font-size:16px;color:var(--navy);}
   .rank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee;}
@@ -182,7 +184,7 @@
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
     .headerbar > div[style*="display:flex"]{flex:1 1 100%;flex-wrap:wrap;gap:6px;justify-content:flex-start;}
-    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
+    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn, #langToggleBtn{padding:6px 10px;font-size:11.5px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
     .user-chip{flex-wrap:wrap;}
@@ -234,27 +236,28 @@
   .char-card .char-name{ font-size:12.5px; font-weight:700; color:#333; }
   .char-card .char-unlock-note{ font-size:10.5px; color:#999; margin-top:2px; line-height:1.3; }
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"국가유산지도","alternateName":"전국 국가유산 위치 지도","description":"천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인할 수 있는 웹 애플리케이션입니다. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.","url":"https://uniggum6-coder.github.io/heritage-map/","applicationCategory":"MapApplication","operatingSystem":"Web","inLanguage":"ko","isAccessibleForFree":true}</script></head>
+</head>
 <body>
 
 <header>
   <div class="headerbar">
     <div class="brand">
-      <h1 class="brand-title" style="margin:0;font-size:inherit;font-weight:inherit;">국가유산지도<span class="src-note">데이터 출처: 국가유산청</span></h1>
+      <div class="brand-title"><span data-i18n="brandTitle">국가유산지도</span><span class="src-note" data-i18n="dataSource">데이터 출처: 국가유산청</span></div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <button id="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
-      <button id="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
-      <button id="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
-      <button id="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
-      <button id="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
+      <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
+      <button id="helpBtn" data-i18n="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
+      <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
+      <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
+      <button id="boardBtn" data-i18n="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
+      <button id="langToggleBtn" onclick="window.hmToggleLang && window.hmToggleLang()">🌐 EN</button>
       <div class="auth-area" id="authArea">
-        <button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
+        <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
       </div>
     </div>
   </div>
   <div id="introBanner" class="intro-banner" style="display:none">
-    <span>📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.</span>
+    <span data-i18n-html="introBanner">📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.</span>
     <button class="intro-close" onclick="window.dismissIntroBanner && window.dismissIntroBanner()">✕</button>
   </div>
 </header>
@@ -263,17 +266,17 @@
   <div id="view-map">
     <aside>
       <div class="sheet-handle" id="sheetHandle"></div>
-      <h3>검색</h3>
-      <input type="text" id="searchBox" placeholder="이름 또는 주소로 검색">
+      <h3 data-i18n="searchTitle">검색</h3>
+      <input type="text" id="searchBox" data-i18n-ph="searchPh" placeholder="이름 또는 주소로 검색">
 
-      <h3>지역</h3>
-      <select id="regionSelect"><option value="">전체 지역</option></select>
-      <select id="subRegionSelect" disabled><option value="">전체 시/군/구</option></select>
+      <h3 data-i18n="regionTitle">지역</h3>
+      <select id="regionSelect"><option value="" data-i18n="allRegions">전체 지역</option></select>
+      <select id="subRegionSelect" disabled><option value="" data-i18n="allDistricts">전체 시/군/구</option></select>
 
-      <h3>지정종목</h3>
+      <h3 data-i18n="catTitle">지정종목</h3>
       <div class="cat-list" id="catList"></div>
 
-      <button id="tabListBtn">무형유산 목록 보기 →</button>
+      <button id="tabListBtn" data-i18n="tabListBtn">무형유산 목록 보기 →</button>
       <div id="count">표시 중</div>
     </aside>
     <div id="sidebarToggle">◀</div>
@@ -282,52 +285,52 @@
   </div>
 
   <div id="view-list">
-    <button id="tabMapBtn">← 지도로 돌아가기</button>
+    <button id="tabMapBtn" data-i18n="backToMap">← 지도로 돌아가기</button>
     <div class="ilist-controls">
-      <input type="text" id="ilistSearch" placeholder="무형유산 이름으로 검색">
-      <select id="ilistRegion"><option value="">전체 지역</option></select>
-      <select id="ilistCat"><option value="">전체 종목</option></select>
+      <input type="text" id="ilistSearch" data-i18n-ph="ilistSearchPh" placeholder="무형유산 이름으로 검색">
+      <select id="ilistRegion"><option value="" data-i18n="allRegions">전체 지역</option></select>
+      <select id="ilistCat"><option value="" data-i18n="allTypes">전체 종목</option></select>
     </div>
     <div class="icards" id="icards"></div>
   </div>
 
   <div id="view-species" style="display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;">
-    <button id="tabMapBtnFromSpecies">← 지도로 돌아가기</button>
-    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;">
+    <button id="tabMapBtnFromSpecies" data-i18n="backToMap">← 지도로 돌아가기</button>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;" data-i18n-html="speciesDesc">
       이곳에 있는 유산들은 특정 장소가 아니라 <b>종(種) 자체</b>가 천연기념물로 지정되어 있어서, 지도에 위치를 표시할 수 없어요.
     </div>
     <div class="ilist-controls">
-      <input type="text" id="slistSearch" placeholder="이름으로 검색">
-      <select id="slistType"><option value="">전체(동물+식물)</option><option value="동물">동물</option><option value="식물">식물</option></select>
+      <input type="text" id="slistSearch" data-i18n-ph="speciesSearchPh" placeholder="이름으로 검색">
+      <select id="slistType"><option value="" data-i18n="speciesAll">전체(동물+식물)</option><option value="동물" data-i18n="speciesAnimal">동물</option><option value="식물" data-i18n="speciesPlant">식물</option></select>
     </div>
     <div class="icards" id="scards"></div>
   </div>
 
   <div id="view-board" style="display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;">
-    <button id="tabMapBtnFromBoard">← 지도로 돌아가기</button>
-    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;">
+    <button id="tabMapBtnFromBoard" data-i18n="backToMap">← 지도로 돌아가기</button>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;" data-i18n="boardDesc">
       💬 방문 후기, 질문 등을 자유롭게 남겨보세요. 글쓰기는 로그인 후 가능해요.
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <input type="text" id="boardTitleInput" placeholder="제목" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;">
+      <input type="text" id="boardTitleInput" data-i18n-ph="boardTitlePh" placeholder="제목" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;">
     </div>
-    <textarea id="boardContentInput" placeholder="내용을 입력하세요" rows="10" style="width:100%;min-height:220px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;resize:vertical;margin-bottom:8px;box-sizing:border-box;"></textarea>
-    <button id="boardSubmitBtn" style="padding:9px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;">글쓰기</button>
+    <textarea id="boardContentInput" data-i18n-ph="boardContentPh" placeholder="내용을 입력하세요" rows="10" style="width:100%;min-height:220px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;resize:vertical;margin-bottom:8px;box-sizing:border-box;"></textarea>
+    <button id="boardSubmitBtn" data-i18n="boardSubmit" style="padding:9px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;">글쓰기</button>
     <div id="boardListArea" style="margin-top:24px;"></div>
   </div>
 </main>
 
 
-<div class="msg-overlay" id="msgOverlay"><div class="msg-box"><p id="msgText"></p><button onclick="document.getElementById('msgOverlay').style.display='none'">확인</button></div></div>
+<div class="msg-overlay" id="msgOverlay"><div class="msg-box"><p id="msgText"></p><button data-i18n="btnOK" onclick="document.getElementById('msgOverlay').style.display='none'">확인</button></div></div>
 
 <div class="msg-overlay" id="helpOverlay"><div class="help-box">
-  <h3>📍 방문 인증이 뭔가요?</h3>
-  <div class="step"><div class="step-num">1</div><p>유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)</p></div>
-  <div class="step"><div class="step-num">2</div><p>인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.</p></div>
-  <div class="step"><div class="step-num">3</div><p>인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.</p></div>
+  <h3 data-i18n="helpTitle">📍 방문 인증이 뭔가요?</h3>
+  <div class="step"><div class="step-num">1</div><p data-i18n-html="helpStep1">유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)</p></div>
+  <div class="step"><div class="step-num">2</div><p data-i18n-html="helpStep2">인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.</p></div>
+  <div class="step"><div class="step-num">3</div><p data-i18n-html="helpStep3">인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.</p></div>
   <div class="rank-grid">
     <div class="rank-col">
-      <div class="rg-row rg-head"><span>방문 수</span><span>등급</span></div>
+      <div class="rg-row rg-head"><span data-i18n="rankGridVisits">방문 수</span><span data-i18n="rankGridRank">등급</span></div>
       <div class="rg-row"><span>1곳</span><span>종9품 참봉</span></div>
       <div class="rg-row"><span>3곳</span><span>정9품 훈도</span></div>
       <div class="rg-row"><span>7곳</span><span>종7품 직장</span></div>
@@ -336,7 +339,7 @@
       <div class="rg-row"><span>25곳</span><span>정6품 좌랑</span></div>
     </div>
     <div class="rank-col">
-      <div class="rg-row rg-head"><span>방문 수</span><span>등급</span></div>
+      <div class="rg-row rg-head"><span data-i18n="rankGridVisits">방문 수</span><span data-i18n="rankGridRank">등급</span></div>
       <div class="rg-row"><span>35곳</span><span>종5품 현령</span></div>
       <div class="rg-row"><span>45곳</span><span>정5품 정랑</span></div>
       <div class="rg-row"><span>60곳</span><span>종4품 군수</span></div>
@@ -345,27 +348,27 @@
       <div class="rg-row"><span>120곳</span><span>정1품 영의정</span></div>
     </div>
   </div>
-  <div class="rank-note" style="margin-top:10px">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <button onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
+  <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
+  <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
 <div class="msg-overlay" id="rankOverlay"><div class="rank-box">
-  <h3>🏆 명예의 전당 · 방문 인증 TOP 30</h3>
+  <h3 data-i18n="rankOverlayTitle">🏆 명예의 전당 · 방문 인증 TOP 30</h3>
   <div id="rankListArea"><div class="rank-empty">불러오는 중…</div></div>
-  <button onclick="document.getElementById('rankOverlay').style.display='none'">닫기</button>
+  <button data-i18n="btnClose" onclick="document.getElementById('rankOverlay').style.display='none'">닫기</button>
 </div></div>
 
 <div class="msg-overlay" id="myVisitsOverlay"><div class="rank-box">
-  <h3>📍 내가 다녀온 곳</h3>
+  <h3 data-i18n="myVisitsTitle">📍 내가 다녀온 곳</h3>
   <div id="myVisitsArea"><div class="rank-empty">불러오는 중…</div></div>
-  <button onclick="document.getElementById('myVisitsOverlay').style.display='none'">닫기</button>
+  <button data-i18n="btnClose" onclick="document.getElementById('myVisitsOverlay').style.display='none'">닫기</button>
 </div></div>
 
 <div class="msg-overlay" id="charOverlay"><div class="rank-box">
-  <h3>🎎 내 캐릭터 고르기</h3>
-  <p style="font-size:12.5px;color:#888;margin:-8px 0 14px;">원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.</p>
+  <h3 data-i18n="charTitle">🎎 내 캐릭터 고르기</h3>
+  <p style="font-size:12.5px;color:#888;margin:-8px 0 14px;" data-i18n="charDesc">원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.</p>
   <div class="char-picker-grid" id="charPickerGrid"></div>
-  <button onclick="document.getElementById('charOverlay').style.display='none'">확인</button>
+  <button data-i18n="btnOK" onclick="document.getElementById('charOverlay').style.display='none'">확인</button>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -376,6 +379,149 @@
 <script>MAP_DATA.push(...MAP_DATA_ADDITIONS);</script>
 <script src="data_species.js"></script>
 <script>
+// ---- 영문판(언어 전환) ----
+// 이번 단계에서는 메뉴/버튼/안내문 같은 "화면 UI 글자"만 영어로 바꿈.
+// 유산 이름·설명, 지정종목 목록, 등급 이름, 캐릭터 이름 같은 실제 데이터/콘텐츠는
+// 이번엔 그대로 한글로 남겨두고 나중에 단계적으로 확장함.
+const I18N = {
+  ko: {
+    brandTitle: '국가유산지도',
+    dataSource: '데이터 출처: 국가유산청',
+    bulkVerifyBtn: '📍 주변 일괄인증',
+    helpBtn: '방문 인증 안내',
+    rankBtn: '🏆 명예의 전당',
+    charPickerBtn: '🎎 내 캐릭터',
+    boardBtn: '💬 게시판',
+    loginBtnLabel: '🔑 구글로 로그인',
+    nickBtnLabel: '닉네임 변경',
+    logoutBtnLabel: '로그아웃',
+    introBanner: '📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.',
+    searchTitle: '검색',
+    searchPh: '이름 또는 주소로 검색',
+    regionTitle: '지역',
+    allRegions: '전체 지역',
+    allDistricts: '전체 시/군/구',
+    catTitle: '지정종목',
+    tabListBtn: '무형유산 목록 보기 →',
+    countSuffix: '건 표시 중',
+    backToMap: '← 지도로 돌아가기',
+    ilistSearchPh: '무형유산 이름으로 검색',
+    allTypes: '전체 종목',
+    speciesDesc: '이곳에 있는 유산들은 특정 장소가 아니라 <b>종(種) 자체</b>가 천연기념물로 지정되어 있어서, 지도에 위치를 표시할 수 없어요.',
+    speciesSearchPh: '이름으로 검색',
+    speciesAll: '전체(동물+식물)',
+    speciesAnimal: '동물',
+    speciesPlant: '식물',
+    boardDesc: '💬 방문 후기, 질문 등을 자유롭게 남겨보세요. 글쓰기는 로그인 후 가능해요.',
+    boardTitlePh: '제목',
+    boardContentPh: '내용을 입력하세요',
+    boardSubmit: '글쓰기',
+    btnOK: '확인',
+    btnClose: '닫기',
+    btnGotIt: '확인했어요',
+    helpTitle: '📍 방문 인증이 뭔가요?',
+    helpStep1: '유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)',
+    helpStep2: '인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.',
+    helpStep3: '인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.',
+    rankGridVisits: '방문 수',
+    rankGridRank: '등급',
+    helpNote: '📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.',
+    rankOverlayTitle: '🏆 명예의 전당 · 방문 인증 TOP 30',
+    myVisitsTitle: '📍 내가 다녀온 곳',
+    charTitle: '🎎 내 캐릭터 고르기',
+    charDesc: '원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.',
+  },
+  en: {
+    brandTitle: 'Korea Heritage Map',
+    dataSource: 'Data source: Korea Heritage Service',
+    bulkVerifyBtn: '📍 Verify Nearby',
+    helpBtn: 'Visit Verification Guide',
+    rankBtn: '🏆 Hall of Fame',
+    charPickerBtn: '🎎 My Character',
+    boardBtn: '💬 Board',
+    loginBtnLabel: '🔑 Sign in with Google',
+    nickBtnLabel: 'Change Nickname',
+    logoutBtnLabel: 'Log Out',
+    introBanner: '📍 Visit in person to <b>verify your visit</b> and level up your <b>rank</b>.',
+    searchTitle: 'Search',
+    searchPh: 'Search by name or address',
+    regionTitle: 'Region',
+    allRegions: 'All Regions',
+    allDistricts: 'All Districts',
+    catTitle: 'Designation Type',
+    tabListBtn: 'View Intangible Heritage List →',
+    countSuffix: ' shown',
+    backToMap: '← Back to Map',
+    ilistSearchPh: 'Search intangible heritage by name',
+    allTypes: 'All Types',
+    speciesDesc: 'The heritage items here are designated as Natural Monuments based on the <b>species itself</b> rather than a specific location, so they can\'t be shown on the map.',
+    speciesSearchPh: 'Search by name',
+    speciesAll: 'All (Animals + Plants)',
+    speciesAnimal: 'Animals',
+    speciesPlant: 'Plants',
+    boardDesc: '💬 Feel free to leave visit reviews, questions, and more. Sign in to post.',
+    boardTitlePh: 'Title',
+    boardContentPh: 'Write your content here',
+    boardSubmit: 'Post',
+    btnOK: 'OK',
+    btnClose: 'Close',
+    btnGotIt: 'Got it',
+    helpTitle: '📍 What is Visit Verification?',
+    helpStep1: 'Visit the heritage site in person and tap the <b>"Verify Visit"</b> button in the map popup to confirm your location. (You must be within 200m of the site.)',
+    helpStep2: 'Once verified, a green <b>checkmark (✓)</b> stays on that heritage marker on the map, so you can see at a glance where you\'ve been.',
+    helpStep3: 'As your verified visit count grows, your <b>rank</b> automatically goes up, like a Joseon-era government post. It\'s shown next to your name in the top right.',
+    rankGridVisits: 'Visits',
+    rankGridRank: 'Rank',
+    helpNote: '📍 If heritage sites are clustered together like in a museum, you can verify them all at once with the "Verify Nearby" button. Note that rank is based on <b>the number of distinct places you\'ve actually visited, not the number of heritage items</b> — verifying 10 items at one place still counts as "1 place" for rank purposes.<br><br>Sign in with your Google account to get started.',
+    rankOverlayTitle: '🏆 Hall of Fame · Top 30 Verified Visits',
+    myVisitsTitle: '📍 Places I\'ve Visited',
+    charTitle: '🎎 Choose My Character',
+    charDesc: 'Freely choose any character you like. If you don\'t pick one, you\'ll keep the default look.',
+  }
+};
+let hmLang = 'ko';
+try{ hmLang = localStorage.getItem('hmLang') || 'ko'; }catch(e){}
+function hmT(key){
+  const table = I18N[hmLang] || I18N.ko;
+  return (table[key] !== undefined) ? table[key] : (I18N.ko[key] !== undefined ? I18N.ko[key] : key);
+}
+window.hmT = hmT;
+function applyLanguage(lang){
+  hmLang = (lang === 'en') ? 'en' : 'ko';
+  window.hmLang = hmLang;
+  try{ localStorage.setItem('hmLang', hmLang); }catch(e){}
+  document.documentElement.lang = hmLang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    const table = I18N[hmLang];
+    if(table && table[k] !== undefined) el.textContent = table[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.getAttribute('data-i18n-html');
+    const table = I18N[hmLang];
+    if(table && table[k] !== undefined) el.innerHTML = table[k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.getAttribute('data-i18n-ph');
+    const table = I18N[hmLang];
+    if(table && table[k] !== undefined) el.setAttribute('placeholder', table[k]);
+  });
+  // 로그인 상태에 따라 JS 템플릿으로 그려지는 로그인/닉네임변경/로그아웃 버튼은
+  // data-i18n으로 못 잡으니 지금 떠 있는 걸 직접 다시 씀(없으면 조용히 무시)
+  const nickBtn = document.getElementById('nickBtn'); if(nickBtn) nickBtn.textContent = hmT('nickBtnLabel');
+  const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.textContent = hmT('logoutBtnLabel');
+  const loginBtnEl = document.getElementById('loginBtn'); if(loginBtnEl) loginBtnEl.textContent = hmT('loginBtnLabel');
+  const langBtn = document.getElementById('langToggleBtn'); if(langBtn) langBtn.textContent = (hmLang === 'en') ? '🌐 한국어' : '🌐 EN';
+  // "N건 표시 중" 문구도 언어에 맞게 다시 그림
+  if(window.hmLastFilteredCount != null){
+    const el = document.getElementById('count');
+    if(el) el.textContent = window.hmLastFilteredCount.toLocaleString() + hmT('countSuffix');
+  }
+}
+window.applyLanguage = applyLanguage;
+window.hmToggleLang = function(){ applyLanguage(hmLang === 'en' ? 'ko' : 'en'); };
+applyLanguage(hmLang);
+
 const CAT_COLORS = {
   // 자연유산 (green family)
   "천연기념물":"#40916c", "명승":"#74c69d",
@@ -795,7 +941,7 @@ function buildPopup(d, hid, visited, fromList){
 }
 function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function updateCount(n){ document.getElementById('count').textContent = n.toLocaleString() + '건 표시 중'; }
+function updateCount(n){ window.hmLastFilteredCount = n; document.getElementById('count').textContent = n.toLocaleString() + hmT('countSuffix'); }
 
 function populateFilters(){
   const regionSel = document.getElementById('regionSelect');
@@ -1213,9 +1359,11 @@ function updateAuthUI(placeCount, rank, itemCount){
     const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
     const nick = (currentNickname || '닉네임 없음').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
-    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">닉네임 변경</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">로그아웃</button></div>`;
+    const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃'}[k] || k));
+    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${t('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${t('logoutBtnLabel')}</button></div>`;
   } else {
-    area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>`;
+    const t = window.hmT || ((k) => ({loginBtnLabel:'🔑 구글로 로그인'}[k] || k));
+    area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">${t('loginBtnLabel')}</button>`;
   }
 }
 
