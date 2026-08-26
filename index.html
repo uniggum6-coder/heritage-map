@@ -517,6 +517,18 @@ function applyLanguage(lang){
     const el = document.getElementById('count');
     if(el) el.textContent = window.hmLastFilteredCount.toLocaleString() + hmT('countSuffix');
   }
+  // 이미 지도에 그려진 마커들의 툴팁/팝업도 언어 전환에 맞게 새로 그림
+  // (최초 페이지 로드 시점의 호출에서는 아직 마커가 없어 아무 것도 하지 않고 조용히 지나감)
+  try{
+    if(allMarkers && allMarkers.length){
+      const visited = window.visitedIds || new Set();
+      allMarkers.forEach(m => {
+        if(!m._d) return;
+        m.setTooltipContent(`<div class="tip-cat">${escapeHtml(m._d.c)}</div><div class="tip-name">${escapeHtml(hmName(m._d))}</div>`);
+        if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, visited.has(m._hid)));
+      });
+    }
+  }catch(e){}
 }
 window.applyLanguage = applyLanguage;
 window.hmToggleLang = function(){ applyLanguage(hmLang === 'en' ? 'ko' : 'en'); };
@@ -673,7 +685,7 @@ function initMap(){
     marker._d = d;
     marker._hid = hid;
     marker.bindPopup(buildPopup(d, hid, false));
-    marker.bindTooltip(`<div class="tip-cat">${escapeHtml(d.c)}</div><div class="tip-name">${escapeHtml(d.n)}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
+    marker.bindTooltip(`<div class="tip-cat">${escapeHtml(d.c)}</div><div class="tip-name">${escapeHtml(hmName(d))}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
     markerByHid[hid] = marker;
     allMarkers.push(marker);
     clusterGroup.addLayer(marker);
@@ -885,7 +897,7 @@ function initMap(){
         : '';
       lastCat = d.c;
       return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
-        <div style="font-size:13px;font-weight:600;">${escapeHtml(d.n)}</div>
+        <div style="font-size:13px;font-weight:600;">${escapeHtml(hmName(d))}</div>
       </div>`;
     }).join('');
     const html = `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
@@ -929,17 +941,21 @@ function buildPopup(d, hid, visited, fromList){
   return `<div>
     ${backBtn}
     <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
-    <div class="popup-title">${escapeHtml(d.n)}</div>
+    <div class="popup-title">${escapeHtml(hmName(d))}</div>
     <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}</div>
     <div class="popup-btn-row">
       ${verifyBtn}
       <a class="popup-transit-btn" href="${kakaoUrl}" target="_blank" rel="noopener">🚌 대중교통 길찾기</a>
     </div>
     ${img}
-    <div class="popup-desc">${escapeHtml(d.a||'')}${d.e ? '<br><br>'+escapeHtml(d.e) : ''}</div>
+    <div class="popup-desc">${escapeHtml(d.a||'')}${hmDesc(d) ? '<br><br>'+escapeHtml(hmDesc(d)) : ''}</div>
   </div>`;
 }
 function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// 영문 이름/설명이 있는 항목(현재 천연기념물 379건)에 한해 언어 토글이 'en'일 때 영문을 표시하고,
+// 그 외 모든 항목은 한국어로 자연스럽게 대체(fallback) 표시합니다.
+function hmName(d){ return (hmLang === 'en' && d.en_n) ? d.en_n : d.n; }
+function hmDesc(d){ return (hmLang === 'en' && d.en_e) ? d.en_e : d.e; }
 
 function updateCount(n){ window.hmLastFilteredCount = n; document.getElementById('count').textContent = n.toLocaleString() + hmT('countSuffix'); }
 
