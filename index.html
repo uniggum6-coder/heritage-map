@@ -630,7 +630,7 @@ function applyLanguage(lang){
       const visited = window.visitedIds || new Set();
       allMarkers.forEach(m => {
         if(!m._d) return;
-        m.setTooltipContent(`<div class="tip-cat">${escapeHtml(m._d.c)}</div><div class="tip-name">${escapeHtml(hmName(m._d))}</div>`);
+        m.setTooltipContent(`<div class="tip-cat">${escapeHtml(catLabel(m._d.c))}</div><div class="tip-name">${escapeHtml(hmName(m._d))}</div>`);
         if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, visited.has(m._hid)));
       });
     }
@@ -639,6 +639,12 @@ function applyLanguage(lang){
     if(window.__hmActivePopup && window.__hmActivePopupRender && map.hasLayer(window.__hmActivePopup)){
       window.__hmActivePopup.setContent(window.__hmActivePopupRender());
     }
+  }catch(e){}
+  // 왼쪽 사이드바의 지정종목(카테고리) 이름들도 언어에 맞게 새로 그림
+  try{
+    document.querySelectorAll('.i18n-cat').forEach(el => {
+      el.textContent = catLabel(el.dataset.cat);
+    });
   }catch(e){}
 }
 window.applyLanguage = applyLanguage;
@@ -685,6 +691,43 @@ const CAT_TO_GROUP = {};
 Object.entries(CAT_GROUPS).forEach(([g, cats]) => cats.forEach(c => CAT_TO_GROUP[c] = g));
 function groupFor(cat){ return CAT_TO_GROUP[cat] || "기타"; }
 function groupColorFor(cat){ return GROUP_COLORS[groupFor(cat)] || "#555"; }
+
+// 지정종목(카테고리) 이름의 영/중/일 번역 — 국가유산청 영문·중문·일문 공식 사이트
+// (english.khs.go.kr, chn.khs.go.kr, jpn.khs.go.kr)의 "국가유산의 종류" 페이지에 나온
+// 공식 명칭을 그대로 사용함. 그룹 이름(자연유산/국가지정 문화유산/시도지정 문화유산)은
+// 이 지도가 편의상 묶어놓은 이름이라 공식 문서에 이 조합 그대로는 없지만, 각 구성 단어
+// (국가지정유산=State-Designated Heritage, 문화유산=Cultural Heritage 등)는 공식 용어임.
+const CAT_I18N = {
+  "자연유산": { en: "Natural Heritage", cn: "自然遗产", jp: "自然遺産" },
+  "국가지정 문화유산": { en: "State-Designated Cultural Heritage", cn: "国家指定文化遗产", jp: "国家指定文化遺産" },
+  "시도지정 문화유산": { en: "City/Province-Designated Cultural Heritage", cn: "市·道指定文化遗产", jp: "市·道指定文化遺産" },
+  "천연기념물": { en: "Natural Monument", cn: "天然纪念物", jp: "天然記念物" },
+  "명승": { en: "Scenic Site", cn: "名胜", jp: "名勝" },
+  "국보": { en: "National Treasure", cn: "国宝", jp: "国宝" },
+  "보물": { en: "Treasure", cn: "宝物", jp: "宝物" },
+  "사적": { en: "Historic Site", cn: "史迹", jp: "史跡" },
+  "국가민속문화유산": { en: "National Folklore Cultural Heritage", cn: "国家民俗文化遗产", jp: "国家民俗文化遺産" },
+  "국가등록문화유산": { en: "State-Registered Cultural Heritage", cn: "国家登录遗产", jp: "国家登録遺産" },
+  "시도유형문화유산": { en: "City/Province Tangible Cultural Heritage", cn: "物质文化遗产", jp: "有形文化遺産" },
+  "시도기념물": { en: "City/Province Monument", cn: "纪念物", jp: "記念物" },
+  "시도민속문화유산": { en: "City/Province Folklore Cultural Heritage", cn: "民俗文化遗产", jp: "民俗文化遺産" },
+  "문화유산자료": { en: "Cultural Heritage Material", cn: "国家遗产资料", jp: "国家遺産資料" },
+  "동물": { en: "Animals", cn: "动物", jp: "動物" },
+  "식물": { en: "Plants", cn: "植物", jp: "植物" },
+  "지질·지형": { en: "Geology / Landform", cn: "地质·地形", jp: "地質・地形" },
+  "천연보호구역": { en: "Nature Reserve", cn: "天然保护区", jp: "天然保護区域" },
+  // 아래 둘은 국가유산청 공식 지정종목명이 아니라 이 지도가 붙인 설명 문구라, 다른 화면 UI 글자와
+  // 같은 방식으로 자연스럽게 번역함(공식 용어 검증 대상 아님)
+  "서식지·번식지·도래지·사육지": { en: "Habitat / Breeding Ground / Wintering Site / Farm", cn: "栖息地·繁殖地·越冬地·饲养地", jp: "生息地・繁殖地・飛来地・飼育地" },
+  "자생지·군락지": { en: "Native Habitat / Colony", cn: "自生地·群落地", jp: "自生地・群落地" },
+  "종자체 지정": { en: "Species-level Designation", cn: "物种指定", jp: "種指定" }
+};
+function catLabel(name){
+  if(!name) return name;
+  if(hmLang === 'ko') return name;
+  const t = CAT_I18N[name];
+  return (t && t[hmLang]) ? t[hmLang] : name;
+}
 
 function showMsg(t){ 
   document.getElementById('msgText').textContent = t; 
@@ -800,7 +843,7 @@ function initMap(){
     marker._d = d;
     marker._hid = hid;
     marker.bindPopup(buildPopup(d, hid, false));
-    marker.bindTooltip(`<div class="tip-cat">${escapeHtml(d.c)}</div><div class="tip-name">${escapeHtml(hmName(d))}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
+    marker.bindTooltip(`<div class="tip-cat">${escapeHtml(catLabel(d.c))}</div><div class="tip-name">${escapeHtml(hmName(d))}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
     markerByHid[hid] = marker;
     allMarkers.push(marker);
     clusterGroup.addLayer(marker);
@@ -1010,7 +1053,7 @@ function initMap(){
       const items = children.map((m,i) => {
         const d = m._d;
         const groupHeader = d.c !== lastCat
-          ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(d.c)} (${children.filter(c=>c._d.c===d.c).length}건)</div>`
+          ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(catLabel(d.c))} (${children.filter(c=>c._d.c===d.c).length}건)</div>`
           : '';
         lastCat = d.c;
         return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
@@ -1064,7 +1107,7 @@ function buildPopup(d, hid, visited, fromList){
     : '';
   return `<div>
     ${backBtn}
-    <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(d.c)}${d.nc ? ' · '+escapeHtml(d.nc) : ''}</span>
+    <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(catLabel(d.c))}${d.nc ? ' · '+escapeHtml(catLabel(d.nc)) : ''}</span>
     <div class="popup-title">${escapeHtml(hmName(d))}</div>
     <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}</div>
     <div class="popup-btn-row">
@@ -1110,7 +1153,7 @@ function populateFilters(){
     heading.innerHTML = `
       <input type="checkbox" class="groupChk" data-group="${groupName}" checked style="width:16px;height:16px;flex:none;cursor:pointer;">
       <span class="group-swatch" style="background:${GROUP_COLORS[groupName]||'#555'}"></span>
-      <span class="group-label" style="flex:1;cursor:pointer;">${groupName} <span style="color:#999;font-weight:500;">(${groupTotal.toLocaleString()})</span></span>
+      <span class="group-label" style="flex:1;cursor:pointer;"><span class="i18n-cat" data-cat="${groupName}">${catLabel(groupName)}</span> <span style="color:#999;font-weight:500;">(${groupTotal.toLocaleString()})</span></span>
       <span class="group-arrow" style="cursor:pointer;font-size:11px;color:#999;transition:transform .2s;">▶</span>
     `;
     catList.appendChild(heading);
@@ -1121,7 +1164,7 @@ function populateFilters(){
     present.forEach(c => {
       const label = document.createElement('label');
       label.style.paddingLeft = '10px';
-      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}" checked> <span class="cat-swatch" style="background:${colorFor(c)}"></span> ${c} <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
+      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}" checked> <span class="cat-swatch" style="background:${colorFor(c)}"></span> <span class="i18n-cat" data-cat="${c}">${catLabel(c)}</span> <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
       subWrap.appendChild(label);
 
       if(c === '천연기념물'){
@@ -1142,19 +1185,21 @@ function populateFilters(){
 
           const header = document.createElement('div');
           header.style.cssText = 'font-weight:600;font-size:12.5px;color:var(--navy);margin:6px 0 2px;';
-          header.textContent = nc;
+          header.className = 'i18n-cat';
+          header.dataset.cat = nc;
+          header.textContent = catLabel(nc);
           natWrap.appendChild(header);
 
           if(ncCount > 0){
             const ncLabel = document.createElement('label');
             ncLabel.style.paddingLeft = '10px';
-            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> ${SUB_LABELS[nc]} <span style="color:#999">(${ncCount})</span>`;
+            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
             natWrap.appendChild(ncLabel);
           }
           if(spCount > 0){
             const spLabel = document.createElement('label');
             spLabel.style.cssText = 'padding-left:10px;cursor:pointer;';
-            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> 종자체 지정 <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
+            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="종자체 지정">${catLabel('종자체 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
             spLabel.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); window.showSpeciesList(nc); });
             natWrap.appendChild(spLabel);
           }
@@ -1164,7 +1209,7 @@ function populateFilters(){
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           if(ncCount === 0) return;
           const ncLabel = document.createElement('label');
-          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> ${nc} <span style="color:#999">(${ncCount})</span>`;
+          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
           natWrap.appendChild(ncLabel);
         });
 
