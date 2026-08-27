@@ -634,6 +634,11 @@ function applyLanguage(lang){
         if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, visited.has(m._hid)));
       });
     }
+    // 클러스터 목록/상세 팝업처럼 특정 마커에 안 묶여서 위 forEach로는 못 잡는 팝업이
+    // 지금 열려있으면, 그 내용도 언어에 맞게 새로 그림 (겹친 위치에서 목록으로 고른 항목 등)
+    if(window.__hmActivePopup && window.__hmActivePopupRender && map.hasLayer(window.__hmActivePopup)){
+      window.__hmActivePopup.setContent(window.__hmActivePopupRender());
+    }
   }catch(e){}
 }
 window.applyLanguage = applyLanguage;
@@ -999,30 +1004,35 @@ function initMap(){
     window.__hmClusterPopupInfo = null; // 아래에서 채움
     // 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우(예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
     // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
-    let lastCat = null;
-    const items = children.map((m,i) => {
-      const d = m._d;
-      const groupHeader = d.c !== lastCat
-        ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(d.c)} (${children.filter(c=>c._d.c===d.c).length}건)</div>`
-        : '';
-      lastCat = d.c;
-      return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
-        <div style="font-size:13px;font-weight:600;">${escapeHtml(hmName(d))}</div>
+    // renderList를 함수로 저장해두면, 목록 팝업이 열려있는 채로 언어를 바꿔도(applyLanguage) 이름들을 다시 그릴 수 있음
+    const renderList = () => {
+      let lastCat = null;
+      const items = children.map((m,i) => {
+        const d = m._d;
+        const groupHeader = d.c !== lastCat
+          ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(d.c)} (${children.filter(c=>c._d.c===d.c).length}건)</div>`
+          : '';
+        lastCat = d.c;
+        return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
+          <div style="font-size:13px;font-weight:600;">${escapeHtml(hmName(d))}</div>
+        </div>`;
+      }).join('');
+      return `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">이 위치에 ${children.length}건이 있어요. 항목을 선택하세요.</div>
+        ${items}
       </div>`;
-    }).join('');
-    const html = `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
-      <div style="font-size:12px;color:#888;margin-bottom:4px;">이 위치에 ${children.length}건이 있어요. 항목을 선택하세요.</div>
-      ${items}
-    </div>`;
-    window.__hmClusterPopupInfo = { latlng: cluster.getLatLng(), html: html };
-    L.popup({maxWidth:280}).setLatLng(cluster.getLatLng()).setContent(html).openOn(map);
+    };
+    window.__hmClusterPopupInfo = { latlng: cluster.getLatLng(), render: renderList };
+    window.__hmActivePopup = L.popup({maxWidth:280}).setLatLng(cluster.getLatLng()).setContent(renderList()).openOn(map);
+    window.__hmActivePopupRender = renderList;
   });
   window.hmBackToClusterList = function(){
     const info = window.__hmClusterPopupInfo;
     if(!info) return;
     map.closePopup();
     setTimeout(() => {
-      L.popup({maxWidth:280}).setLatLng(info.latlng).setContent(info.html).openOn(map);
+      window.__hmActivePopup = L.popup({maxWidth:280}).setLatLng(info.latlng).setContent(info.render()).openOn(map);
+      window.__hmActivePopupRender = info.render;
     }, 10);
   };
   window.hmPickCluster = function(idx){
@@ -1030,10 +1040,14 @@ function initMap(){
     const m = list[idx];
     if(!m) return;
     map.closePopup();
+    // 클러스터에 묶여 화면에 개별적으로 표시되지 않는 마커는 지도에 아직 붙어있지 않은 상태라
+    // marker.openPopup()이 동작하지 않으므로(마커 자체가 아니라) 별도의 팝업을 직접 띄움.
+    // renderDetail을 함수로 저장해두면, 이 팝업이 열려있는 채로 언어를 바꿔도(applyLanguage) 내용을 다시 그릴 수 있음
     const fromList = !!window.__hmClusterPopupInfo;
-    const detailHtml = buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid), fromList);
+    const renderDetail = () => buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid), fromList);
     setTimeout(() => {
-      L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(detailHtml).openOn(map);
+      window.__hmActivePopup = L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(renderDetail()).openOn(map);
+      window.__hmActivePopupRender = renderDetail;
     }, 10);
   };
   updateCount(MAP_DATA.length);
