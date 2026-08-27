@@ -123,8 +123,10 @@
   #boardBtn:hover{background:rgba(255,255,255,.28);}
   #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #charPickerBtn:hover{background:rgba(255,255,255,.28);}
-  #langToggleBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
-  #langToggleBtn:hover{background:rgba(255,255,255,.28);}
+  .lang-switcher{display:flex;align-items:center;background:rgba(255,255,255,.16);border-radius:20px;padding:3px;gap:2px;}
+  .lang-btn{padding:5px 10px;background:transparent;color:#fff;opacity:.75;border:none;border-radius:16px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .lang-btn:hover{opacity:1;}
+  .lang-btn.active{background:#fff;color:var(--navy);opacity:1;}
   .rank-box{background:#fff;padding:22px;border-radius:12px;max-width:400px;text-align:left;max-height:80vh;overflow-y:auto;}
   .rank-box h3{margin:0 0 14px;font-size:16px;color:var(--navy);}
   .rank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee;}
@@ -185,7 +187,8 @@
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
     .headerbar > div[style*="display:flex"]{flex:1 1 100%;flex-wrap:wrap;gap:6px;justify-content:flex-start;}
-    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn, #langToggleBtn{padding:6px 10px;font-size:11.5px;}
+    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
+    .lang-btn{padding:4px 8px;font-size:11px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
     .user-chip{flex-wrap:wrap;}
@@ -251,7 +254,12 @@
       <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
       <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
       <button id="boardBtn" data-i18n="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
-      <button id="langToggleBtn" onclick="window.hmToggleLang && window.hmToggleLang()">🌐 EN</button>
+      <div class="lang-switcher" id="langSwitcher">
+        <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
+        <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
+        <button class="lang-btn" data-lang="cn" onclick="window.hmSetLang && window.hmSetLang('cn')">中</button>
+        <button class="lang-btn" data-lang="jp" onclick="window.hmSetLang && window.hmSetLang('jp')">日</button>
+      </div>
       <div class="auth-area" id="authArea">
         <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
       </div>
@@ -607,11 +615,9 @@ function applyLanguage(lang){
   const nickBtn = document.getElementById('nickBtn'); if(nickBtn) nickBtn.textContent = hmT('nickBtnLabel');
   const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.textContent = hmT('logoutBtnLabel');
   const loginBtnEl = document.getElementById('loginBtn'); if(loginBtnEl) loginBtnEl.textContent = hmT('loginBtnLabel');
-  const langBtn = document.getElementById('langToggleBtn');
-  if(langBtn){
-    const NEXT_LABEL = { ko: '🌐 EN', en: '🌐 中文', cn: '🌐 日本語', jp: '🌐 한국어' };
-    langBtn.textContent = NEXT_LABEL[hmLang] || '🌐 EN';
-  }
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === hmLang);
+  });
   // "N건 표시 중" 문구도 언어에 맞게 다시 그림
   if(window.hmLastFilteredCount != null){
     const el = document.getElementById('count');
@@ -635,6 +641,7 @@ window.hmToggleLang = function(){
   const NEXT = { ko: 'en', en: 'cn', cn: 'jp', jp: 'ko' };
   applyLanguage(NEXT[hmLang] || 'ko');
 };
+window.hmSetLang = function(lang){ applyLanguage(lang); };
 applyLanguage(hmLang);
 
 const CAT_COLORS = {
