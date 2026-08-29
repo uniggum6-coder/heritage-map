@@ -439,6 +439,13 @@ const I18N = {
     myVisitsTitle: '📍 내가 다녀온 곳',
     charTitle: '🎎 내 캐릭터 고르기',
     charDesc: '원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.',
+    verifiedLabel: '✅ 인증 완료',
+    verifyBtn: '📍 현장 인증',
+    transitBtn: '🚌 대중교통 길찾기',
+    backToList: '← 목록으로',
+    unknownDate: '지정일 미상',
+    clusterListHint: '이 위치에 {n}건이 있어요. 항목을 선택하세요.',
+    catCountUnit: '{n}건',
   },
   en: {
     brandTitle: 'Korea Heritage Map',
@@ -486,6 +493,13 @@ const I18N = {
     myVisitsTitle: '📍 Places I\'ve Visited',
     charTitle: '🎎 Choose My Character',
     charDesc: 'Freely choose any character you like. If you don\'t pick one, you\'ll keep the default look.',
+    verifiedLabel: '✅ Verified',
+    verifyBtn: '📍 Verify Visit',
+    transitBtn: '🚌 Transit Directions',
+    backToList: '← Back to List',
+    unknownDate: 'Date unknown',
+    clusterListHint: 'There are {n} items at this location. Please select one.',
+    catCountUnit: '{n}',
   },
   cn: {
     brandTitle: '国家遗产地图',
@@ -533,6 +547,13 @@ const I18N = {
     myVisitsTitle: '📍 我去过的地方',
     charTitle: '🎎 选择我的角色',
     charDesc: '请自由选择喜欢的角色。不选择的话将保持默认形象。',
+    verifiedLabel: '✅ 已认证',
+    verifyBtn: '📍 现场认证',
+    transitBtn: '🚌 公共交通路线',
+    backToList: '← 返回列表',
+    unknownDate: '指定日期不详',
+    clusterListHint: '此位置有{n}项，请选择一项。',
+    catCountUnit: '{n}项',
   },
   jp: {
     brandTitle: '国家遺産地図',
@@ -580,6 +601,13 @@ const I18N = {
     myVisitsTitle: '📍 訪れた場所',
     charTitle: '🎎 マイキャラクターを選ぶ',
     charDesc: 'お好きなキャラクターを自由に選んでください。選ばなければデフォルトのままです。',
+    verifiedLabel: '✅ 認証済み',
+    verifyBtn: '📍 現地認証',
+    transitBtn: '🚌 公共交通ルート',
+    backToList: '← リストに戻る',
+    unknownDate: '指定日不明',
+    clusterListHint: 'この場所には{n}件あります。項目を選択してください。',
+    catCountUnit: '{n}件',
   }
 };
 let hmLang = 'ko';
@@ -1053,7 +1081,7 @@ function initMap(){
       const items = children.map((m,i) => {
         const d = m._d;
         const groupHeader = d.c !== lastCat
-          ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(catLabel(d.c))} (${children.filter(c=>c._d.c===d.c).length}건)</div>`
+          ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(catLabel(d.c))} (${escapeHtml(hmT('catCountUnit').replace('{n}', children.filter(c=>c._d.c===d.c).length))})</div>`
           : '';
         lastCat = d.c;
         return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
@@ -1061,7 +1089,7 @@ function initMap(){
         </div>`;
       }).join('');
       return `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
-        <div style="font-size:12px;color:#888;margin-bottom:4px;">이 위치에 ${children.length}건이 있어요. 항목을 선택하세요.</div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">${escapeHtml(hmT('clusterListHint').replace('{n}', children.length))}</div>
         ${items}
       </div>`;
     };
@@ -1100,19 +1128,19 @@ function buildPopup(d, hid, visited, fromList){
   const img = d.i ? `<img class="popup-img" src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
   const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
   const verifyBtn = visited
-    ? `<div class="popup-verified">✅ 인증 완료</div>`
-    : `<button class="popup-verify-btn" onclick="window.hmVerifyVisit && window.hmVerifyVisit('${hid}', ${d.la}, ${d.lo})">📍 현장 인증</button>`;
+    ? `<div class="popup-verified">${escapeHtml(hmT('verifiedLabel'))}</div>`
+    : `<button class="popup-verify-btn" onclick="window.hmVerifyVisit && window.hmVerifyVisit('${hid}', ${d.la}, ${d.lo})">${escapeHtml(hmT('verifyBtn'))}</button>`;
   const backBtn = fromList
-    ? `<div onclick="window.hmBackToClusterList && window.hmBackToClusterList()" style="cursor:pointer;font-size:12px;color:var(--teal,#1f6f6b);font-weight:600;margin-bottom:6px;">← 목록으로</div>`
+    ? `<div onclick="window.hmBackToClusterList && window.hmBackToClusterList()" style="cursor:pointer;font-size:12px;color:var(--teal,#1f6f6b);font-weight:600;margin-bottom:6px;">${escapeHtml(hmT('backToList'))}</div>`
     : '';
   return `<div>
     ${backBtn}
     <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(catLabel(d.c))}${d.nc ? ' · '+escapeHtml(catLabel(d.nc)) : ''}</span>
     <div class="popup-title">${escapeHtml(hmName(d))}</div>
-    <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}</div>
+    <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||hmT('unknownDate'))}</div>
     <div class="popup-btn-row">
       ${verifyBtn}
-      <a class="popup-transit-btn" href="${kakaoUrl}" target="_blank" rel="noopener">🚌 대중교통 길찾기</a>
+      <a class="popup-transit-btn" href="${kakaoUrl}" target="_blank" rel="noopener">${escapeHtml(hmT('transitBtn'))}</a>
     </div>
     ${img}
     <div class="popup-desc">${escapeHtml(d.a||'')}${hmDesc(d) ? '<br><br>'+escapeHtml(hmDesc(d)) : ''}</div>
@@ -1237,10 +1265,27 @@ function populateFilters(){
     arrow.addEventListener('click', toggleExpand);
   });
   document.querySelectorAll('.catChk').forEach(chk => chk.addEventListener('change', () => {
+    // "천연기념물" 체크박스를 직접 켜거나 끄면, 그 안의 동물/식물/지질·지형/천연보호구역
+    // 하위 체크박스도 같은 상태로 맞춰줌 (하위만 체크된 채 상위가 꺼져 있어서 아무것도
+    // 안 보이는 혼란을 막기 위함)
+    if(chk.value === '천연기념물'){
+      document.querySelectorAll('.natChk').forEach(n => { n.checked = chk.checked; });
+    }
     syncGroupCheckboxState(chk.dataset.group);
     applyFilters();
   }));
-  document.querySelectorAll('.natChk').forEach(nchk => nchk.addEventListener('change', applyFilters));
+  document.querySelectorAll('.natChk').forEach(nchk => nchk.addEventListener('change', () => {
+    // 반대 방향: 동물/식물/지질·지형/천연보호구역 중 하나라도 체크되면 상위 "천연기념물"
+    // 체크박스도 자동으로 켜주고, 전부 해제되면 같이 꺼줌 — 그래야 하위 체크박스를
+    // 켰는데 지도에 아무것도 안 뜨는 문제가 생기지 않음
+    const natChk = document.querySelector('.catChk[value="천연기념물"]');
+    if(natChk){
+      const anyChecked = [...document.querySelectorAll('.natChk')].some(n => n.checked);
+      natChk.checked = anyChecked;
+      syncGroupCheckboxState(natChk.dataset.group);
+    }
+    applyFilters();
+  }));
   document.querySelectorAll('.groupChk').forEach(gchk => gchk.addEventListener('change', () => {
     const group = gchk.dataset.group;
     document.querySelectorAll(`.catChk[data-group="${group}"]`).forEach(c => c.checked = gchk.checked);
@@ -1343,7 +1388,7 @@ function renderIntangible(){
       ${img}
       <span class="tag">${escapeHtml(d.c)}</span>
       <h4>${escapeHtml(d.n)}</h4>
-      <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||'지정일 미상')}${d.o ? ' · '+escapeHtml(d.o) : ''}</div>
+      <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||hmT('unknownDate'))}${d.o ? ' · '+escapeHtml(d.o) : ''}</div>
       <div class="desc">${escapeHtml(d.e||'')}</div>
     `;
     wrap.appendChild(div);
