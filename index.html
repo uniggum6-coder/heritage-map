@@ -748,7 +748,7 @@ const CAT_I18N = {
   // 같은 방식으로 자연스럽게 번역함(공식 용어 검증 대상 아님)
   "서식지·번식지·도래지·사육지": { en: "Habitat / Breeding Ground / Wintering Site / Farm", cn: "栖息地·繁殖地·越冬地·饲养地", jp: "生息地・繁殖地・飛来地・飼育地" },
   "자생지·군락지": { en: "Native Habitat / Colony", cn: "自生地·群落地", jp: "自生地・群落地" },
-  "종자체 지정": { en: "Species-level Designation", cn: "物种指定", jp: "品種指定" }
+  "종 지정": { en: "Species-level Designation", cn: "物种指定", jp: "種指定" }
 };
 function catLabel(name){
   if(!name) return name;
@@ -1211,23 +1211,23 @@ function populateFilters(){
           const spCount = (typeof SPECIES_DATA !== 'undefined') ? SPECIES_DATA.filter(s => s.g === nc).length : 0;
           if(ncCount === 0 && spCount === 0) return;
 
-          const header = document.createElement('div');
-          header.style.cssText = 'font-weight:600;font-size:12.5px;color:var(--navy);margin:6px 0 2px;';
-          header.className = 'i18n-cat';
-          header.dataset.cat = nc;
-          header.textContent = catLabel(nc);
+          // 동물/식물도 지질·지형/천연보호구역과 같은 층으로 보이도록 체크박스를 단
+          // 상위 라벨로 만든다. 여기 체크박스는 아래 하위 항목(서식지/자생지)을 함께 켜고 끈다.
+          const header = document.createElement('label');
+          header.style.cssText = 'font-weight:600;margin-top:6px;';
+          header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
           natWrap.appendChild(header);
 
           if(ncCount > 0){
             const ncLabel = document.createElement('label');
-            ncLabel.style.paddingLeft = '10px';
+            ncLabel.style.paddingLeft = '16px';
             ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
             natWrap.appendChild(ncLabel);
           }
           if(spCount > 0){
             const spLabel = document.createElement('label');
-            spLabel.style.cssText = 'padding-left:10px;cursor:pointer;';
-            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="종자체 지정">${catLabel('종자체 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
+            spLabel.style.cssText = 'padding-left:16px;cursor:pointer;';
+            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="종 지정">${catLabel('종 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
             spLabel.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); window.showSpeciesList(nc); });
             natWrap.appendChild(spLabel);
           }
@@ -1270,11 +1270,32 @@ function populateFilters(){
     // 안 보이는 혼란을 막기 위함)
     if(chk.value === '천연기념물'){
       document.querySelectorAll('.natChk').forEach(n => { n.checked = chk.checked; });
+      document.querySelectorAll('.natParentChk').forEach(n => { n.checked = chk.checked; });
     }
     syncGroupCheckboxState(chk.dataset.group);
     applyFilters();
   }));
+  // 동물/식물 상위 체크박스: 자기 하위 항목(서식지·자생지)을 함께 켜고 끈다.
+  document.querySelectorAll('.natParentChk').forEach(pchk => pchk.addEventListener('change', () => {
+    const nc = pchk.dataset.nc;
+    document.querySelectorAll(`.natChk[value="${nc}"]`).forEach(n => { n.checked = pchk.checked; });
+    const natChk = document.querySelector('.catChk[value="천연기념물"]');
+    if(natChk){
+      const anyChecked = [...document.querySelectorAll('.natChk')].some(n => n.checked);
+      natChk.checked = anyChecked;
+      syncGroupCheckboxState(natChk.dataset.group);
+    }
+    applyFilters();
+  }));
+  // 하위 항목이 바뀌면 상위(동물/식물) 체크박스 상태도 맞춰준다.
+  function syncNatParents(){
+    document.querySelectorAll('.natParentChk').forEach(pchk => {
+      const kids = [...document.querySelectorAll(`.natChk[value="${pchk.dataset.nc}"]`)];
+      if(kids.length) pchk.checked = kids.some(k => k.checked);
+    });
+  }
   document.querySelectorAll('.natChk').forEach(nchk => nchk.addEventListener('change', () => {
+    syncNatParents();
     // 반대 방향: 동물/식물/지질·지형/천연보호구역 중 하나라도 체크되면 상위 "천연기념물"
     // 체크박스도 자동으로 켜주고, 전부 해제되면 같이 꺼줌 — 그래야 하위 체크박스를
     // 켰는데 지도에 아무것도 안 뜨는 문제가 생기지 않음
