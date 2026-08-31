@@ -822,12 +822,12 @@ let allMarkers = [];
 
 function initMap(){
   L.Path.CLICK_TOLERANCE = 20; // widen the clickable hit area around thin/small paths
-  const koreaBounds = L.latLngBounds([30.5, 121.0], [41.5, 135.0]);
+  const koreaBounds = L.latLngBounds([32.0, 122.5], [43.5, 133.0]);
   map = L.map('map', {
     zoomControl:true,
     minZoom:6,
     maxBounds: koreaBounds,
-    maxBoundsViscosity: 0.7
+    maxBoundsViscosity: 1.0
   }).setView([36.2, 127.8], 7);
   // "내 위치" 마커 전용 pane: 항상 다른 마커/클러스터보다 위에 그려지고, 클릭도 항상 이쪽이 먼저
   // 받도록(겹쳐 있어도 캐릭터 고르기가 확실히 열리도록) 별도 pane의 z-index를 markerPane(600)보다 높게 둠.
