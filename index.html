@@ -1213,24 +1213,40 @@ function populateFilters(){
 
           // 동물/식물도 지질·지형/천연보호구역과 같은 층으로 보이도록 체크박스를 단
           // 상위 라벨로 만든다. 여기 체크박스는 아래 하위 항목(서식지/자생지)을 함께 켜고 끈다.
+          // 4가지(동물/식물/지질·지형/천연보호구역)가 같은 층으로 보이도록 굵기를 통일하고,
+          // 동물·식물의 세부 항목은 평소엔 접어둔다(▶ 눌러 펼침).
           const header = document.createElement('label');
-          header.style.cssText = 'font-weight:600;margin-top:6px;';
           header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
+          const subArrow = document.createElement('span');
+          subArrow.textContent = '▶';
+          subArrow.style.cssText = 'cursor:pointer;font-size:10px;color:#999;margin-left:4px;transition:transform .2s;';
+          header.appendChild(subArrow);
           natWrap.appendChild(header);
 
+          const kidWrap = document.createElement('div');
+          kidWrap.style.cssText = 'display:none;padding-left:16px;';
           if(ncCount > 0){
             const ncLabel = document.createElement('label');
-            ncLabel.style.paddingLeft = '16px';
             ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
-            natWrap.appendChild(ncLabel);
+            kidWrap.appendChild(ncLabel);
           }
           if(spCount > 0){
             const spLabel = document.createElement('label');
-            spLabel.style.cssText = 'padding-left:16px;cursor:pointer;';
+            spLabel.style.cssText = 'cursor:pointer;';
             spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="종 지정">${catLabel('종 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
             spLabel.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); window.showSpeciesList(nc); });
-            natWrap.appendChild(spLabel);
+            kidWrap.appendChild(spLabel);
           }
+          natWrap.appendChild(kidWrap);
+
+          const toggleKid = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const open = kidWrap.style.display !== 'none';
+            kidWrap.style.display = open ? 'none' : 'block';
+            subArrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+          };
+          subArrow.addEventListener('click', toggleKid);
         });
 
         ['지질·지형','천연보호구역'].forEach(nc => {
@@ -1309,7 +1325,14 @@ function populateFilters(){
   }));
   document.querySelectorAll('.groupChk').forEach(gchk => gchk.addEventListener('change', () => {
     const group = gchk.dataset.group;
-    document.querySelectorAll(`.catChk[data-group="${group}"]`).forEach(c => c.checked = gchk.checked);
+    const cats = [...document.querySelectorAll(`.catChk[data-group="${group}"]`)];
+    cats.forEach(c => c.checked = gchk.checked);
+    // 천연기념물이 이 그룹에 속해 있으면 그 아래 세부 항목(동물/식물/지질·지형/천연보호구역)도
+    // 함께 켜고 꺼야 한다. 이걸 빼면 지도에서는 사라졌는데 목록에는 체크가 남아 헷갈린다.
+    if(cats.some(c => c.value === '천연기념물')){
+      document.querySelectorAll('.natChk').forEach(n => { n.checked = gchk.checked; });
+      document.querySelectorAll('.natParentChk').forEach(n => { n.checked = gchk.checked; });
+    }
     gchk.indeterminate = false;
     applyFilters();
   }));
