@@ -413,6 +413,7 @@ const I18N = {
     catTitle: '지정종목',
     tabListBtn: '무형유산 목록 보기 →',
     countSuffix: '건 표시 중',
+    pickHint: '왼쪽에서 보고 싶은 유산 종류를 선택하세요',
     backToMap: '← 지도로 돌아가기',
     ilistSearchPh: '무형유산 이름으로 검색',
     allTypes: '전체 종목',
@@ -467,6 +468,7 @@ const I18N = {
     catTitle: 'Designation Type',
     tabListBtn: 'View Intangible Heritage List →',
     countSuffix: ' shown',
+    pickHint: 'Select a heritage type on the left to begin',
     backToMap: '← Back to Map',
     ilistSearchPh: 'Search intangible heritage by name',
     allTypes: 'All Types',
@@ -521,6 +523,7 @@ const I18N = {
     catTitle: '指定类型',
     tabListBtn: '查看非物质遗产列表 →',
     countSuffix: ' 项显示中',
+    pickHint: '请在左侧选择要查看的遗产类型',
     backToMap: '← 返回地图',
     ilistSearchPh: '按非物质遗产名称搜索',
     allTypes: '全部类型',
@@ -575,6 +578,7 @@ const I18N = {
     catTitle: '指定種目',
     tabListBtn: '無形遺産リストを見る →',
     countSuffix: '件表示中',
+    pickHint: '左側で表示したい遺産の種類を選んでください',
     backToMap: '← 地図に戻る',
     ilistSearchPh: '無形遺産の名前で検索',
     allTypes: '全種目',
@@ -649,7 +653,7 @@ function applyLanguage(lang){
   // "N건 표시 중" 문구도 언어에 맞게 다시 그림
   if(window.hmLastFilteredCount != null){
     const el = document.getElementById('count');
-    if(el) el.textContent = window.hmLastFilteredCount.toLocaleString() + hmT('countSuffix');
+    if(el) el.textContent = window.hmNothingPicked ? hmT('pickHint') : (window.hmLastFilteredCount.toLocaleString() + hmT('countSuffix'));
   }
   // 이미 지도에 그려진 마커들의 툴팁/팝업도 언어 전환에 맞게 새로 그림
   // (최초 페이지 로드 시점의 호출에서는 아직 마커가 없어 아무 것도 하지 않고 조용히 지나감)
@@ -1161,7 +1165,16 @@ function hmDesc(d){
   return d.e;
 }
 
-function updateCount(n){ window.hmLastFilteredCount = n; document.getElementById('count').textContent = n.toLocaleString() + hmT('countSuffix'); }
+function updateCount(n){
+  window.hmLastFilteredCount = n;
+  // 처음에는 아무 분류도 체크돼 있지 않다. 그때 "0건"만 뜨면 고장난 것처럼 보이므로
+  // 무엇을 해야 하는지 안내 문구를 대신 보여준다.
+  const anyChecked = document.querySelector('.catChk:checked') !== null;
+  const el = document.getElementById('count');
+  if(!anyChecked){ el.textContent = hmT('pickHint'); window.hmNothingPicked = true; return; }
+  window.hmNothingPicked = false;
+  el.textContent = n.toLocaleString() + hmT('countSuffix');
+}
 
 function populateFilters(){
   const regionSel = document.getElementById('regionSelect');
@@ -1179,7 +1192,7 @@ function populateFilters(){
     heading.className = 'group-heading';
     heading.style.cssText = 'font-weight:700;font-size:13.5px;margin:8px 0;color:var(--navy);display:flex;align-items:center;gap:8px;padding:10px 8px;border-radius:8px;background:#faf8f4;';
     heading.innerHTML = `
-      <input type="checkbox" class="groupChk" data-group="${groupName}" checked style="width:16px;height:16px;flex:none;cursor:pointer;">
+      <input type="checkbox" class="groupChk" data-group="${groupName}" style="width:16px;height:16px;flex:none;cursor:pointer;">
       <span class="group-swatch" style="background:${GROUP_COLORS[groupName]||'#555'}"></span>
       <span class="group-label" style="flex:1;cursor:pointer;"><span class="i18n-cat" data-cat="${groupName}">${catLabel(groupName)}</span> <span style="color:#999;font-weight:500;">(${groupTotal.toLocaleString()})</span></span>
       <span class="group-arrow" style="cursor:pointer;font-size:11px;color:#999;transition:transform .2s;">▶</span>
@@ -1192,7 +1205,7 @@ function populateFilters(){
     present.forEach(c => {
       const label = document.createElement('label');
       label.style.paddingLeft = '10px';
-      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}" checked> <span class="cat-swatch" style="background:${colorFor(c)}"></span> <span class="i18n-cat" data-cat="${c}">${catLabel(c)}</span> <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
+      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}"> <span class="cat-swatch" style="background:${colorFor(c)}"></span> <span class="i18n-cat" data-cat="${c}">${catLabel(c)}</span> <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
       subWrap.appendChild(label);
 
       if(c === '천연기념물'){
@@ -1216,7 +1229,7 @@ function populateFilters(){
           // 4가지(동물/식물/지질·지형/천연보호구역)가 같은 층으로 보이도록 굵기를 통일하고,
           // 동물·식물의 세부 항목은 평소엔 접어둔다(▶ 눌러 펼침).
           const header = document.createElement('label');
-          header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
+          header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
           const subArrow = document.createElement('span');
           subArrow.textContent = '▶';
           subArrow.style.cssText = 'cursor:pointer;font-size:10px;color:#999;margin-left:4px;transition:transform .2s;';
@@ -1227,7 +1240,7 @@ function populateFilters(){
           kidWrap.style.cssText = 'display:none;padding-left:16px;';
           if(ncCount > 0){
             const ncLabel = document.createElement('label');
-            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
+            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
             kidWrap.appendChild(ncLabel);
           }
           if(spCount > 0){
@@ -1253,7 +1266,7 @@ function populateFilters(){
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           if(ncCount === 0) return;
           const ncLabel = document.createElement('label');
-          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}" checked> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
+          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
           natWrap.appendChild(ncLabel);
         });
 
