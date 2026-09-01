@@ -878,7 +878,8 @@ function initMap(){
     marker.bindTooltip(`<div class="tip-cat">${escapeHtml(catLabel(d.c))}</div><div class="tip-name">${escapeHtml(hmName(d))}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
     markerByHid[hid] = marker;
     allMarkers.push(marker);
-    clusterGroup.addLayer(marker);
+    // 여기서 바로 지도에 올리지 않는다. 초기 체크 상태(전부 해제)에 맞춰
+    // 아래 applyFilters()가 표시할 마커만 골라서 올린다.
   });
   map.addLayer(clusterGroup);
   checkLayer = L.layerGroup().addTo(map);
@@ -1536,6 +1537,7 @@ try{
   populateSubRegions('');
   initMap();
   initIntangibleList();
+  applyFilters();   // 마커 생성이 끝난 뒤 체크 상태에 맞춰 표시
 }catch(err){
   showMsg('페이지를 불러오는 중 오류가 발생했습니다: ' + err.message);
   console.error(err);
