@@ -1170,7 +1170,9 @@ function updateCount(n){
   window.hmLastFilteredCount = n;
   // 처음에는 아무 분류도 체크돼 있지 않다. 그때 "0건"만 뜨면 고장난 것처럼 보이므로
   // 무엇을 해야 하는지 안내 문구를 대신 보여준다.
-  const anyChecked = document.querySelector('.catChk:checked') !== null;
+  const sb = document.getElementById('searchBox');
+  const anyChecked = document.querySelector('.catChk:checked') !== null
+                     || (sb && sb.value.trim() !== '');
   const el = document.getElementById('count');
   if(!anyChecked){ el.textContent = hmT('pickHint'); window.hmNothingPicked = true; return; }
   window.hmNothingPicked = false;
@@ -1384,13 +1386,18 @@ function applyFilters(){
     const checked = [...document.querySelectorAll('.catChk:checked')].map(c=>c.value);
     const checkedSet = new Set(checked);
     const checkedNat = new Set([...document.querySelectorAll('.natChk:checked')].map(c=>c.value));
+    const searchAll = !!q && checkedSet.size === 0;
 
     const matched = [];
     for(let i = 0; i < allMarkers.length; i++){
       const m = allMarkers[i];
       const d = m._d;
-      if(!checkedSet.has(d.c)) continue;
-      if(d.c === '천연기념물' && !checkedNat.has(d.nc)) continue;
+      // 아무 분류도 체크하지 않은 채 검색어만 입력한 경우에는 전체에서 찾아준다.
+      // (체크를 먼저 해야만 검색이 되면 "검색이 안 된다"고 느끼게 됨)
+      if(!searchAll){
+        if(!checkedSet.has(d.c)) continue;
+        if(d.c === '천연기념물' && !checkedNat.has(d.nc)) continue;
+      }
       if(region && d.r !== region) continue;
       if(subRegion && d.s !== subRegion) continue;
       if(q && !((d.n && d.n.toLowerCase().includes(q)) || (d.a && d.a.toLowerCase().includes(q)))) continue;
