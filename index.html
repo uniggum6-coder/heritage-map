@@ -2095,6 +2095,8 @@ onAuthStateChanged(auth, async (user) => {
   var wait= document.getElementById('hmLightboxWait');
   if(!box || !im) return;
 
+  var pushed = false;
+
   function open(src){
     im.removeAttribute('src');
     im.style.visibility = 'hidden';
@@ -2103,13 +2105,26 @@ onAuthStateChanged(auth, async (user) => {
     document.body.style.overflow = 'hidden';
     im.dataset.hmFb = '';
     im.src = src;
+    // 휴대폰 뒤로가기로 사진만 닫히고 지도는 유지되도록 기록을 하나 쌓는다
+    if(!pushed){
+      try { history.pushState({ hmLb: 1 }, ''); pushed = true; } catch(e){}
+    }
   }
-  function close(){
+  function close(fromPop){
+    if(!box.classList.contains('on')) return;
     box.classList.remove('on');
     document.body.style.overflow = '';
     im.removeAttribute('src');
+    if(pushed){
+      pushed = false;
+      if(!fromPop){ try { history.back(); } catch(e){} }
+    }
   }
   window.hmCloseLightbox = close;
+
+  window.addEventListener('popstate', function(){
+    if(box.classList.contains('on')) close(true);
+  });
 
   im.addEventListener('load', function(){
     wait.style.display = 'none';
