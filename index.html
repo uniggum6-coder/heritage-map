@@ -1132,7 +1132,7 @@ function initMap(){
 }
 
 function buildPopup(d, hid, visited, fromList){
-  const img = d.i ? `<img class="popup-img" src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
+  const img = d.i ? `<img class="popup-img" loading="lazy" src="${escapeHtml(d.i)}" onerror="if(!this.dataset.hmFb &amp;&amp; this.src.indexOf('/thumb/')>-1){this.dataset.hmFb='1';this.src=this.src.replace('/thumb/','/');}else{this.style.display='none';}">` : '';
   const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
   const verifyBtn = visited
     ? `<div class="popup-verified">${escapeHtml(hmT('verifiedLabel'))}</div>`
