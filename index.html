@@ -88,7 +88,13 @@
   .popup-cat{display:inline-block;font-size:11px;font-weight:700;color:#fff;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
   .popup-title{font-size:15px;font-weight:700;margin:0 0 4px;}
   .popup-meta{font-size:12px;color:var(--muted);margin:0 0 6px;}
-  .popup-img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:6px;}
+  .popup-img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:6px;cursor:zoom-in;}
+  #hmLightbox{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
+  #hmLightbox.on{display:flex;}
+  #hmLightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 6px 30px rgba(0,0,0,.6);}
+  #hmLightboxClose{position:absolute;top:10px;right:14px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:26px;line-height:42px;cursor:pointer;padding:0;}
+  #hmLightboxClose:hover{background:rgba(255,255,255,.3);}
+  #hmLightboxWait{position:absolute;color:#fff;font-size:13px;opacity:.8;}
   .popup-desc{font-size:12.5px;line-height:1.5;color:#333;}
   .popup-transit-btn{display:block;padding:8px 6px;background:var(--navy);color:#ffffff !important;text-align:center;text-decoration:none;border-radius:6px;font-size:11.5px;font-weight:700;flex:1;}
   /* a 태그라 브라우저 기본 링크색이 끼어드는 경우가 있어 모든 상태에서 흰색으로 고정 */
@@ -2076,6 +2082,69 @@ onAuthStateChanged(auth, async (user) => {
     window.clearVisitedMarks && window.clearVisitedMarks();
   }
 });
+</script>
+<div id="hmLightbox" role="dialog" aria-modal="true">
+  <div id="hmLightboxWait">…</div>
+  <img id="hmLightboxImg" alt="">
+  <button id="hmLightboxClose" type="button" aria-label="close">&times;</button>
+</div>
+<script>
+(function(){
+  var box = document.getElementById('hmLightbox');
+  var im  = document.getElementById('hmLightboxImg');
+  var wait= document.getElementById('hmLightboxWait');
+  if(!box || !im) return;
+
+  function open(src){
+    im.removeAttribute('src');
+    im.style.visibility = 'hidden';
+    wait.style.display = 'block';
+    box.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    im.dataset.hmFb = '';
+    im.src = src;
+  }
+  function close(){
+    box.classList.remove('on');
+    document.body.style.overflow = '';
+    im.removeAttribute('src');
+  }
+  window.hmCloseLightbox = close;
+
+  im.addEventListener('load', function(){
+    wait.style.display = 'none';
+    im.style.visibility = 'visible';
+  });
+  im.addEventListener('error', function(){
+    // 원본이 없으면 작은 사진이라도 보여준다
+    if(!im.dataset.hmFb && im.src.indexOf('/thumb/') === -1){
+      im.dataset.hmFb = '1';
+      im.src = im.src.replace('/unisearch/images/', '/unisearch/images/__T__/')
+                     .replace(/\/__T__\/([a-z_]+)\//, '/$1/thumb/');
+      return;
+    }
+    wait.textContent = '!';
+    wait.style.display = 'block';
+  });
+
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    if(t && t.id === 'hmLightboxClose'){ close(); return; }
+    if(t === box){ close(); return; }
+    if(t && t.classList && t.classList.contains('popup-img')){
+      var s = t.getAttribute('src') || '';
+      if(!s) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      wait.textContent = '···';
+      open(s.replace('/thumb/', '/'));
+    }
+  }, true);
+
+  document.addEventListener('keydown', function(ev){
+    if(ev.key === 'Escape' && box.classList.contains('on')) close();
+  });
+})();
 </script>
 </body>
 </html>
