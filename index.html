@@ -98,9 +98,15 @@
     background:linear-gradient(to bottom,rgba(0,0,0,0) 60%,rgba(0,0,0,.18) 100%);}
   #hmLightbox{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
   #hmLightbox.on{display:flex;}
-  #hmLightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 6px 30px rgba(0,0,0,.6);}
-  #hmLightboxClose{position:absolute;top:10px;right:14px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:26px;line-height:42px;cursor:pointer;padding:0;}
-  #hmLightboxClose:hover{background:rgba(255,255,255,.3);}
+  #hmLightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 6px 30px rgba(0,0,0,.6);
+    transition:transform .25s ease;transform-origin:center center;}
+  #hmLightbox.rot img{border-radius:4px;}
+  #hmLightboxClose,#hmLightboxRotate{position:absolute;top:10px;width:42px;height:42px;border:0;border-radius:50%;
+    background:rgba(255,255,255,.15);color:#fff;font-size:24px;line-height:42px;cursor:pointer;padding:0;}
+  #hmLightboxClose{right:14px;font-size:26px;}
+  #hmLightboxRotate{right:64px;font-size:20px;}
+  #hmLightboxClose:hover,#hmLightboxRotate:hover{background:rgba(255,255,255,.3);}
+  #hmLightboxRotate.on{background:rgba(255,255,255,.42);}
   #hmLightboxWait{position:absolute;color:#fff;font-size:13px;opacity:.8;}
   .popup-desc{font-size:12.5px;line-height:1.5;color:#333;}
   .popup-transit-btn{display:block;padding:8px 6px;background:var(--navy);color:#ffffff !important;text-align:center;text-decoration:none;border-radius:6px;font-size:11.5px;font-weight:700;flex:1;}
@@ -2108,6 +2114,7 @@ onAuthStateChanged(auth, async (user) => {
 <div id="hmLightbox" role="dialog" aria-modal="true">
   <div id="hmLightboxWait">…</div>
   <img id="hmLightboxImg" alt="">
+  <button id="hmLightboxRotate" type="button" aria-label="rotate" title="사진 돌리기">&#8635;</button>
   <button id="hmLightboxClose" type="button" aria-label="close">&times;</button>
 </div>
 <script>
@@ -2115,11 +2122,53 @@ onAuthStateChanged(auth, async (user) => {
   var box = document.getElementById('hmLightbox');
   var im  = document.getElementById('hmLightboxImg');
   var wait= document.getElementById('hmLightboxWait');
+  var rotBtn = document.getElementById('hmLightboxRotate');
   if(!box || !im) return;
 
   var pushed = false;
+  var rotated = false;
+
+  // 사진을 90도 돌렸을 때, 세로 화면에 꽉 차도록 크기를 다시 계산한다.
+  // 돌린 뒤에는 화면의 세로 길이가 사진의 가로 자리, 화면의 가로 길이가 사진의 세로 자리가 된다.
+  function applyRotation(){
+    if(!im) return;
+    if(!rotated){
+      im.style.transform = '';
+      im.style.maxWidth = '100%';
+      im.style.maxHeight = '100%';
+      im.style.width = '';
+      im.style.height = '';
+      if(rotBtn) rotBtn.classList.remove('on');
+      box.classList.remove('rot');
+      return;
+    }
+    var pad = 32;
+    var vw = Math.max(80, window.innerWidth  - pad);
+    var vh = Math.max(80, window.innerHeight - pad);
+    var nw = im.naturalWidth  || vh;
+    var nh = im.naturalHeight || vw;
+    // 돌린 상태에서 사진의 가로는 화면의 세로(vh) 안에, 세로는 화면의 가로(vw) 안에 들어가야 한다
+    var scale = Math.min(vh / nw, vw / nh);
+    var w = Math.round(nw * scale);
+    var h = Math.round(nh * scale);
+    im.style.maxWidth = 'none';
+    im.style.maxHeight = 'none';
+    im.style.width  = w + 'px';
+    im.style.height = h + 'px';
+    im.style.transform = 'rotate(90deg)';
+    if(rotBtn) rotBtn.classList.add('on');
+    box.classList.add('rot');
+  }
+
+  function toggleRotate(){
+    rotated = !rotated;
+    applyRotation();
+  }
+  window.addEventListener('resize', function(){ if(rotated) applyRotation(); });
 
   function open(src){
+    rotated = false;
+    applyRotation();
     im.removeAttribute('src');
     im.style.visibility = 'hidden';
     wait.style.display = 'block';
@@ -2134,6 +2183,8 @@ onAuthStateChanged(auth, async (user) => {
   }
   function close(fromPop){
     if(!box.classList.contains('on')) return;
+    rotated = false;
+    applyRotation();
     box.classList.remove('on');
     document.body.style.overflow = '';
     im.removeAttribute('src');
@@ -2151,6 +2202,7 @@ onAuthStateChanged(auth, async (user) => {
   im.addEventListener('load', function(){
     wait.style.display = 'none';
     im.style.visibility = 'visible';
+    applyRotation();
   });
   im.addEventListener('error', function(){
     // 원본이 없으면 작은 사진이라도 보여준다
@@ -2166,6 +2218,9 @@ onAuthStateChanged(auth, async (user) => {
 
   document.addEventListener('click', function(ev){
     var t = ev.target;
+    if(t && (t.id === 'hmLightboxRotate' || (t.parentNode && t.parentNode.id === 'hmLightboxRotate'))){
+      ev.preventDefault(); ev.stopPropagation(); toggleRotate(); return;
+    }
     if(t && t.id === 'hmLightboxClose'){ close(); return; }
     if(t === box){ close(); return; }
     if(t && t.classList && t.classList.contains('popup-img')){
