@@ -822,23 +822,45 @@ function computeHeritageId(d){
 var markerByHid = {};
 var checkLayer = null;
 
+// 방문 표시는 분류 색을 덮지 않는다. 유산의 원은 분류 색 그대로 두고,
+// 그 원 한가운데에 흰색 ✓만 얹는다. (예전에는 초록 동그라미를 옆에 따로 붙여서,
+// 방문만 하면 문화유산도 자연유산처럼 초록으로 보이는 문제가 있었음)
+function makeVisitedCheckIcon(){
+  return L.divIcon({
+    html:'<div style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
+        +'color:#fff;font-size:13px;font-weight:900;line-height:1;'
+        +'text-shadow:0 0 2px rgba(0,0,0,.8),0 1px 2px rgba(0,0,0,.55);">✓</div>',
+    className:'visited-check-icon', iconSize:[20,20], iconAnchor:[10,10]
+  });
+}
 function markVisitedOnMap(hid){
   const marker = markerByHid[hid];
   if(!marker) return;
   marker.setPopupContent(buildPopup(marker._d, hid, true));
-  if(checkLayer && !marker._checkMark){
-    const checkIcon = L.divIcon({
-      html:'<div style="background:#2e8b57;color:#fff;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4);">✓</div>',
-      className:'visited-check-icon', iconSize:[14,14], iconAnchor:[-3,17]
-    });
-    const cm = L.marker([marker._d.la, marker._d.lo], {icon:checkIcon, interactive:false, zIndexOffset:200});
-    marker._checkMark = cm;
+  marker._visited = true;
+  refreshVisitedMarks();
+}
+// 지도에 실제로 그려져 있는(필터를 통과했고, 묶음으로 접혀 있지 않은) 유산에만 ✓를 얹는다.
+function refreshVisitedMarks(){
+  if(!checkLayer) return;
+  checkLayer.clearLayers();
+  const visited = window.visitedIds || new Set();
+  for(let i = 0; i < allMarkers.length; i++){
+    const m = allMarkers[i];
+    if(!m._hid || !visited.has(m._hid)) continue;
+    if(!clusterGroup || !clusterGroup.hasLayer(m)) continue;      // 필터에서 빠진 것
+    if(clusterGroup.getVisibleParent){
+      const vp = clusterGroup.getVisibleParent(m);
+      if(vp && vp !== m) continue;                                 // 묶음 안에 접혀 있음
+    }
+    const cm = L.marker([m._d.la, m._d.lo], {icon: makeVisitedCheckIcon(), interactive:false, zIndexOffset:200});
     checkLayer.addLayer(cm);
   }
 }
+window.refreshVisitedMarks = refreshVisitedMarks;
 function clearVisitedMarks(){
   if(checkLayer) checkLayer.clearLayers();
-  allMarkers.forEach(m => { m._checkMark = null; if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, false)); });
+  allMarkers.forEach(m => { m._visited = false; m._checkMark = null; if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, false)); });
 }
 
 // ---- MAP VIEW ----
@@ -904,6 +926,9 @@ function initMap(){
   });
   map.addLayer(clusterGroup);
   checkLayer = L.layerGroup().addTo(map);
+  // 확대/이동으로 묶음이 풀리거나 접힐 때마다 ✓ 위치를 다시 계산
+  map.on('zoomend moveend', function(){ refreshVisitedMarks(); });
+  clusterGroup.on('animationend', function(){ refreshVisitedMarks(); });
 
   // ---- 내 위치 표시 (로그인 여부와 무관, 저장 없이 화면에만 표시) ----
   // 실시간으로 위치를 계속 추적(watchPosition)하면서, 실제 이동 속도를 계산해
@@ -1442,6 +1467,7 @@ function applyFilters(){
     clusterGroup.clearLayers();
     clusterGroup.addLayers(matched); // bulk add — much faster than addLayer in a loop
     updateCount(matched.length);
+    refreshVisitedMarks();
   }, 0);
 }
 
@@ -2099,7 +2125,12 @@ onAuthStateChanged(auth, async (user) => {
     // 저장된 rank/카운트가 예전 방식(유산개수 기준)일 수 있으니, 접속 시 다시 계산해서 동기화
     await setDoc(uRef, {totalVisits: itemCount, totalPlaces: placeCount, rank}, {merge:true});
     updateAuthUI(placeCount, rank, itemCount);
-    visitedIds.forEach(hid => window.markVisitedOnMap && window.markVisitedOnMap(hid));
+    // 팝업 내용만 먼저 갱신하고, ✓ 다시 그리기는 마지막에 한 번만 (건수가 많아도 느려지지 않게)
+    visitedIds.forEach(hid => {
+      const m = markerByHid[hid];
+      if(m){ m._visited = true; m.setPopupContent(buildPopup(m._d, hid, true)); }
+    });
+    window.refreshVisitedMarks && window.refreshVisitedMarks();
     if(!currentNickname){
       setTimeout(() => { window.hmChangeNickname && window.hmChangeNickname(); }, 300);
     }
