@@ -838,7 +838,8 @@ function markVisitedOnMap(hid){
   if(!marker) return;
   marker.setPopupContent(buildPopup(marker._d, hid, true));
   marker._visited = true;
-  refreshVisitedMarks();
+  // 방문한 곳은 분류 체크와 무관하게 보여야 하므로 필터를 한 번 다시 돌린다
+  if(window.applyFilters) window.applyFilters(); else refreshVisitedMarks();
 }
 // 지도에 실제로 그려져 있는(필터를 통과했고, 묶음으로 접혀 있지 않은) 유산에만 ✓를 얹는다.
 function refreshVisitedMarks(){
@@ -1449,13 +1450,18 @@ function applyFilters(){
     const checkedNat = new Set([...document.querySelectorAll('.natChk:checked')].map(c=>c.value));
     const searchAll = !!q && checkedSet.size === 0;
 
+    // 내가 방문한 곳은 분류 체크와 상관없이 항상 지도에 표시한다.
+    // (체크를 하나도 안 한 상태로 지도를 열어도 내 발자취는 보이도록)
+    const visitedSet = window.visitedIds || new Set();
+
     const matched = [];
     for(let i = 0; i < allMarkers.length; i++){
       const m = allMarkers[i];
       const d = m._d;
+      const isVisited = !!(m._hid && visitedSet.has(m._hid));
       // 아무 분류도 체크하지 않은 채 검색어만 입력한 경우에는 전체에서 찾아준다.
       // (체크를 먼저 해야만 검색이 되면 "검색이 안 된다"고 느끼게 됨)
-      if(!searchAll){
+      if(!searchAll && !isVisited){
         if(!checkedSet.has(d.c)) continue;
         if(d.c === '천연기념물' && !checkedNat.has(d.nc)) continue;
       }
@@ -1471,6 +1477,7 @@ function applyFilters(){
   }, 0);
 }
 
+window.applyFilters = applyFilters;
 document.getElementById('searchBox').addEventListener('input', applyFilters);
 document.getElementById('regionSelect').addEventListener('change', () => {
   populateSubRegions(document.getElementById('regionSelect').value);
@@ -2130,7 +2137,7 @@ onAuthStateChanged(auth, async (user) => {
       const m = markerByHid[hid];
       if(m){ m._visited = true; m.setPopupContent(buildPopup(m._d, hid, true)); }
     });
-    window.refreshVisitedMarks && window.refreshVisitedMarks();
+    window.applyFilters ? window.applyFilters() : (window.refreshVisitedMarks && window.refreshVisitedMarks());
     if(!currentNickname){
       setTimeout(() => { window.hmChangeNickname && window.hmChangeNickname(); }, 300);
     }
