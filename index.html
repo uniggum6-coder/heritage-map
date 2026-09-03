@@ -821,6 +821,7 @@ function computeHeritageId(d){
 }
 var markerByHid = {};
 var checkLayer = null;
+var visitedLayer = null;
 
 // 방문 표시는 분류 색을 덮지 않는다. 유산의 원은 분류 색 그대로 두고,
 // 그 원 한가운데에 흰색 ✓만 얹는다. (예전에는 초록 동그라미를 옆에 따로 붙여서,
@@ -843,25 +844,21 @@ function markVisitedOnMap(hid){
 }
 // 지도에 실제로 그려져 있는(필터를 통과했고, 묶음으로 접혀 있지 않은) 유산에만 ✓를 얹는다.
 function refreshVisitedMarks(){
-  if(!checkLayer) return;
+  if(!checkLayer || !visitedLayer) return;
   checkLayer.clearLayers();
   const visited = window.visitedIds || new Set();
-  for(let i = 0; i < allMarkers.length; i++){
-    const m = allMarkers[i];
-    if(!m._hid || !visited.has(m._hid)) continue;
-    if(!clusterGroup || !clusterGroup.hasLayer(m)) continue;      // 필터에서 빠진 것
-    if(clusterGroup.getVisibleParent){
-      const vp = clusterGroup.getVisibleParent(m);
-      if(vp && vp !== m) continue;                                 // 묶음 안에 접혀 있음
-    }
-    const cm = L.marker([m._d.la, m._d.lo], {icon: makeVisitedCheckIcon(), interactive:false, zIndexOffset:200});
+  visitedLayer.eachLayer(function(m){
+    if(!m._hid || !visited.has(m._hid)) return;
+    const cm = L.marker([m._d.la, m._d.lo], {icon: makeVisitedCheckIcon(), interactive:false, zIndexOffset:400});
     checkLayer.addLayer(cm);
-  }
+  });
 }
 window.refreshVisitedMarks = refreshVisitedMarks;
 function clearVisitedMarks(){
   if(checkLayer) checkLayer.clearLayers();
   allMarkers.forEach(m => { m._visited = false; m._checkMark = null; if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, false)); });
+  // 로그아웃하면 방문 표시가 사라지므로, 지도에 직접 올려둔 유산들도 다시 묶음으로 되돌린다
+  if(window.applyFilters) window.applyFilters();
 }
 
 // ---- MAP VIEW ----
@@ -927,6 +924,8 @@ function initMap(){
   });
   map.addLayer(clusterGroup);
   checkLayer = L.layerGroup().addTo(map);
+  // 방문한 곳은 묶음(클러스터)에 넣지 않고 항상 개별로 보이게 한다.
+  visitedLayer = L.layerGroup().addTo(map);
   // 확대/이동으로 묶음이 풀리거나 접힐 때마다 ✓ 위치를 다시 계산
   map.on('zoomend moveend', function(){ refreshVisitedMarks(); });
   clusterGroup.on('animationend', function(){ refreshVisitedMarks(); });
@@ -1455,6 +1454,8 @@ function applyFilters(){
     const visitedSet = window.visitedIds || new Set();
 
     const matched = [];
+    const clustered = [];
+    const visitedOnes = [];
     for(let i = 0; i < allMarkers.length; i++){
       const m = allMarkers[i];
       const d = m._d;
@@ -1469,9 +1470,13 @@ function applyFilters(){
       if(subRegion && d.s !== subRegion) continue;
       if(q && !hmHit(qTok, d.n, d.a)) continue;
       matched.push(m);
+      if(isVisited) visitedOnes.push(m); else clustered.push(m);
     }
+    // 방문한 곳은 묶음에 넣지 않고 지도에 바로 올린다(전국 지도에서도 개별로 보이도록)
     clusterGroup.clearLayers();
-    clusterGroup.addLayers(matched); // bulk add — much faster than addLayer in a loop
+    if(visitedLayer) visitedLayer.clearLayers();
+    clusterGroup.addLayers(clustered); // bulk add — much faster than addLayer in a loop
+    if(visitedLayer) visitedOnes.forEach(m => visitedLayer.addLayer(m));
     updateCount(matched.length);
     refreshVisitedMarks();
   }, 0);
