@@ -1031,9 +1031,8 @@ function initMap(){
       // 강제로 리플로우를 한 번 발생시켜 곧바로 화면에 그려지도록 함.
       const myLocEl = myLocationMarker.getElement();
       if(myLocEl){ void myLocEl.offsetHeight; }
-      // 사용자가 "내 위치" 버튼을 직접 눌렀을 때만 지도를 그쪽으로 이동(페이지를 열자마자
-      // 조용히 자동 감지될 때는 첫 화면이 전국 지도로 유지되도록 지도를 건드리지 않음)
-      if(moveMap && map.getZoom() < 13) map.setView([lat, lon], 15);
+      // 내 위치를 찾아도 지도는 움직이지 않는다. 보고 있던 화면(전국 지도 등)이 그대로 유지되고
+      // 그 위에 내 위치 표시만 나타난다. 확대도 하지 않고 이동도 하지 않음.
     } else {
       myLocationMarker.setLatLng([lat, lon]);
     }
