@@ -39,7 +39,13 @@
   body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--sand);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
   header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;padding:0;position:relative;overflow:hidden;flex:none;max-height:200px;transition:max-height .25s ease,opacity .2s ease;}
   header.header-hidden{max-height:0;opacity:0;}
-  .headerbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;position:relative;z-index:2;}
+  .headerbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;position:relative;z-index:2;
+    flex-wrap:wrap;gap:10px;}
+  /* 버튼 줄: 화면이 좁아지면 자리가 모자란 만큼 다음 줄로 넘긴다.
+     (예전에는 640px 이하에서만 줄바꿈이 돼서, 태블릿처럼 그보다 넓은 화면에서는
+      한 줄에 밀어 넣다가 오른쪽 끝의 닉네임 변경·로그아웃이 화면 밖으로 잘렸음) */
+  .headerbar .hb-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    justify-content:flex-end;min-width:0;max-width:100%;}
   .brand{display:flex;flex-direction:column;gap:2px;}
   .brand .brand-title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;}
   .brand .src-note{font-size:11px;font-weight:400;opacity:0.7;margin-left:10px;}
@@ -191,6 +197,8 @@
   .user-chip .u-rank{font-weight:700;font-size:12px;opacity:.95;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
   .user-chip .u-rank:hover{opacity:1;}
   .mapae-badge{display:inline-flex;align-items:center;justify-content:center;gap:1px;height:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:10px;font-weight:700;margin-right:4px;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.2) inset;}
+  .auth-area{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+  .user-chip{flex-wrap:wrap;min-width:0;}
   .user-chip #logoutBtn{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0;}
   .user-chip #logoutBtn:hover{opacity:1;}
   .user-chip #nickBtn{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0;}
@@ -207,7 +215,7 @@
     .brand{flex:1 1 100%;min-width:0;}
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
-    .headerbar > div[style*="display:flex"]{flex:1 1 100%;flex-wrap:wrap;gap:6px;justify-content:flex-start;}
+    .headerbar .hb-actions{flex:1 1 100%;gap:6px;justify-content:flex-start;}
     #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
     .lang-btn{padding:4px 8px;font-size:11px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
@@ -269,7 +277,7 @@
     <div class="brand">
       <div class="brand-title"><span data-i18n="brandTitle">국가유산지도</span><span class="src-note" data-i18n="dataSource">데이터 출처: 국가유산청</span></div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div class="hb-actions">
       <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
       <button id="helpBtn" data-i18n="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
       <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
