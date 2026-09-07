@@ -5,6 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
+  <meta name="hm-build" content="v7 (2026-09-07)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -298,12 +299,12 @@
   #hmMenuBtn{padding:8px 13px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;
              font-size:15px;line-height:1;font-weight:700;cursor:pointer;}
   #hmMenuBtn:hover{background:rgba(255,255,255,.3);}
-  .hb-menu-panel{display:none;position:fixed;z-index:12000;
+  .hb-menu-panel{display:none;position:fixed !important;z-index:12000;
                  background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;
                  box-shadow:0 8px 28px rgba(0,0,0,.22);padding:7px;min-width:190px;}
   .hb-menu-panel.open{display:block;}
-  #hmMenu > button{display:block;width:100%;text-align:left;padding:10px 13px;border:0;background:none;
-                          font-size:13.5px;font-family:inherit;color:#22302f;cursor:pointer;border-radius:8px;
+  #hmMenu > button{display:block !important;width:100%;text-align:left;padding:10px 13px;border:0;background:none;
+                          font-size:13.5px;font-family:inherit;color:#22302f !important;cursor:pointer;border-radius:8px;
                           white-space:nowrap;}
   #hmMenu > button:hover{background:#f0ece4;}
   .hb-menu-sep{height:1px;background:var(--line,#e3ddd2);margin:6px 4px;}
@@ -766,6 +767,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v7 (2026-09-07)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -3792,6 +3794,12 @@ window.addEventListener('load', function(){
 
 <!-- ---- 헤더 메뉴 ---- -->
 <script>
+// 헤더가 잘라내지 못하도록 메뉴를 본문 맨 끝으로 미리 옮겨둔다
+(function moveMenu(){
+  var m = document.getElementById('hmMenu');
+  if(!m){ return document.addEventListener('DOMContentLoaded', moveMenu); }
+  if(m.parentNode !== document.body) document.body.appendChild(m);
+})();
 window.hmToggleMenu = function(){
   var m = document.getElementById('hmMenu');
   if(!m) return;
@@ -3802,7 +3810,9 @@ window.hmToggleMenu = function(){
     ['hmMenuNick','hmMenuLogout','hmMenuAuthSep'].forEach(function(id){
       var e = document.getElementById(id); if(e) e.style.display = on ? '' : 'none';
     });
-    // 헤더가 잘라내지 않도록 화면 기준으로 자리를 잡는다
+    // 헤더가 잘라내지 않도록 아예 본문 맨 끝으로 옮겨둔다 (한 번만)
+    if(m.parentNode !== document.body) document.body.appendChild(m);
+    // 화면 기준으로 자리를 잡는다
     var b = document.getElementById('hmMenuBtn');
     if(b){
       var r = b.getBoundingClientRect();
@@ -3819,7 +3829,7 @@ window.hmMenuPick = function(fn){
 document.addEventListener('click', function(ev){
   var m = document.getElementById('hmMenu');
   if(!m || !m.classList.contains('open')) return;
-  if(ev.target.closest && ev.target.closest('.hb-menu-wrap')) return;
+  if(ev.target.closest && (ev.target.closest('.hb-menu-wrap') || ev.target.closest('#hmMenu'))) return;
   m.classList.remove('open');
 });
 </script>
