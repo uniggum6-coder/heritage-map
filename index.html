@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v7 (2026-09-07)">
+  <meta name="hm-build" content="v10 (2026-09-07)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -299,15 +299,17 @@
   #hmMenuBtn{padding:8px 13px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;
              font-size:15px;line-height:1;font-weight:700;cursor:pointer;}
   #hmMenuBtn:hover{background:rgba(255,255,255,.3);}
-  .hb-menu-panel{display:none;position:fixed !important;z-index:12000;
+  .hb-menu-panel{display:none;position:fixed !important;z-index:99000;
                  background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;
                  box-shadow:0 8px 28px rgba(0,0,0,.22);padding:7px;min-width:190px;}
   .hb-menu-panel.open{display:block;}
-  #hmMenu > button{display:block !important;width:100%;text-align:left;padding:10px 13px;border:0;background:none;
+  #hmMenu > button{display:block;width:100%;text-align:left;padding:10px 13px;border:0;background:none;
                           font-size:13.5px;font-family:inherit;color:#22302f !important;cursor:pointer;border-radius:8px;
                           white-space:nowrap;}
   #hmMenu > button:hover{background:#f0ece4;}
   .hb-menu-sep{height:1px;background:var(--line,#e3ddd2);margin:6px 4px;}
+  #hmMenuBack{position:fixed;inset:0;z-index:98999;background:rgba(20,30,30,.28);display:none;}
+  #hmMenuBack.on{display:block;}
   #hmMenu .lang-switcher{background:#f0ece4;margin:4px;justify-content:center;}
   #hmMenu .lang-btn{color:#5c6a6a;}
   #hmMenu .lang-btn.active{background:var(--teal,#0f3d3e);color:#fff;opacity:1;}
@@ -558,7 +560,7 @@
           <div id="qzFields" class="qz-fields"></div>
           <p class="qz-sub" style="margin-top:14px">한 문제에 몇 초 줄까요?</p>
           <div id="qzSecs" class="qz-secs"></div>
-          <label class="qz-name-row">이름 <input type="text" id="qzHostName" maxlength="12" placeholder="이름을 적어주세요"></label>
+          <label class="qz-name-row">닉네임 <input type="text" id="qzHostName" maxlength="12" placeholder="닉네임"></label>
           <button class="qz-btn qz-btn-main" id="qzCreateBtn">방 만들고 시작하기</button>
         </div>
 
@@ -566,7 +568,7 @@
           <h3>코드로 참가하기</h3>
           <div class="qz-join-row">
             <input type="text" id="qzJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
-            <input type="text" id="qzJoinName" maxlength="12" placeholder="이름">
+            <input type="text" id="qzJoinName" maxlength="12" placeholder="닉네임">
             <button class="qz-btn" id="qzJoinBtn">참가</button>
           </div>
           <p class="qz-note" id="qzKakaoNote" style="display:none">
@@ -674,7 +676,7 @@
           <h3>코드로 참가하기</h3>
           <div class="qz-join-row">
             <input type="text" id="rcJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
-            <input type="text" id="rcJoinName" maxlength="12" placeholder="이름">
+            <input type="text" id="rcJoinName" maxlength="12" placeholder="닉네임">
             <button class="qz-btn" id="rcJoinBtn">참가</button>
           </div>
         </div>
@@ -767,7 +769,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v7 (2026-09-07)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v10 (2026-09-07)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2181,7 +2183,7 @@ getRedirectResult(auth).catch(err => {
     console.warn('로그인 복귀 처리 실패', err);
   }
 });
-window.hmLogout = () => { signOut(auth); };
+window.hmLogout = () => { window.hmNickname = ''; signOut(auth); };
 
 window.hmChangeNickname = async () => {
   if(!currentUser) return;
@@ -2195,6 +2197,7 @@ window.hmChangeNickname = async () => {
   try{
     await setDoc(doc(db, 'users', currentUser.uid), {nickname: trimmed}, {merge:true});
     currentNickname = trimmed;
+    window.hmNickname = trimmed;
     const uSnap = await getDoc(doc(db, 'users', currentUser.uid));
     const d = uSnap.data() || {};
     updateAuthUI(d.totalVisits || 0, d.rank || rankFor(0));
@@ -2545,6 +2548,7 @@ onAuthStateChanged(auth, async (user) => {
     if(uSnap.exists()){
       rank = uSnap.data().rank || rank;
       currentNickname = uSnap.data().nickname || '';
+      window.hmNickname = currentNickname;
       // 이 계정으로 저장해둔 캐릭터가 있으면(다른 기기 포함) 이어서 보이게 동기화
       const savedChar = uSnap.data().myCharacter;
       if(savedChar){ localStorage.setItem('hmMyCharacter', savedChar); }
@@ -2553,6 +2557,7 @@ onAuthStateChanged(auth, async (user) => {
     } else {
       await setDoc(uRef, {displayName:user.displayName, email:user.email, totalVisits:0, totalPlaces:0, rank}, {merge:true});
       currentNickname = '';
+      window.hmNickname = '';
     }
     const q = query(collection(db, 'visits'), where('userId', '==', user.uid));
     const snap = await getDocs(q);
@@ -2830,10 +2835,9 @@ function ensureUser(){
   });
 }
 function defaultName(){
-  const u = auth.currentUser;
-  if(u && !u.isAnonymous && u.displayName) return u.displayName;
+  if(window.hmNickname) return window.hmNickname;          // 앱에서 정한 닉네임
   try{ const n = localStorage.getItem('hmQuizName'); if(n) return n; }catch(e){}
-  return '';
+  return '';                                               // 구글 계정 이름은 쓰지 않음
 }
 
 /* ---------- 시작 화면 ---------- */
@@ -2882,7 +2886,7 @@ async function createRoom(){
   const slugs = [...$('qzFields').querySelectorAll('input:checked')].map(x => x.value);
   if(!slugs.length) return say('분야를 하나 이상 골라주세요.');
   const name = ($('qzHostName').value || '').trim();
-  if(name.length < 1) return say('이름을 적어주세요.');
+  if(name.length < 1) return say('닉네임을 적어주세요.');
   const btn = $('qzCreateBtn'); btn.disabled = true; btn.textContent = '문제를 고르는 중…';
   try{
     const u = await ensureUser();
@@ -2907,7 +2911,7 @@ async function joinRoom(){
   const code = ($('qzJoinCode').value || '').trim();
   const name = ($('qzJoinName').value || '').trim();
   if(!/^\d{4}$/.test(code)) return say('입장 코드 4자리를 넣어주세요.');
-  if(!name) return say('이름을 적어주세요.');
+  if(!name) return say('닉네임을 적어주세요.');
   const btn = $('qzJoinBtn'); btn.disabled = true;
   try{
     await ensureUser();
@@ -3347,10 +3351,9 @@ function ensureUser(){
   });
 }
 function myName(){
-  const u = auth.currentUser;
-  if(u && !u.isAnonymous && u.displayName) return u.displayName;
+  if(window.hmNickname) return window.hmNickname;          // 앱에서 정한 닉네임
   try{ const n = localStorage.getItem('hmQuizName'); if(n) return n; }catch(e){}
-  return '';
+  return '';                                               // 구글 계정 이름은 쓰지 않음
 }
 
 /* ---------- 시작 화면 ---------- */
@@ -3388,11 +3391,12 @@ async function createRace(){
   const btn = $('rcCreateBtn'); btn.disabled = true; btn.textContent = '만드는 중…';
   try{
     const code = await freshCode();
+    const hostName = myName() || u.displayName || '진행자';
     await setDoc(doc(db,'teamRaces',code), {
-      hostUid: u.uid, hostName: u.displayName || '진행자', title, minutes,
+      hostUid: u.uid, hostName, title, minutes,
       state: 'waiting', createdMs: Date.now()
     });
-    await enter(code, u.displayName || '진행자');
+    await enter(code, hostName);
   }catch(e){ say('대결을 만들지 못했어요: ' + e.message); }
   finally{ btn.disabled = false; btn.textContent = '대결 만들기'; }
 }
@@ -3401,7 +3405,7 @@ async function joinRace(){
   const code = ($('rcJoinCode').value || '').trim();
   const name = ($('rcJoinName').value || '').trim();
   if(!/^\d{4}$/.test(code)) return say('입장 코드 4자리를 넣어주세요.');
-  if(!name) return say('이름을 적어주세요.');
+  if(!name) return say('닉네임을 적어주세요.');
   const btn = $('rcJoinBtn'); btn.disabled = true;
   try{
     await ensureUser();
@@ -3799,7 +3803,17 @@ window.addEventListener('load', function(){
   var m = document.getElementById('hmMenu');
   if(!m){ return document.addEventListener('DOMContentLoaded', moveMenu); }
   if(m.parentNode !== document.body) document.body.appendChild(m);
+  if(!document.getElementById('hmMenuBack')){
+    var bk = document.createElement('div');
+    bk.id = 'hmMenuBack';
+    bk.addEventListener('click', function(){ window.hmToggleMenu(); });
+    document.body.appendChild(bk);
+  }
 })();
+function hmMenuBackdrop(on){
+  var bk = document.getElementById('hmMenuBack');
+  if(bk) bk.classList.toggle('on', !!on);
+}
 window.hmToggleMenu = function(){
   var m = document.getElementById('hmMenu');
   if(!m) return;
@@ -3821,9 +3835,11 @@ window.hmToggleMenu = function(){
     }
   }
   m.classList.toggle('open', !open);
+  hmMenuBackdrop(!open);
 };
 window.hmMenuPick = function(fn){
   var m = document.getElementById('hmMenu'); if(m) m.classList.remove('open');
+  hmMenuBackdrop(false);
   setTimeout(fn, 10);
 };
 document.addEventListener('click', function(ev){
@@ -3831,6 +3847,7 @@ document.addEventListener('click', function(ev){
   if(!m || !m.classList.contains('open')) return;
   if(ev.target.closest && (ev.target.closest('.hb-menu-wrap') || ev.target.closest('#hmMenu'))) return;
   m.classList.remove('open');
+  hmMenuBackdrop(false);
 });
 </script>
 </body>
