@@ -236,6 +236,35 @@
   .qz-rv .ans{color:var(--teal,#0f3d3e);font-weight:700;margin-top:7px;}
   .qz-rv .txt{color:#5c6a6a;word-break:keep-all;}
   .qz-result-btns{display:grid;gap:8px;}
+  /* ---------- 팀 대결 ---------- */
+  #view-race{background:var(--bg,#f4efe6);}
+  .rc-notice{font-size:12px;color:#b04a3a;font-weight:400;margin-left:6px;}
+  .rc-teams{display:grid;gap:8px;}
+  .rc-team{border:1px solid var(--line,#e3ddd2);border-radius:10px;padding:11px 13px;background:#fbf9f5;}
+  .rc-team.mine{border-color:var(--teal,#0f3d3e);border-width:2px;background:#f2f7f6;}
+  .rc-team-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .rc-team-name{flex:1 1 45%;font-weight:700;font-size:14.5px;color:#22302f;min-width:90px;
+                overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rc-team-cnt{font-size:12.5px;color:#8a9595;flex:0 0 auto;}
+  .rc-team-btn{padding:6px 12px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:7px;
+               font-size:12.5px;cursor:pointer;font-family:inherit;color:#2b3a3a;flex:0 0 auto;}
+  .rc-team-btn.on{background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);}
+  .rc-members{margin-top:7px;font-size:12.5px;color:#7b8888;line-height:1.7;word-break:keep-all;}
+  .rc-lock{font-size:12px;color:#b08968;font-weight:700;flex:0 0 auto;}
+  .rc-clock-box{background:var(--teal,#0f3d3e);color:#fff;border-radius:12px;padding:16px;text-align:center;margin-bottom:16px;}
+  .rc-clock{font-size:40px;font-weight:800;letter-spacing:2px;margin-top:2px;}
+  .rc-clock.warn{color:#ffd27a;}
+  .rc-bar{height:6px;background:#e3ddd2;border-radius:4px;overflow:hidden;margin-top:6px;}
+  .rc-bar span{display:block;height:100%;background:var(--teal,#0f3d3e);}
+  .rc-per{font-size:11.5px;color:#98a3a3;margin-left:8px;flex:0 0 auto;}
+  #rcBanner{position:fixed;left:0;right:0;bottom:0;z-index:9998;background:var(--teal,#0f3d3e);color:#fff;
+            padding:11px 16px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;
+            box-shadow:0 -2px 12px rgba(0,0,0,.25);}
+  .rc-name-box{display:grid;gap:8px;}
+  .rc-sugs{display:flex;flex-wrap:wrap;gap:7px;}
+  .rc-sug{padding:7px 13px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:16px;
+          font-size:13px;cursor:pointer;font-family:inherit;color:#2b3a3a;}
+  .rc-sug:hover{background:#e8f0ef;border-color:var(--teal,#0f3d3e);}
   @media(max-width:520px){
     .qz-fields{grid-template-columns:1fr;}
     .qz-code{font-size:36px;letter-spacing:8px;}
@@ -259,6 +288,8 @@
   #boardBtn:hover{background:rgba(255,255,255,.28);}
   #quizBtn{padding:8px 13px;background:#f0c454;color:#2a2a15;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
   #quizBtn:hover{background:#f6d072;}
+  #raceBtn{padding:8px 13px;background:#7fb3a3;color:#0d2a26;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+  #raceBtn:hover{background:#93c4b5;}
   #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #charPickerBtn:hover{background:rgba(255,255,255,.28);}
   .lang-switcher{display:flex;align-items:center;background:rgba(255,255,255,.16);border-radius:20px;padding:3px;gap:2px;}
@@ -395,6 +426,7 @@
       <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
       <button id="boardBtn" data-i18n="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
       <button id="quizBtn" data-i18n="quizBtn" class="hb-quiz" onclick="window.showQuiz && window.showQuiz()">🎯 퀴즈</button>
+      <button id="raceBtn" data-i18n="raceBtn" onclick="window.showRace && window.showRace()">🏃 팀 대결</button>
       <div class="lang-switcher" id="langSwitcher">
         <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
         <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
@@ -580,6 +612,91 @@
     </div>
   </div>
 
+  <!-- ================= 팀 대결 ================= -->
+  <div id="view-race" style="display:none;width:100%;height:100%;overflow-y:auto;">
+    <div class="qz-wrap">
+
+      <div id="rcHome" class="qz-pane">
+        <div class="qz-top">
+          <h2>🏃 팀 대결</h2>
+          <button class="qz-back" onclick="window.hmRaceExit()">✕ 닫기</button>
+        </div>
+        <p class="qz-lead">팀을 나눠 정해진 시간 안에 국가유산을 많이 찾아 인증하는 대결이에요. 현장체험학습이나 가족 나들이에 쓰면 좋아요.</p>
+
+        <div class="qz-card">
+          <h3>대결 만들기</h3>
+          <p class="qz-sub">만든 사람이 진행을 맡습니다. 구글 로그인이 필요해요.</p>
+          <label class="qz-name-row">이름 <input type="text" id="rcTitle" maxlength="24" placeholder="예) 봉명초 5-2반 유산 탐험"></label>
+          <p class="qz-sub">시간은 얼마나 줄까요?</p>
+          <div id="rcMins" class="qz-secs"></div>
+          <button class="qz-btn qz-btn-main" id="rcCreateBtn">대결 만들기</button>
+        </div>
+
+        <div class="qz-card">
+          <h3>코드로 참가하기</h3>
+          <div class="qz-join-row">
+            <input type="text" id="rcJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
+            <input type="text" id="rcJoinName" maxlength="12" placeholder="이름">
+            <button class="qz-btn" id="rcJoinBtn">참가</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="rcLobby" class="qz-pane" style="display:none">
+        <div class="qz-top">
+          <h2 id="rcLobbyTitle">대결</h2>
+          <button class="qz-back" onclick="window.hmRaceLeave()">✕ 나가기</button>
+        </div>
+        <div class="qz-code-box">
+          <div class="qz-code-label">입장 코드</div>
+          <div class="qz-code" id="rcCodeText">----</div>
+          <div class="qz-code-btns">
+            <button class="qz-btn qz-btn-sm" id="rcCopyBtn">코드 복사</button>
+            <button class="qz-btn qz-btn-sm" id="rcShareBtn">공유하기</button>
+          </div>
+        </div>
+        <div class="qz-card">
+          <h3>팀 <span id="rcTeamCount">0</span>개 · 참가 <span id="rcJoinedCount">0</span>명 <span id="rcNoTeam" class="rc-notice"></span></h3>
+          <div id="rcTeamList" class="rc-teams"></div>
+          <button class="qz-btn" id="rcNewTeamBtn" style="width:100%;margin-top:10px">+ 새 팀 만들기</button>
+        </div>
+        <div id="rcHostArea" style="display:none">
+          <button class="qz-btn qz-btn-main" id="rcStartBtn">시작하기</button>
+          <p class="qz-note">시작하면 시간이 흐르기 시작해요. 팀은 그대로 굳어집니다.</p>
+        </div>
+        <p class="qz-note" id="rcWaitNote">팀을 고르고 기다려주세요. 진행자가 시작합니다.</p>
+      </div>
+
+      <div id="rcRun" class="qz-pane" style="display:none">
+        <div class="qz-top">
+          <h2 id="rcRunTitle">대결</h2>
+          <button class="qz-back" onclick="window.hmRaceToMap()">지도로 →</button>
+        </div>
+        <div class="rc-clock-box">
+          <div class="qz-code-label">남은 시간</div>
+          <div class="rc-clock" id="rcClock">--:--</div>
+        </div>
+        <div id="rcBoard" class="qz-ranks"></div>
+        <button class="qz-btn qz-btn-main" onclick="window.hmRaceToMap()" style="margin-bottom:10px">지도로 가서 인증하기</button>
+        <div id="rcHostRun" style="display:none;display:grid;gap:8px;">
+          <button class="qz-btn" id="rcExtendBtn">10분 연장</button>
+          <button class="qz-btn" id="rcEndBtn">지금 끝내기</button>
+        </div>
+      </div>
+
+      <div id="rcResult" class="qz-pane" style="display:none">
+        <h2 class="qz-result-title">🏆 최종 순위</h2>
+        <div id="rcRankList" class="qz-ranks"></div>
+        <div id="rcDetail" class="qz-review"></div>
+        <div class="qz-result-btns">
+          <button class="qz-btn" onclick="window.hmRaceExit()">지도로 돌아가기</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div id="rcBanner" onclick="window.showRace()" style="display:none"></div>
+
 </main>
 
 
@@ -656,6 +773,7 @@ const I18N = {
     charPickerBtn: '🎎 내 캐릭터',
     boardBtn: '💬 게시판',
     quizBtn: '🎯 퀴즈',
+    raceBtn: '🏃 팀 대결',
     loginBtnLabel: '🔑 구글로 로그인',
     nickBtnLabel: '닉네임 변경',
     logoutBtnLabel: '로그아웃',
@@ -712,6 +830,7 @@ const I18N = {
     charPickerBtn: '🎎 My Character',
     boardBtn: '💬 Board',
     quizBtn: '🎯 Quiz',
+    raceBtn: '🏃 Team Race',
     loginBtnLabel: '🔑 Sign in with Google',
     nickBtnLabel: 'Change Nickname',
     logoutBtnLabel: 'Log Out',
@@ -768,6 +887,7 @@ const I18N = {
     charPickerBtn: '🎎 我的角色',
     boardBtn: '💬 留言板',
     quizBtn: '🎯 问答',
+    raceBtn: '🏃 团队赛',
     loginBtnLabel: '🔑 使用谷歌登录',
     nickBtnLabel: '修改昵称',
     logoutBtnLabel: '退出登录',
@@ -824,6 +944,7 @@ const I18N = {
     charPickerBtn: '🎎 マイキャラクター',
     boardBtn: '💬 掲示板',
     quizBtn: '🎯 クイズ',
+    raceBtn: '🏃 チーム対決',
     loginBtnLabel: '🔑 Googleでログイン',
     nickBtnLabel: 'ニックネーム変更',
     logoutBtnLabel: 'ログアウト',
@@ -1962,6 +2083,8 @@ function haversineMeters(lat1, lon1, lat2, lon2){
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+window.haversineMeters = haversineMeters;   // 팀 대결에서도 씀
+
 
 let currentUser = null;
 let visitedIds = new Set();
@@ -2282,6 +2405,8 @@ window.hmVerifyVisit = (hid, targetLat, targetLon) => {
       updateAuthUI(newPlaceCount, newRank, newItemCount);
       window.markVisitedOnMap && window.markVisitedOnMap(hid);
       window.hmConfetti && window.hmConfetti();
+      const mk = markerByHid[hid];
+      if(mk) window.hmRaceAddPlaces && window.hmRaceAddPlaces([{hid, n: mk._d.n, la: mk._d.la, lo: mk._d.lo}]);
       const nm = hmNameOf(hid);
       window.showMsg(`🎉 인증 완료!\n\n${nm ? '📍 ' + nm + '\n\n' : ''}현재 등급: ${newRank} (${newPlaceCount}곳)`);
     }catch(err){
@@ -2349,6 +2474,8 @@ window.hmBulkVerify = () => {
       updateAuthUI(newPlaceCount, newRank, newItemCount);
       nearby.forEach(m => window.markVisitedOnMap && window.markVisitedOnMap(m._hid));
       window.hmConfetti && window.hmConfetti();
+      window.hmRaceAddPlaces && window.hmRaceAddPlaces(
+        nearby.map(m => ({ hid: m._hid, n: m._d.n, la: m._d.la, lo: m._d.lo })));
       const line = hmPlaceLine(nearby.map(m => m._d.n));
       window.showMsg(`🎉 ${nearby.length}건 인증 완료!\n\n📍 ${line}\n\n(이 위치는 1곳으로 카운트돼요)\n현재 등급: ${newRank} (${newPlaceCount}곳)`);
     }catch(err){
@@ -3109,6 +3236,443 @@ $('qzShareBtn').addEventListener('click', () => {
 (function(){
   const m = /[?&]quiz=(\d{4})/.exec(location.search);
   if(m) setTimeout(() => window.showQuiz(m[1]), 300);
+})();
+</script>
+
+<!-- ---- 팀 대결 (방문 인증) ---- -->
+<script type="module">
+import { getApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
+  collection, getDocs
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const app  = getApp();
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const MIN_CHOICES  = [30, 60, 120, 180];   // 제한 시간(분)
+const CLUSTER_M    = 400;                  // 이 거리 안쪽은 한 장소로 침
+const TEAM_NAMES   = ["개구리매","개리","검독수리","검은머리물떼새","검은목두루미","고니","긴가지해송","까막딱따구리","꼬치동자개","남생이","노랑부리백로","노랑부리저어새","독수리","두견","두루미","따오기","뜸부기","매","먹황새","미호종개","반달가슴곰","붉은배새매","비단벌레","뿔쇠오리","사향노루","산굴뚝나비","새매","소쩍새","솔부엉이","쇠부엉이","수달","수리부엉이","알락개구리매","어름치","올빼미","원앙","장수하늘소","재두루미","잿빛개구리매","저어새","점박이물범","참매","참수리","칡부엉이","크낙새","큰고니","큰소쩍새","팔색조","하늘다람쥐","해송","호사도요","호사비오리","혹고니","황새","황조롱이","흑기러기","흑두루미","흑비둘기","흰꼬리수리","첨성대","다보탑","석굴암","경복궁","불국사","해인사","숭례문","광화문","수원화성","종묘","창덕궁","한라산","독도","성산일출봉","주상절리","금강송","천마총","무령왕릉","팔만대장경","훈민정음","거북선","금동대향로","반가사유상","고인돌","다산초당","도산서원","오죽헌","선교장","낙산사","미륵사지"];
+
+let RC = null;              // {code, teamId, isHost, race, teams}
+let raceUnsub = null, teamsUnsub = null, rcTick = null;
+
+const $ = id => document.getElementById(id);
+function esc(s){ return window.escapeHtml ? window.escapeHtml(s) : String(s==null?'':s); }
+function say(m){ window.showMsg ? window.showMsg(m) : alert(m); }
+function pane(id){
+  ['rcHome','rcLobby','rcRun','rcResult'].forEach(p => { const e = $(p); if(e) e.style.display = (p===id?'block':'none'); });
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function mmss(ms){
+  if(ms < 0) ms = 0;
+  const t = Math.floor(ms/1000), h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60;
+  const p = n => String(n).padStart(2,'0');
+  return h > 0 ? h + ':' + p(m) + ':' + p(s) : p(m) + ':' + p(s);
+}
+// 등급 계산과 같은 방식 — 400m 안쪽은 한 장소로 묶어서 셈
+function placeCount(places){
+  const pts = Object.values(places || {});
+  const n = pts.length;
+  if(!n) return 0;
+  const par = pts.map((_,i)=>i);
+  const find = i => { while(par[i]!==i){ par[i]=par[par[i]]; i=par[i]; } return i; };
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+    if(window.haversineMeters && window.haversineMeters(pts[i].la,pts[i].lo,pts[j].la,pts[j].lo) <= CLUSTER_M){
+      const a=find(i), b=find(j); if(a!==b) par[a]=b;
+    }
+  }
+  return new Set(pts.map((_,i)=>find(i))).size;
+}
+
+/* ---------- 로그인 ---------- */
+function ensureUser(){
+  return new Promise((ok,no) => {
+    if(auth.currentUser) return ok(auth.currentUser);
+    const off = onAuthStateChanged(auth, u => { if(u){ off(); ok(u); } });
+    signInAnonymously(auth).catch(e => { off(); no(e); });
+  });
+}
+function myName(){
+  const u = auth.currentUser;
+  if(u && !u.isAnonymous && u.displayName) return u.displayName;
+  try{ const n = localStorage.getItem('hmQuizName'); if(n) return n; }catch(e){}
+  return '';
+}
+
+/* ---------- 시작 화면 ---------- */
+function renderHome(){
+  const box = $('rcMins');
+  box.innerHTML = MIN_CHOICES.map((n,i) =>
+    `<button type="button" class="qz-sec${i===1?' on':''}" data-min="${n}">${n>=60 ? (n/60)+'시간' : n+'분'}</button>`).join('');
+  box.querySelectorAll('.qz-sec').forEach(b => b.addEventListener('click', () => {
+    box.querySelectorAll('.qz-sec').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  }));
+  $('rcJoinName').value = myName();
+  const isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const sb = $('rcShareBtn'); if(sb) sb.style.display = (isPhone && navigator.share) ? '' : 'none';
+}
+
+/* ---------- 대결 만들기 / 참가 ---------- */
+async function freshCode(){
+  for(let t=0;t<12;t++){
+    const c = String(Math.floor(1000 + Math.random()*9000));
+    const snap = await getDoc(doc(db,'teamRaces',c));
+    if(!snap.exists()) return c;
+    if(Date.now() - (snap.data().createdMs||0) > 3*24*3600*1000) return c;
+  }
+  throw new Error('코드를 만들지 못했어요. 잠시 뒤 다시 해주세요.');
+}
+
+async function createRace(){
+  const u = auth.currentUser;
+  if(!u || u.isAnonymous){
+    return say('대결을 만들려면 구글 로그인이 필요해요.\n\n오른쪽 위 로그인 버튼을 눌러 로그인한 뒤 다시 시도해주세요.\n\n참가하는 사람은 로그인 안 해도 됩니다.');
+  }
+  const title = ($('rcTitle').value || '').trim() || '국가유산 팀 대결';
+  const mb = $('rcMins').querySelector('.qz-sec.on');
+  const minutes = mb ? Number(mb.dataset.min) : 60;
+  const btn = $('rcCreateBtn'); btn.disabled = true; btn.textContent = '만드는 중…';
+  try{
+    const code = await freshCode();
+    await setDoc(doc(db,'teamRaces',code), {
+      hostUid: u.uid, hostName: u.displayName || '진행자', title, minutes,
+      state: 'waiting', createdMs: Date.now()
+    });
+    await enter(code, u.displayName || '진행자');
+  }catch(e){ say('대결을 만들지 못했어요: ' + e.message); }
+  finally{ btn.disabled = false; btn.textContent = '대결 만들기'; }
+}
+
+async function joinRace(){
+  const code = ($('rcJoinCode').value || '').trim();
+  const name = ($('rcJoinName').value || '').trim();
+  if(!/^\d{4}$/.test(code)) return say('입장 코드 4자리를 넣어주세요.');
+  if(!name) return say('이름을 적어주세요.');
+  const btn = $('rcJoinBtn'); btn.disabled = true;
+  try{
+    await ensureUser();
+    const snap = await getDoc(doc(db,'teamRaces',code));
+    if(!snap.exists()) return say('그런 대결이 없어요. 코드를 확인해주세요.');
+    if(snap.data().state === 'done') return say('이미 끝난 대결이에요.');
+    try{ localStorage.setItem('hmQuizName', name); }catch(e){}
+    await enter(code, name);
+  }catch(e){ say('참가하지 못했어요: ' + e.message); }
+  finally{ btn.disabled = false; }
+}
+
+async function enter(code, name){
+  const u = auth.currentUser;
+  RC = { code, name, uid: u.uid, isHost: false, race: null, teams: [], teamId: null };
+  try{ localStorage.setItem('hmRaceCode', code); }catch(e){}
+  watch();
+}
+
+/* ---------- 지켜보기 ---------- */
+function watch(){
+  if(raceUnsub) raceUnsub();
+  raceUnsub = onSnapshot(doc(db,'teamRaces',RC.code), snap => {
+    if(!snap.exists()) return;
+    RC.race = snap.data();
+    RC.isHost = (RC.race.hostUid === RC.uid);
+    route();
+  });
+  if(teamsUnsub) teamsUnsub();
+  teamsUnsub = onSnapshot(collection(db,'teamRaces',RC.code,'teams'), snap => {
+    const list = []; snap.forEach(d => list.push({ id:d.id, ...d.data() }));
+    list.sort((a,b) => (a.createdMs||0) - (b.createdMs||0));
+    RC.teams = list;
+    const mine = list.find(t => (t.memberUids||[]).indexOf(RC.uid) > -1);
+    RC.teamId = mine ? mine.id : null;
+    route();
+  });
+}
+
+function route(){
+  if(!RC || !RC.race) return;
+  const st = RC.race.state;
+  if(st === 'waiting'){ pane('rcLobby'); drawLobby(); stopClock(); banner(false); }
+  else if(st === 'running'){ pane('rcRun'); drawRun(); startClock(); }
+  else if(st === 'done'){ pane('rcResult'); drawResult(); stopClock(); banner(false); }
+}
+
+/* ---------- 대기실 ---------- */
+function drawLobby(){
+  $('rcLobbyTitle').textContent = RC.race.title || '대결';
+  $('rcCodeText').textContent = RC.code;
+  $('rcHostArea').style.display = RC.isHost ? 'block' : 'none';
+  $('rcWaitNote').style.display = RC.isHost ? 'none' : 'block';
+  $('rcTeamCount').textContent = RC.teams.length;
+  const joined = RC.teams.reduce((n,t) => n + (t.memberUids||[]).length, 0);
+  $('rcJoinedCount').textContent = joined;
+  $('rcNoTeam').textContent = RC.teamId ? '' : '— 아직 팀을 안 골랐어요';
+
+  $('rcTeamList').innerHTML = RC.teams.map(t => {
+    const n = (t.memberUids||[]).length;
+    const mine = t.id === RC.teamId;
+    const full = t.locked || (t.cap && n >= t.cap);
+    let btn;
+    if(mine) btn = '<button class="rc-team-btn on" data-act="leave" data-id="'+t.id+'">나가기</button>';
+    else if(full) btn = '<span class="rc-lock">🔒 마감</span>';
+    else btn = '<button class="rc-team-btn" data-act="join" data-id="'+t.id+'">들어가기</button>';
+    const hostBtns = RC.isHost
+      ? '<button class="rc-team-btn" data-act="rename" data-id="'+t.id+'">이름</button>'
+        + '<button class="rc-team-btn" data-act="del" data-id="'+t.id+'">삭제</button>' : '';
+    const lockBtn = (mine && t.creatorUid === RC.uid && !full)
+      ? '<button class="rc-team-btn" data-act="lock" data-id="'+t.id+'">마감</button>' : '';
+    return `<div class="rc-team${mine?' mine':''}">
+        <div class="rc-team-top">
+          <span class="rc-team-name">${esc(t.name)}</span>
+          <span class="rc-team-cnt">${n}${t.cap ? '/'+t.cap : ''}명</span>
+          ${btn}${lockBtn}${hostBtns}
+        </div>
+        <div class="rc-members">${(t.memberNames||[]).map(esc).join(' · ') || '아직 아무도 없어요'}</div>
+      </div>`;
+  }).join('') || '<p class="qz-note">아직 팀이 없어요. 아래 버튼으로 첫 팀을 만들어보세요.</p>';
+
+  $('rcTeamList').querySelectorAll('.rc-team-btn').forEach(b => {
+    b.addEventListener('click', () => teamAction(b.dataset.act, b.dataset.id));
+  });
+}
+
+async function teamAction(act, tid){
+  const ref = doc(db,'teamRaces',RC.code,'teams',tid);
+  const t = RC.teams.find(x => x.id === tid); if(!t) return;
+  try{
+    if(act === 'join'){
+      if(RC.teamId) await leaveTeam(RC.teamId);
+      await updateDoc(ref, {
+        memberUids: [...(t.memberUids||[]), RC.uid],
+        memberNames: [...(t.memberNames||[]), RC.name]
+      });
+    } else if(act === 'leave'){
+      await leaveTeam(tid);
+    } else if(act === 'lock'){
+      await updateDoc(ref, { locked: true });
+    } else if(act === 'rename'){
+      const nn = window.prompt('팀 이름을 바꿔주세요', t.name);
+      if(nn && nn.trim()) await updateDoc(ref, { name: nn.trim().slice(0,16) });
+    } else if(act === 'del'){
+      if(window.confirm(`'${t.name}' 팀을 지울까요?`)) await deleteDoc(ref);
+    }
+  }catch(e){ say('처리하지 못했어요: ' + e.message); }
+}
+
+async function leaveTeam(tid){
+  const t = RC.teams.find(x => x.id === tid); if(!t) return;
+  const i = (t.memberUids||[]).indexOf(RC.uid);
+  if(i < 0) return;
+  const uids = [...t.memberUids], names = [...(t.memberNames||[])];
+  uids.splice(i,1); names.splice(i,1);
+  await updateDoc(doc(db,'teamRaces',RC.code,'teams',tid), { memberUids: uids, memberNames: names, locked: false });
+}
+
+/* ---------- 새 팀 만들기 ---------- */
+function newTeam(){
+  const used = new Set(RC.teams.map(t => t.name.replace(/팀$/,'')));
+  const sug  = shuffle(TEAM_NAMES.filter(n => !used.has(n))).slice(0,6);
+  const html = `<div class="rc-name-box">
+      <p class="qz-sub" style="margin:0">팀 이름을 고르거나 직접 지어주세요.</p>
+      <div class="rc-sugs">${sug.map(n => '<button type="button" class="rc-sug">'+esc(n)+'팀</button>').join('')}</div>
+      <label class="qz-name-row" style="margin:0">이름 <input type="text" id="rcNewName" maxlength="16" placeholder="직접 입력"></label>
+      <label class="qz-name-row" style="margin:0">인원 <input type="number" id="rcNewCap" min="2" max="30" value="5" style="width:80px;flex:0 0 auto"> 명이 되면 마감</label>
+      <button class="qz-btn qz-btn-main" id="rcNewOk">이 이름으로 팀 만들기</button>
+    </div>`;
+  const wrap = document.createElement('div');
+  wrap.className = 'qz-card'; wrap.id = 'rcNewBox'; wrap.innerHTML = html;
+  const old = $('rcNewBox'); if(old) old.remove();
+  $('rcNewTeamBtn').after(wrap);
+  wrap.querySelectorAll('.rc-sug').forEach(b => b.addEventListener('click', () => { $('rcNewName').value = b.textContent; }));
+  $('rcNewOk').addEventListener('click', createTeam);
+  $('rcNewName').focus();
+}
+
+async function createTeam(){
+  const name = ($('rcNewName').value || '').trim();
+  const cap  = Math.max(2, Math.min(30, Number($('rcNewCap').value) || 5));
+  if(!name) return say('팀 이름을 정해주세요.');
+  try{
+    if(RC.teamId) await leaveTeam(RC.teamId);
+    const tid = 't' + Date.now().toString(36) + Math.floor(Math.random()*900+100);
+    await setDoc(doc(db,'teamRaces',RC.code,'teams',tid), {
+      name, cap, locked:false, creatorUid: RC.uid, createdMs: Date.now(),
+      memberUids: [RC.uid], memberNames: [RC.name], places: {}
+    });
+    const box = $('rcNewBox'); if(box) box.remove();
+  }catch(e){ say('팀을 만들지 못했어요: ' + e.message); }
+}
+
+/* ---------- 시작 · 진행 ---------- */
+async function startRace(){
+  if(!RC.teams.length) return say('팀이 하나도 없어요.');
+  const btn = $('rcStartBtn'); btn.disabled = true;
+  try{
+    const now = Date.now();
+    await updateDoc(doc(db,'teamRaces',RC.code), {
+      state:'running', startAt: now, endAt: now + (RC.race.minutes||60)*60000
+    });
+  }catch(e){ say('시작하지 못했어요: ' + e.message); btn.disabled = false; }
+}
+
+function stopClock(){ if(rcTick){ clearInterval(rcTick); rcTick = null; } }
+function startClock(){
+  stopClock();
+  const beat = () => {
+    if(!RC || !RC.race || RC.race.state !== 'running') return;
+    const left = (RC.race.endAt||0) - Date.now();
+    const el = $('rcClock');
+    if(el){ el.textContent = mmss(left); el.classList.toggle('warn', left < 5*60000); }
+    banner(true, left);
+    if(left <= 0 && RC.isHost) endRace(true);
+  };
+  rcTick = setInterval(beat, 1000); beat();
+}
+
+function teamScores(){
+  return RC.teams.map(t => {
+    const cnt = placeCount(t.places);
+    const n = Math.max(1, (t.memberUids||[]).length);
+    return { ...t, score: cnt, per: cnt / n, members: (t.memberUids||[]).length };
+  }).sort((a,b) => b.score - a.score || b.per - a.per);
+}
+
+function drawRun(){
+  $('rcRunTitle').textContent = RC.race.title || '대결';
+  $('rcHostRun').style.display = RC.isHost ? 'grid' : 'none';
+  const rows = teamScores();
+  const top = Math.max(1, rows[0] ? rows[0].score : 1);
+  const medal = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+  $('rcBoard').innerHTML = rows.map((t,i) => `
+    <div class="qz-rank${t.id===RC.teamId?' me':''}">
+      <span class="no">${medal(i)}</span>
+      <span class="nm">${esc(t.name)}
+        <div class="rc-bar"><span style="width:${Math.round(100*t.score/top)}%"></span></div>
+      </span>
+      <span class="rc-per">${t.members}명 · 1인당 ${t.per.toFixed(1)}</span>
+      <span class="sc">${t.score}곳</span>
+    </div>`).join('') || '<p class="qz-note">아직 아무도 인증하지 않았어요.</p>';
+}
+
+async function endRace(auto){
+  if(!auto && !window.confirm('지금 대결을 끝낼까요?')) return;
+  try{ await updateDoc(doc(db,'teamRaces',RC.code), { state:'done', endedMs: Date.now() }); }
+  catch(e){ if(!auto) say('끝내지 못했어요: ' + e.message); }
+}
+async function extendRace(){
+  try{ await updateDoc(doc(db,'teamRaces',RC.code), { endAt: (RC.race.endAt||Date.now()) + 10*60000 }); }
+  catch(e){ say('연장하지 못했어요: ' + e.message); }
+}
+
+/* ---------- 결과 ---------- */
+let resultShown = false;
+function drawResult(){
+  const rows = teamScores();
+  const medal = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+  $('rcRankList').innerHTML = rows.map((t,i) => `
+    <div class="qz-rank${t.id===RC.teamId?' me':''}">
+      <span class="no">${medal(i)}</span>
+      <span class="nm">${esc(t.name)}</span>
+      <span class="rc-per">${t.members}명 · 1인당 ${t.per.toFixed(1)}</span>
+      <span class="sc">${t.score}곳</span>
+    </div>`).join('') || '<p class="qz-note">인증한 팀이 없어요.</p>';
+  $('rcDetail').innerHTML = rows.map(t => {
+    const names = Object.values(t.places||{}).map(x => x.n);
+    return `<div class="qz-rv"><div class="ans">${esc(t.name)} · ${t.score}곳</div>
+      <div class="txt">${names.length ? names.map(esc).join(', ') : '인증 없음'}</div>
+      <div class="txt" style="margin-top:5px;color:#98a3a3">${(t.memberNames||[]).map(esc).join(' · ')}</div></div>`;
+  }).join('');
+  if(!resultShown){ resultShown = true; window.hmConfetti && window.hmConfetti(); }
+}
+
+/* ---------- 인증하면 우리 팀에 더하기 ---------- */
+window.hmRaceAddPlaces = async (list) => {
+  if(!RC || !RC.teamId || !RC.race || RC.race.state !== 'running') return;
+  if(!list || !list.length) return;
+  const patch = {};
+  list.forEach(x => { if(x && x.hid) patch['places.' + x.hid] = { n: x.n, la: x.la, lo: x.lo }; });
+  if(!Object.keys(patch).length) return;
+  try{ await updateDoc(doc(db,'teamRaces',RC.code,'teams',RC.teamId), patch); }
+  catch(e){ console.warn('팀 기록 저장 실패', e); }
+};
+window.hmRaceActive = () => !!(RC && RC.race && RC.race.state === 'running' && RC.teamId);
+
+/* ---------- 아래 띠 ---------- */
+function banner(on, left){
+  const b = $('rcBanner'); if(!b) return;
+  const showing = $('view-race').style.display === 'block';
+  if(!on || showing){ b.style.display = 'none'; return; }
+  const rows = teamScores();
+  const me = rows.findIndex(t => t.id === RC.teamId);
+  const mine = me > -1 ? rows[me] : null;
+  b.textContent = '🏃 ' + mmss(left) + ' 남음'
+    + (mine ? ' · 우리 팀 ' + (me+1) + '등 ' + mine.score + '곳' : ' · 팀을 고르세요')
+    + '  ▲';
+  b.style.display = 'block';
+}
+
+/* ---------- 나가기 ---------- */
+function cleanup(){
+  stopClock();
+  if(raceUnsub){ raceUnsub(); raceUnsub = null; }
+  if(teamsUnsub){ teamsUnsub(); teamsUnsub = null; }
+  RC = null; resultShown = false;
+  const b = $('rcBanner'); if(b) b.style.display = 'none';
+  try{ localStorage.removeItem('hmRaceCode'); }catch(e){}
+}
+window.hmRaceLeave = () => { cleanup(); pane('rcHome'); renderHome(); };
+window.hmRaceExit = () => {
+  $('view-race').style.display = 'none';
+  $('view-map').style.display = 'flex';
+  if(RC && RC.race && RC.race.state === 'running') banner(true, (RC.race.endAt||0) - Date.now());
+  setTimeout(()=>{ try{ window.map && window.map.invalidateSize(); }catch(e){} }, 50);
+};
+window.hmRaceToMap = () => window.hmRaceExit();
+window.showRace = (code) => {
+  ['view-map','view-list','view-species','view-board','view-quiz'].forEach(v => { const e=$(v); if(e) e.style.display='none'; });
+  $('view-race').style.display = 'block';
+  const b = $('rcBanner'); if(b) b.style.display = 'none';
+  if(RC && RC.race){ route(); return; }
+  pane('rcHome'); renderHome();
+  if(code){ $('rcJoinCode').value = code; }
+};
+
+$('rcCreateBtn').addEventListener('click', createRace);
+$('rcJoinBtn').addEventListener('click', joinRace);
+$('rcNewTeamBtn').addEventListener('click', newTeam);
+$('rcStartBtn').addEventListener('click', startRace);
+$('rcEndBtn').addEventListener('click', () => endRace(false));
+$('rcExtendBtn').addEventListener('click', extendRace);
+$('rcCopyBtn').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?race=' + RC.code;
+  navigator.clipboard.writeText(link).then(
+    () => say('초대 링크를 복사했어요. 카톡이나 문자로 붙여넣으세요.'),
+    () => say('복사가 안 됐어요. 코드 ' + RC.code + ' 를 알려주세요.'));
+});
+$('rcShareBtn').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?race=' + RC.code;
+  if(navigator.share) navigator.share({ title:'국가유산 팀 대결', text:'팀 대결에 초대합니다 (코드 ' + RC.code + ')', url: link }).catch(()=>{});
+});
+
+/* ---------- 링크로 들어온 경우 / 하던 대결 이어가기 ---------- */
+(function(){
+  const m = /[?&]race=(\d{4})/.exec(location.search);
+  if(m){ setTimeout(() => window.showRace(m[1]), 300); return; }
+  let saved = null; try{ saved = localStorage.getItem('hmRaceCode'); }catch(e){}
+  if(saved){
+    setTimeout(async () => {
+      try{
+        const snap = await getDoc(doc(db,'teamRaces',saved));
+        if(snap.exists() && snap.data().state === 'running'){
+          await ensureUser();
+          RC = { code: saved, name: myName(), uid: auth.currentUser.uid, isHost:false, race:null, teams:[], teamId:null };
+          watch();
+          setTimeout(() => { if($('view-race').style.display !== 'block') banner(true, (RC.race&&RC.race.endAt||0) - Date.now()); }, 1500);
+        } else { try{ localStorage.removeItem('hmRaceCode'); }catch(e){} }
+      }catch(e){}
+    }, 1200);
+  }
 })();
 </script>
 

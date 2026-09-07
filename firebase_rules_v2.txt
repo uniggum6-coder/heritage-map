@@ -1,0 +1,65 @@
+파이어베이스 콘솔 → Firestore → 규칙 탭에서
+지금 있는 글자를 전부 지우고 아래를 통째로 붙여넣은 뒤 [게시]를 누르세요.
+
+맨 아래 teamRaces 부분만 새로 추가된 것이고,
+나머지(visits / users / boardPosts / quizRooms)는 지금 것과 같습니다.
+
+------------------------------ 여기부터 복사 ------------------------------
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // visits: 로그인한 사용자가 자기 방문 기록만 쓰기/읽기 가능
+    match /visits/{visitId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == request.resource.data.userId;
+    }
+
+    // users: 닉네임/등급/인증수는 누구나 읽기 가능(명예의 전당용), 쓰기는 본인만
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // boardPosts: 게시판 - 누구나 읽기 가능, 쓰기는 로그인한 사람만, 삭제는 본인 글만
+    match /boardPosts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.authorUid;
+      allow delete: if request.auth != null
+                    && request.auth.uid == resource.data.authorUid;
+    }
+
+    // quizRooms: 퀴즈 방 - 방장만 시작/종료, 점수는 각자 자기 칸에만
+    match /quizRooms/{code} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if request.auth != null
+                    && resource.data.hostUid == request.auth.uid;
+
+      match /players/{uid} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // teamRaces: 팀 대결 - 시작/종료/연장은 진행자만
+    match /teamRaces/{code} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if request.auth != null
+                    && resource.data.hostUid == request.auth.uid;
+
+      // 팀은 참가자들이 만들고 들어가고 인증을 더해야 하므로 로그인한 사람이면 쓸 수 있음
+      match /teams/{teamId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+  }
+}
+
+------------------------------ 여기까지 ------------------------------
