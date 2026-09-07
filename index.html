@@ -134,6 +134,7 @@
   .icards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
   .icard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;}
   .icard img{width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;background:#eee;}
+  .icard img.hm-zoomable{cursor:zoom-in;}
   .icard .tag{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--teal);padding:2px 8px;border-radius:10px;margin-bottom:6px;}
   .icard h4{margin:0 0 4px;font-size:14.5px;}
   .icard .meta{font-size:12px;color:var(--muted);margin-bottom:6px;}
@@ -1585,7 +1586,9 @@ function renderSpecies(){
   filtered.forEach(d => {
     const div = document.createElement('div');
     div.className = 'icard';
+    const simg = d.i ? `<img class="hm-zoomable" loading="lazy" src="${escapeHtml(d.i)}" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">` : '';
     div.innerHTML = `
+      ${simg}
       <span class="tag" style="background:${TN_SUB_COLORS[d.g]||'#8d99ae'}">${escapeHtml(d.c)} · ${escapeHtml(d.g)}</span>
       <h4>${escapeHtml(d.n)}</h4>
       <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')}</div>
@@ -2274,7 +2277,7 @@ onAuthStateChanged(auth, async (user) => {
     }
     if(t && t.id === 'hmLightboxClose'){ close(); return; }
     if(t === box){ close(); return; }
-    if(t && t.classList && t.classList.contains('popup-img')){
+    if(t && t.classList && (t.classList.contains('popup-img') || t.classList.contains('hm-zoomable'))){
       var s = t.getAttribute('src') || '';
       if(!s) return;
       ev.preventDefault();
