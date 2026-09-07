@@ -1,0 +1,1 @@
+const QUIZ_MANIFEST = {"nature":{"label":"자연유산","var":"QUIZ_NATURE","chunks":2,"count":535},"national":{"label":"국가지정 문화유산","var":"QUIZ_NATIONAL","chunks":6,"count":2986},"local":{"label":"시도지정 문화유산","var":"QUIZ_LOCAL","chunks":13,"count":6094},"intangible":{"label":"무형유산","var":"QUIZ_INTANGIBLE","chunks":2,"count":705}};

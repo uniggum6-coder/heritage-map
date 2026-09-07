@@ -147,6 +147,97 @@
   .icard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;}
   .icard img{width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;background:#eee;}
   .icard img.hm-zoomable{cursor:zoom-in;}
+  /* ---------- 퀴즈 ---------- */
+  #view-quiz{background:var(--bg,#f4efe6);}
+  .qz-wrap{max-width:620px;margin:0 auto;padding:20px 16px 60px;}
+  .qz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px;}
+  .qz-top h2{font-size:20px;margin:0;color:var(--teal,#0f3d3e);}
+  .qz-back{background:none;border:0;font-size:13px;color:#7b8888;cursor:pointer;padding:6px;}
+  .qz-lead{font-size:13.5px;color:#5c6a6a;line-height:1.7;margin:0 0 18px;}
+  .qz-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .qz-card h3{margin:0 0 4px;font-size:15px;color:var(--teal,#0f3d3e);}
+  .qz-sub{margin:0 0 10px;font-size:12.5px;color:#8a9595;}
+  .qz-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .qz-field{display:flex;align-items:center;gap:7px;font-size:13px;padding:9px 10px;border:1px solid var(--line,#e3ddd2);
+            border-radius:8px;cursor:pointer;background:#fbf9f5;}
+  .qz-field.on{background:#e8f0ef;border-color:var(--teal,#0f3d3e);font-weight:700;color:var(--teal,#0f3d3e);}
+  .qz-field input{margin:0;}
+  .qz-field small{color:#98a3a3;font-weight:400;}
+  .qz-name-row{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;color:#5c6a6a;}
+  .qz-name-row input{flex:1;padding:9px 10px;border:1px solid var(--line,#e3ddd2);border-radius:8px;font-size:14px;min-width:0;}
+  .qz-btn{padding:10px 18px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:8px;
+          font-size:14px;cursor:pointer;font-family:inherit;color:#2b3a3a;}
+  .qz-btn:hover{background:#f3efe8;}
+  .qz-btn-main{width:100%;background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);
+               font-weight:700;font-size:15px;padding:13px;}
+  .qz-btn-main:hover{background:#155052;}
+  .qz-btn-main:disabled{background:#a8b5b5;border-color:#a8b5b5;cursor:default;}
+  .qz-btn-sm{padding:7px 14px;font-size:13px;}
+  .qz-join-row{display:flex;gap:8px;}
+  .qz-join-row input{padding:9px 10px;border:1px solid var(--line,#e3ddd2);border-radius:8px;font-size:15px;min-width:0;}
+  #qzJoinCode{width:78px;text-align:center;letter-spacing:3px;font-weight:700;}
+  #qzJoinName{flex:1;}
+  .qz-note{font-size:12px;color:#98a3a3;margin:10px 0 0;line-height:1.6;}
+  .qz-code-box{background:var(--teal,#0f3d3e);color:#fff;border-radius:12px;padding:18px;text-align:center;margin-bottom:16px;}
+  .qz-code-label{font-size:12px;opacity:.75;}
+  .qz-code{font-size:42px;font-weight:800;letter-spacing:10px;margin:4px 0 12px;padding-left:10px;}
+  .qz-code-btns{display:flex;gap:8px;justify-content:center;}
+  .qz-players{display:flex;flex-wrap:wrap;gap:6px;}
+  .qz-player{background:#f0ece4;border-radius:14px;padding:5px 12px;font-size:13px;}
+  .qz-player.me{background:var(--teal,#0f3d3e);color:#fff;font-weight:700;}
+  .qz-play-head{display:flex;align-items:center;gap:10px;font-size:13px;color:#5c6a6a;margin-bottom:14px;}
+  .qz-timer{flex:1;height:7px;background:#e3ddd2;border-radius:4px;overflow:hidden;}
+  .qz-timer-bar{height:100%;width:100%;background:var(--teal,#0f3d3e);transition:width .25s linear;}
+  #qzClock{min-width:26px;text-align:right;font-weight:700;color:var(--teal,#0f3d3e);}
+  .qz-qbox{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:18px;margin-bottom:16px;}
+  .qz-question{margin:0;font-size:15px;line-height:1.8;color:#22302f;word-break:keep-all;}
+  .qz-qcat{margin:10px 0 0;font-size:12px;color:#98a3a3;text-align:right;}
+  .qz-options{display:grid;gap:9px;}
+  .qz-opt{text-align:left;padding:14px 16px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:10px;
+          font-size:14.5px;cursor:pointer;font-family:inherit;color:#22302f;line-height:1.5;word-break:keep-all;}
+  .qz-opt:hover{background:#f3efe8;}
+  .qz-opt.picked{background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);font-weight:700;}
+  .qz-opt:disabled{cursor:default;}
+  .qz-opt b{margin-right:8px;opacity:.7;font-weight:700;}
+  .qz-verdict{text-align:center;font-size:22px;font-weight:800;margin:20px 0 18px;}
+  .qz-verdict.ok{color:#1f7a4d;}
+  .qz-verdict.no{color:#b04a3a;}
+  .qz-verdict small{display:block;font-size:13px;font-weight:400;color:#7b8888;margin-top:6px;}
+  .qz-answer-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:14px;
+                  display:flex;gap:14px;align-items:center;}
+  .qz-answer-card img{width:104px;height:78px;object-fit:cover;border-radius:8px;background:#eee;flex:0 0 auto;}
+  .qz-answer-name{font-size:16px;font-weight:700;color:var(--teal,#0f3d3e);line-height:1.4;word-break:keep-all;}
+  .qz-answer-meta{font-size:12.5px;color:#8a9595;margin-top:5px;}
+  .qz-next{text-align:center;font-size:12.5px;color:#98a3a3;margin-top:18px;}
+  #qzResult{position:relative;}
+  #qzConfetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99998;display:none;}
+  .qz-result-title{text-align:center;font-size:21px;color:var(--teal,#0f3d3e);margin:14px 0 18px;}
+  .qz-ranks{display:grid;gap:7px;margin-bottom:20px;}
+  .qz-rank{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line,#e3ddd2);
+           border-radius:10px;padding:11px 14px;font-size:14.5px;
+           animation:qzPop .38s cubic-bezier(.2,1.5,.4,1) both;}
+  .qz-rank.me{border-color:var(--teal,#0f3d3e);border-width:2px;background:#f2f7f6;}
+  .qz-rank .no{width:30px;text-align:center;font-weight:800;color:#8a9595;flex:0 0 auto;}
+  .qz-rank .nm{flex:1;font-weight:700;color:#22302f;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qz-rank .sc{font-weight:800;color:var(--teal,#0f3d3e);flex:0 0 auto;}
+  .qz-rank .hit{font-size:11.5px;color:#98a3a3;margin-left:8px;flex:0 0 auto;}
+  @keyframes qzPop{from{opacity:0;transform:translateY(14px) scale(.96);}to{opacity:1;transform:none;}}
+  .qz-result-tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .qz-tab{flex:1;padding:9px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:8px;
+          font-size:13px;cursor:pointer;font-family:inherit;color:#5c6a6a;}
+  .qz-tab.on{background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);font-weight:700;}
+  .qz-review{display:grid;gap:10px;margin-bottom:20px;}
+  .qz-rv{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:10px;padding:13px;font-size:13px;line-height:1.7;}
+  .qz-rv .rate{font-size:12px;color:#b04a3a;font-weight:700;margin-bottom:5px;}
+  .qz-rv .ans{color:var(--teal,#0f3d3e);font-weight:700;margin-top:7px;}
+  .qz-rv .txt{color:#5c6a6a;word-break:keep-all;}
+  .qz-result-btns{display:grid;gap:8px;}
+  @media(max-width:520px){
+    .qz-fields{grid-template-columns:1fr;}
+    .qz-code{font-size:36px;letter-spacing:8px;}
+    .qz-answer-card img{width:84px;height:64px;}
+  }
+
   .icard .tag{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--teal);padding:2px 8px;border-radius:10px;margin-bottom:6px;}
   .icard h4{margin:0 0 4px;font-size:14.5px;}
   .icard .meta{font-size:12px;color:var(--muted);margin-bottom:6px;}
@@ -161,6 +252,8 @@
   #rankBtn:hover{background:rgba(255,255,255,.28);}
   #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #boardBtn:hover{background:rgba(255,255,255,.28);}
+  #quizBtn{padding:8px 13px;background:#f0c454;color:#2a2a15;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+  #quizBtn:hover{background:#f6d072;}
   #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #charPickerBtn:hover{background:rgba(255,255,255,.28);}
   .lang-switcher{display:flex;align-items:center;background:rgba(255,255,255,.16);border-radius:20px;padding:3px;gap:2px;}
@@ -296,6 +389,7 @@
       <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
       <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
       <button id="boardBtn" data-i18n="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
+      <button id="quizBtn" data-i18n="quizBtn" class="hb-quiz" onclick="window.showQuiz && window.showQuiz()">🎯 퀴즈</button>
       <div class="lang-switcher" id="langSwitcher">
         <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
         <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
@@ -369,6 +463,117 @@
     <button id="boardSubmitBtn" data-i18n="boardSubmit" style="padding:9px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;">글쓰기</button>
     <div id="boardListArea" style="margin-top:24px;"></div>
   </div>
+  <!-- ================= 퀴즈 ================= -->
+  <div id="view-quiz" style="display:none;width:100%;height:100%;overflow-y:auto;">
+    <div class="qz-wrap">
+
+      <!-- 시작 화면 -->
+      <div id="qzHome" class="qz-pane">
+        <div class="qz-top">
+          <h2>🎯 국가유산 퀴즈</h2>
+          <button class="qz-back" onclick="window.hmQuizExit()">✕ 닫기</button>
+        </div>
+        <p class="qz-lead">10문제를 풀고 점수를 겨뤄요. 혼자 해도 되고, 코드를 나눠주면 여럿이 같이 할 수 있어요.</p>
+
+        <div class="qz-card">
+          <h3>방 만들기</h3>
+          <p class="qz-sub">어떤 분야로 낼까요? (여러 개 고르면 섞여서 나와요)</p>
+          <div id="qzFields" class="qz-fields"></div>
+          <label class="qz-name-row">이름 <input type="text" id="qzHostName" maxlength="12" placeholder="이름을 적어주세요"></label>
+          <button class="qz-btn qz-btn-main" id="qzCreateBtn">방 만들고 시작하기</button>
+        </div>
+
+        <div class="qz-card">
+          <h3>코드로 참가하기</h3>
+          <div class="qz-join-row">
+            <input type="text" id="qzJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
+            <input type="text" id="qzJoinName" maxlength="12" placeholder="이름">
+            <button class="qz-btn" id="qzJoinBtn">참가</button>
+          </div>
+          <p class="qz-note" id="qzKakaoNote" style="display:none">
+            카카오톡 안에서 열면 로그인이 막힐 수 있어요. 로그인 없이 참가하는 건 문제없습니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 대기실 -->
+      <div id="qzLobby" class="qz-pane" style="display:none">
+        <div class="qz-top">
+          <h2>참가자 모으는 중</h2>
+          <button class="qz-back" onclick="window.hmQuizLeave()">✕ 나가기</button>
+        </div>
+        <div class="qz-code-box">
+          <div class="qz-code-label">입장 코드</div>
+          <div class="qz-code" id="qzCodeText">----</div>
+          <div class="qz-code-btns">
+            <button class="qz-btn qz-btn-sm" id="qzCopyBtn">코드 복사</button>
+            <button class="qz-btn qz-btn-sm" id="qzShareBtn">공유하기</button>
+          </div>
+        </div>
+        <div class="qz-card">
+          <h3>참가자 <span id="qzPlayerCount">0</span>명</h3>
+          <div id="qzPlayerList" class="qz-players"></div>
+        </div>
+        <div id="qzHostArea" style="display:none">
+          <button class="qz-btn qz-btn-main" id="qzStartBtn">시작하기</button>
+          <p class="qz-note">시작하면 더 들어올 수 없어요.</p>
+        </div>
+        <p class="qz-note" id="qzWaitNote">방장이 시작하기를 기다리는 중이에요.</p>
+      </div>
+
+      <!-- 문제 -->
+      <div id="qzPlay" class="qz-pane" style="display:none">
+        <div class="qz-play-head">
+          <span id="qzProgress">문제 1 / 10</span>
+          <div class="qz-timer"><div class="qz-timer-bar" id="qzTimerBar"></div></div>
+          <span id="qzClock">20</span>
+        </div>
+        <div class="qz-qbox">
+          <p class="qz-question" id="qzQuestion"></p>
+          <p class="qz-qcat" id="qzQCat"></p>
+        </div>
+        <div class="qz-options" id="qzOptions"></div>
+      </div>
+
+      <!-- 정답 공개 -->
+      <div id="qzReveal" class="qz-pane" style="display:none">
+        <div class="qz-verdict" id="qzVerdict"></div>
+        <div class="qz-answer-card">
+          <img id="qzRevealImg" alt="" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){this.src=s.replace('/thumb/','/');}else{this.style.display='none';}">
+          <div>
+            <div class="qz-answer-name" id="qzAnswerName"></div>
+            <div class="qz-answer-meta" id="qzAnswerMeta"></div>
+          </div>
+        </div>
+        <div class="qz-next">다음 문제 <span id="qzNextSec">5</span>초 전</div>
+      </div>
+
+      <!-- 결과 -->
+      <div id="qzResult" class="qz-pane" style="display:none">
+        <canvas id="qzConfetti"></canvas>
+        <h2 class="qz-result-title">🏆 최종 순위</h2>
+        <div id="qzRankList" class="qz-ranks"></div>
+        <div class="qz-result-tabs">
+          <button class="qz-tab on" id="qzTabWrong">내가 틀린 문제</button>
+          <button class="qz-tab" id="qzTabHard">다같이 어려웠던 문제</button>
+        </div>
+        <div id="qzReviewBox" class="qz-review"></div>
+        <div class="qz-result-btns">
+          <button class="qz-btn qz-btn-main" onclick="window.hmQuizRestart()">다시 하기</button>
+          <button class="qz-btn" onclick="window.hmQuizExit()">지도로 돌아가기</button>
+        </div>
+      </div>
+
+      <!-- 연장전 대기 -->
+      <div id="qzWaitExtra" class="qz-pane" style="display:none">
+        <h2 class="qz-result-title">🔥 1등 연장전</h2>
+        <p class="qz-lead" id="qzExtraWho"></p>
+        <p class="qz-note">끝나면 최종 순위가 나와요.</p>
+      </div>
+
+    </div>
+  </div>
+
 </main>
 
 
@@ -429,6 +634,7 @@
 <script src="data_map_additions.js"></script>
 <script>MAP_DATA.push(...MAP_DATA_ADDITIONS);</script>
 <script src="data_species.js"></script>
+<script src="quiz_manifest.js"></script>
 <script>
 // ---- 영문판(언어 전환) ----
 // 이번 단계에서는 메뉴/버튼/안내문 같은 "화면 UI 글자"만 영어로 바꿈.
@@ -443,6 +649,7 @@ const I18N = {
     rankBtn: '🏆 명예의 전당',
     charPickerBtn: '🎎 내 캐릭터',
     boardBtn: '💬 게시판',
+    quizBtn: '🎯 퀴즈',
     loginBtnLabel: '🔑 구글로 로그인',
     nickBtnLabel: '닉네임 변경',
     logoutBtnLabel: '로그아웃',
@@ -498,6 +705,7 @@ const I18N = {
     rankBtn: '🏆 Hall of Fame',
     charPickerBtn: '🎎 My Character',
     boardBtn: '💬 Board',
+    quizBtn: '🎯 Quiz',
     loginBtnLabel: '🔑 Sign in with Google',
     nickBtnLabel: 'Change Nickname',
     logoutBtnLabel: 'Log Out',
@@ -553,6 +761,7 @@ const I18N = {
     rankBtn: '🏆 名人堂',
     charPickerBtn: '🎎 我的角色',
     boardBtn: '💬 留言板',
+    quizBtn: '🎯 问答',
     loginBtnLabel: '🔑 使用谷歌登录',
     nickBtnLabel: '修改昵称',
     logoutBtnLabel: '退出登录',
@@ -608,6 +817,7 @@ const I18N = {
     rankBtn: '🏆 名誉の殿堂',
     charPickerBtn: '🎎 マイキャラクター',
     boardBtn: '💬 掲示板',
+    quizBtn: '🎯 クイズ',
     loginBtnLabel: '🔑 Googleでログイン',
     nickBtnLabel: 'ニックネーム変更',
     logoutBtnLabel: 'ログアウト',
@@ -1659,7 +1869,7 @@ if('serviceWorker' in navigator){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, limit, writeBatch, addDoc, deleteDoc
@@ -1769,11 +1979,39 @@ function updateAuthUI(placeCount, rank, itemCount){
   }
 }
 
+// 카카오톡·라인 등 앱 안에서 열린 브라우저인지
+function hmInAppBrowser(){
+  return /KAKAOTALK|NAVER|Line\/|Instagram|FBAN|FBAV|DaumApps/i.test(navigator.userAgent || '');
+}
+// 팝업이 막히는 환경(아이폰 사파리, 홈 화면 앱 등)에서는 화면 전환 방식으로 넘어감
+const POPUP_BLOCKED = new Set([
+  'auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/cancelled-popup-request',
+  'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'
+]);
 window.hmLogin = () => {
+  if(hmInAppBrowser()){
+    window.showMsg && window.showMsg(
+      '카카오톡·네이버 앱 안에서는 구글 로그인이 막혀요.\n\n' +
+      '오른쪽 위 ⋮ (아이폰은 아래 공유 아이콘) → "다른 브라우저로 열기"를 눌러 크롬이나 사파리로 연 뒤 로그인해주세요.\n\n' +
+      '로그인 없이 지도를 보거나 퀴즈에 참가하는 건 그대로 됩니다.');
+    return;
+  }
   signInWithPopup(auth, provider).catch(err => {
+    if(POPUP_BLOCKED.has(err && err.code)){
+      signInWithRedirect(auth, provider).catch(e2 => {
+        window.showMsg ? window.showMsg('로그인에 실패했습니다: ' + e2.message) : alert('로그인 실패: ' + e2.message);
+      });
+      return;
+    }
     window.showMsg ? window.showMsg('로그인에 실패했습니다: ' + err.message) : alert('로그인 실패: ' + err.message);
   });
 };
+// 화면 전환 방식으로 로그인하고 돌아왔을 때 결과 받기
+getRedirectResult(auth).catch(err => {
+  if(err && err.code && err.code !== 'auth/no-auth-event'){
+    console.warn('로그인 복귀 처리 실패', err);
+  }
+});
 window.hmLogout = () => { signOut(auth); };
 
 window.hmChangeNickname = async () => {
@@ -2304,5 +2542,508 @@ onAuthStateChanged(auth, async (user) => {
   });
 })();
 </script>
+<!-- ---- 국가유산 퀴즈 ---- -->
+<script type="module">
+import { getApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
+  collection, getDocs, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const app  = getApp();
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const QN        = 10;      // 문제 수
+const ANSWER_MS = 20000;   // 문제 푸는 시간
+const REVEAL_MS = 5000;    // 정답 공개 시간
+const STEP_MS   = ANSWER_MS + REVEAL_MS;
+const LEAD_MS   = 4000;    // 시작 버튼 누르고 첫 문제까지
+const PER_HIT   = 10;      // 맞히면 점수
+
+const FIELD_DEFS = [
+  { slug:'nature',     label:'자연유산',         hint:'천연기념물·명승' },
+  { slug:'national',   label:'국가지정 문화유산', hint:'국보·보물·사적' },
+  { slug:'local',      label:'시도지정 문화유산', hint:'시도유형·기념물' },
+  { slug:'intangible', label:'무형유산',         hint:'국가·시도무형' }
+];
+
+let ST = null;        // 현재 게임 상태
+let roomUnsub = null, playerUnsub = null, tick = null;
+
+/* ---------- 유틸 ---------- */
+const $ = id => document.getElementById(id);
+function esc(s){ return window.escapeHtml ? window.escapeHtml(s) : String(s==null?'':s); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pane(id){
+  ['qzHome','qzLobby','qzPlay','qzReveal','qzResult','qzWaitExtra'].forEach(p=>{
+    const el = $(p); if(el) el.style.display = (p===id ? 'block' : 'none');
+  });
+}
+function say(m){ window.showMsg ? window.showMsg(m) : alert(m); }
+
+/* ---------- 문제 조각 불러오기 ---------- */
+const loadedChunks = {};
+function loadScript(src){
+  return new Promise((ok, no) => {
+    if(loadedChunks[src]) return ok();
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => { loadedChunks[src] = 1; ok(); };
+    s.onerror = () => no(new Error('불러오기 실패: ' + src));
+    document.head.appendChild(s);
+  });
+}
+// 고른 분야마다 조각 하나씩 무작위로 받아서 문제를 뽑는다
+async function pickQuestions(slugs){
+  const pool = [];
+  for(const slug of slugs){
+    const info = (typeof QUIZ_MANIFEST !== 'undefined') ? QUIZ_MANIFEST[slug] : null;
+    if(!info) continue;
+    const n  = Math.floor(Math.random() * info.chunks) + 1;
+    const fn = 'quiz_' + slug + '_' + String(n).padStart(2,'0') + '.js';
+    await loadScript(fn);
+    const arr = window[info.var] || [];
+    arr.forEach(x => pool.push(x));
+  }
+  if(pool.length < QN + 3) throw new Error('문제가 모자라요. 다른 분야를 골라주세요.');
+  const picked = shuffle(pool.slice()).slice(0, QN);
+  return picked.map(it => {
+    // 오답 3개 — 같은 세부 분류에서 먼저 찾고, 모자라면 전체에서
+    let cand = pool.filter(x => x.c === it.c && x.a !== it.a).map(x => x.a);
+    if(cand.length < 3) cand = pool.filter(x => x.a !== it.a).map(x => x.a);
+    const wrong = shuffle([...new Set(cand)]).slice(0,3);
+    const opts  = shuffle([it.a, ...wrong]);
+    return { q:it.q, c:it.c, r:it.r, s:it.s, i:it.i, opts, ans:opts.indexOf(it.a) };
+  });
+}
+
+/* ---------- 로그인 (없으면 익명으로) ---------- */
+function ensureUser(){
+  return new Promise((ok, no) => {
+    if(auth.currentUser) return ok(auth.currentUser);
+    const off = onAuthStateChanged(auth, u => {
+      if(u){ off(); ok(u); }
+    });
+    signInAnonymously(auth).catch(e => { off(); no(e); });
+  });
+}
+function defaultName(){
+  const u = auth.currentUser;
+  if(u && !u.isAnonymous && u.displayName) return u.displayName;
+  try{ const n = localStorage.getItem('hmQuizName'); if(n) return n; }catch(e){}
+  return '';
+}
+
+/* ---------- 시작 화면 ---------- */
+function renderHome(){
+  const box = $('qzFields');
+  box.innerHTML = FIELD_DEFS.map(f =>
+    `<label class="qz-field" data-slug="${f.slug}">
+       <input type="checkbox" value="${f.slug}"><span>${f.label} <small>${f.hint}</small></span>
+     </label>`).join('');
+  box.querySelectorAll('input').forEach(cb => {
+    cb.addEventListener('change', () => cb.closest('.qz-field').classList.toggle('on', cb.checked));
+  });
+  const first = box.querySelector('input');
+  if(first){ first.checked = true; first.closest('.qz-field').classList.add('on'); }
+  $('qzHostName').value = defaultName();
+  $('qzJoinName').value = defaultName();
+  if(/KAKAOTALK/i.test(navigator.userAgent)) $('qzKakaoNote').style.display = 'block';
+}
+
+/* ---------- 방 만들기 / 참가 ---------- */
+async function freshCode(){
+  for(let t=0;t<12;t++){
+    const c = String(Math.floor(1000 + Math.random()*9000));
+    const snap = await getDoc(doc(db,'quizRooms',c));
+    if(!snap.exists()) return c;
+    const st = snap.data();
+    if(Date.now() - (st.createdMs||0) > 24*3600*1000) return c;   // 하루 지난 방은 재사용
+  }
+  throw new Error('방 코드를 만들지 못했어요. 잠시 뒤 다시 해주세요.');
+}
+
+async function createRoom(){
+  const slugs = [...$('qzFields').querySelectorAll('input:checked')].map(x => x.value);
+  if(!slugs.length) return say('분야를 하나 이상 골라주세요.');
+  const name = ($('qzHostName').value || '').trim();
+  if(name.length < 1) return say('이름을 적어주세요.');
+  const btn = $('qzCreateBtn'); btn.disabled = true; btn.textContent = '문제를 고르는 중…';
+  try{
+    const u = await ensureUser();
+    try{ localStorage.setItem('hmQuizName', name); }catch(e){}
+    const qs   = await pickQuestions(slugs);
+    const code = await freshCode();
+    await setDoc(doc(db,'quizRooms',code), {
+      hostUid: u.uid, hostName: name, fields: slugs,
+      state: 'waiting', createdMs: Date.now(), questions: qs
+    });
+    await joinAs(code, name, true);
+  }catch(e){
+    say('방을 만들지 못했어요: ' + e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = '방 만들고 시작하기';
+  }
+}
+
+async function joinRoom(){
+  const code = ($('qzJoinCode').value || '').trim();
+  const name = ($('qzJoinName').value || '').trim();
+  if(!/^\d{4}$/.test(code)) return say('입장 코드 4자리를 넣어주세요.');
+  if(!name) return say('이름을 적어주세요.');
+  const btn = $('qzJoinBtn'); btn.disabled = true;
+  try{
+    await ensureUser();
+    const snap = await getDoc(doc(db,'quizRooms',code));
+    if(!snap.exists()) return say('그런 방이 없어요. 코드를 다시 확인해주세요.');
+    if(snap.data().state !== 'waiting') return say('이미 시작한 방이에요.');
+    try{ localStorage.setItem('hmQuizName', name); }catch(e){}
+    await joinAs(code, name, false);
+  }catch(e){
+    say('참가하지 못했어요: ' + e.message);
+  }finally{ btn.disabled = false; }
+}
+
+async function joinAs(code, name, isHost){
+  const u = auth.currentUser;
+  ST = { code, name, uid: u.uid, isHost, room:null, myMarks:[], myScore:0,
+         answered:{}, shownIdx:-1, phase:'', extraMarks:[], extraScore:0 };
+  await setDoc(doc(db,'quizRooms',code,'players',u.uid), {
+    name, score:0, marks:[], extraScore:0, extraMarks:[], joinedMs: Date.now()
+  });
+  watchRoom();
+}
+
+/* ---------- 방 상태 지켜보기 ---------- */
+function watchRoom(){
+  if(roomUnsub) roomUnsub();
+  roomUnsub = onSnapshot(doc(db,'quizRooms',ST.code), snap => {
+    if(!snap.exists()) return;
+    ST.room = snap.data();
+    route();
+  });
+}
+function watchPlayers(on){
+  if(playerUnsub){ playerUnsub(); playerUnsub = null; }
+  if(!on) return;
+  playerUnsub = onSnapshot(collection(db,'quizRooms',ST.code,'players'), snap => {
+    const list = []; snap.forEach(d => list.push(d.data()));
+    $('qzPlayerCount').textContent = list.length;
+    $('qzPlayerList').innerHTML = list
+      .sort((a,b)=>(a.joinedMs||0)-(b.joinedMs||0))
+      .map(p => `<span class="qz-player${p.name===ST.name?' me':''}">${esc(p.name)}</span>`).join('');
+  });
+}
+
+function route(){
+  const r = ST.room;
+  if(r.state === 'waiting'){
+    if(ST.phase !== 'lobby'){
+      ST.phase = 'lobby';
+      pane('qzLobby');
+      $('qzCodeText').textContent = ST.code;
+      $('qzHostArea').style.display = ST.isHost ? 'block' : 'none';
+      $('qzWaitNote').style.display = ST.isHost ? 'none' : 'block';
+      watchPlayers(true);
+    }
+  } else if(r.state === 'playing'){
+    if(ST.phase !== 'play'){ ST.phase = 'play'; watchPlayers(false); startLoop(false); }
+  } else if(r.state === 'extra'){
+    if(ST.phase !== 'extra'){
+      ST.phase = 'extra';
+      const tied = r.tied || [];
+      if(tied.indexOf(ST.uid) > -1){ startLoop(true); }
+      else {
+        stopLoop(); pane('qzWaitExtra');
+        $('qzExtraWho').textContent = (r.tiedNames||[]).join(' · ') + ' 님이 연장전을 푸는 중이에요.';
+      }
+    }
+  } else if(r.state === 'done'){
+    if(ST.phase !== 'done'){ ST.phase = 'done'; stopLoop(); showResult(); }
+  }
+}
+
+/* ---------- 시작 ---------- */
+async function startGame(){
+  const btn = $('qzStartBtn'); btn.disabled = true;
+  try{
+    await updateDoc(doc(db,'quizRooms',ST.code), { state:'playing', startAt: Date.now() + LEAD_MS });
+  }catch(e){ say('시작하지 못했어요: ' + e.message); btn.disabled = false; }
+}
+
+/* ---------- 게임 진행 ---------- */
+function questions(extra){ return extra ? (ST.room.extraQuestions||[]) : (ST.room.questions||[]); }
+function startAt(extra){ return extra ? (ST.room.extraStartAt||0) : (ST.room.startAt||0); }
+
+function stopLoop(){ if(tick){ clearInterval(tick); tick = null; } }
+function startLoop(extra){
+  stopLoop();
+  ST.extra = !!extra;
+  ST.shownIdx = -1; ST.shownPhase = '';
+  ST.answered = {};
+  tick = setInterval(() => step(extra), 200);
+  step(extra);
+}
+
+function step(extra){
+  const qs = questions(extra), t0 = startAt(extra);
+  const el = Date.now() - t0;
+  if(el < 0){                                   // 시작 카운트다운
+    showCountdown(Math.ceil(-el/1000)); return;
+  }
+  const idx = Math.floor(el / STEP_MS);
+  if(idx >= qs.length){ stopLoop(); finishMine(extra); return; }
+  const into  = el % STEP_MS;
+  const asking = into < ANSWER_MS;
+  const key = idx + (asking ? 'q' : 'r');
+  if(key !== ST.shownPhase){
+    ST.shownPhase = key;
+    if(asking) drawQuestion(idx, qs[idx], qs.length);
+    else       drawReveal(idx, qs[idx], extra);
+  }
+  if(asking){
+    const left = Math.ceil((ANSWER_MS - into)/1000);
+    $('qzClock').textContent = left;
+    $('qzTimerBar').style.width = (100 * (ANSWER_MS - into) / ANSWER_MS) + '%';
+  } else {
+    $('qzNextSec').textContent = Math.ceil((STEP_MS - into)/1000);
+  }
+}
+
+function showCountdown(sec){
+  if(ST.shownPhase !== 'cd'){ ST.shownPhase = 'cd'; pane('qzPlay'); }
+  $('qzProgress').textContent = '곧 시작해요';
+  $('qzQuestion').textContent = sec + '초 뒤에 첫 문제가 나와요.';
+  $('qzQCat').textContent = '';
+  $('qzOptions').innerHTML = '';
+  $('qzClock').textContent = sec;
+  $('qzTimerBar').style.width = '100%';
+}
+
+function drawQuestion(idx, q, total){
+  pane('qzPlay');
+  $('qzProgress').textContent = `문제 ${idx+1} / ${total}`;
+  $('qzQuestion').textContent = q.q;
+  $('qzQCat').textContent = '(' + q.c + ')';
+  const wrap = $('qzOptions');
+  wrap.innerHTML = q.opts.map((o,i) =>
+    `<button class="qz-opt" data-i="${i}"><b>${'①②③④'[i]}</b>${esc(o)}</button>`).join('');
+  wrap.querySelectorAll('.qz-opt').forEach(b => {
+    b.addEventListener('click', () => {
+      if(ST.answered[idx] !== undefined) return;
+      const pick = Number(b.dataset.i);
+      ST.answered[idx] = pick;
+      wrap.querySelectorAll('.qz-opt').forEach(x => { x.disabled = true; });
+      b.classList.add('picked');
+    });
+  });
+}
+
+function drawReveal(idx, q, extra){
+  const pick = ST.answered[idx];
+  const ok   = (pick === q.ans);
+  if(extra){ ST.extraMarks[idx] = ok?1:0; if(ok) ST.extraScore += PER_HIT; }
+  else     { ST.myMarks[idx]    = ok?1:0; if(ok) ST.myScore    += PER_HIT; }
+  saveScore(extra);
+
+  pane('qzReveal');
+  const v = $('qzVerdict');
+  v.className = 'qz-verdict ' + (ok ? 'ok' : 'no');
+  const cur = extra ? ST.extraScore : ST.myScore;
+  v.innerHTML = ok
+    ? `✓ 정답!<small>+${PER_HIT}점 · 지금 ${cur}점</small>`
+    : (pick === undefined
+        ? `시간 초과<small>정답은 ${'①②③④'[q.ans]} 였어요 · 지금 ${cur}점</small>`
+        : `✕ 아쉬워요<small>고른 답 ${'①②③④'[pick]} · 정답은 ${'①②③④'[q.ans]} · 지금 ${cur}점</small>`);
+  const img = $('qzRevealImg');
+  if(q.i){ img.style.display=''; img.src = q.i; } else { img.style.display='none'; }
+  $('qzAnswerName').textContent = q.opts[q.ans];
+  $('qzAnswerMeta').textContent = [q.c, (q.r||'') + ' ' + (q.s||'')].join(' · ').trim();
+}
+
+function saveScore(extra){
+  const ref = doc(db,'quizRooms',ST.code,'players',ST.uid);
+  const payload = extra
+    ? { extraScore: ST.extraScore, extraMarks: ST.extraMarks.slice() }
+    : { score: ST.myScore, marks: ST.myMarks.slice() };
+  updateDoc(ref, payload).catch(()=>{});
+}
+
+/* ---------- 끝났을 때 ---------- */
+async function finishMine(extra){
+  if(!ST.isHost){ pane(extra ? 'qzWaitExtra' : 'qzWaitExtra'); $('qzExtraWho').textContent = '점수를 모으는 중이에요…'; return; }
+  // 방장이 마무리 판정
+  await new Promise(r => setTimeout(r, 1200));   // 다른 사람 점수가 도착할 여유
+  const snap = await getDocs(collection(db,'quizRooms',ST.code,'players'));
+  const players = []; snap.forEach(d => players.push({ uid:d.id, ...d.data() }));
+  if(!extra){
+    const top = Math.max(...players.map(p => p.score||0));
+    const tied = players.filter(p => (p.score||0) === top);
+    if(tied.length > 1 && top > 0){
+      try{
+        const qs = await pickQuestions(ST.room.fields || ['nature']);
+        await updateDoc(doc(db,'quizRooms',ST.code), {
+          state:'extra', extraQuestions: qs, extraStartAt: Date.now() + LEAD_MS,
+          tied: tied.map(p=>p.uid), tiedNames: tied.map(p=>p.name)
+        });
+        return;
+      }catch(e){ /* 연장전을 못 만들면 그냥 공동 1등 */ }
+    }
+  }
+  await updateDoc(doc(db,'quizRooms',ST.code), { state:'done' });
+}
+
+/* ---------- 결과 ---------- */
+async function showResult(){
+  pane('qzResult');
+  $('qzRankList').innerHTML = '<p class="qz-note">점수를 모으는 중…</p>';
+  const snap = await getDocs(collection(db,'quizRooms',ST.code,'players'));
+  const players = []; snap.forEach(d => players.push({ uid:d.id, ...d.data() }));
+  players.sort((a,b) => (b.score-a.score) || ((b.extraScore||0)-(a.extraScore||0)) || (a.joinedMs-b.joinedMs));
+
+  // 공동 순위 매기기 (본선 점수 같으면 연장전 점수로만 가름)
+  let rank = 0, prevKey = null;
+  players.forEach((p,i) => {
+    const key = p.score + '/' + (p.extraScore||0);
+    if(key !== prevKey){ rank = i + 1; prevKey = key; }
+    p.rank = rank;
+  });
+  ST.players = players;
+
+  const medal = n => n===1?'🥇':n===2?'🥈':n===3?'🥉':String(n);
+  const row = p => `<div class="qz-rank${p.uid===ST.uid?' me':''}">
+      <span class="no">${medal(p.rank)}</span>
+      <span class="nm">${esc(p.name)}${p.uid===ST.uid?' <small style="font-weight:400;color:#8a9595">(나)</small>':''}</span>
+      <span class="hit">${(p.marks||[]).filter(Boolean).length}/${QN}</span>
+      <span class="sc">${p.score}점</span>
+    </div>`;
+
+  const box = $('qzRankList');
+  const lower = players.filter(p => p.rank > 3);
+  const top3  = players.filter(p => p.rank <= 3).sort((a,b)=>b.rank-a.rank);  // 3등 → 1등
+  box.innerHTML = lower.map(row).join('');
+  let delay = 400;
+  top3.forEach(p => {
+    setTimeout(() => {
+      box.insertAdjacentHTML('afterbegin', row(p));
+      if(p.rank === 1) confetti();
+    }, delay);
+    delay += 1100;
+  });
+  renderReview('wrong');
+}
+
+function renderReview(kind){
+  $('qzTabWrong').classList.toggle('on', kind==='wrong');
+  $('qzTabHard').classList.toggle('on', kind==='hard');
+  const qs = ST.room.questions || [];
+  const box = $('qzReviewBox');
+  if(kind === 'wrong'){
+    const mine = ST.myMarks;
+    const items = qs.map((q,i)=>({q,i})).filter(x => !mine[x.i]);
+    if(!items.length){ box.innerHTML = '<p class="qz-note">틀린 문제가 없어요. 완벽합니다!</p>'; return; }
+    box.innerHTML = items.map(x => `<div class="qz-rv">
+        <div class="txt">${esc(x.q.q)}</div>
+        <div class="ans">정답 · ${esc(x.q.opts[x.q.ans])}</div>
+      </div>`).join('');
+  } else {
+    const ps = (ST.players||[]).filter(p => (p.marks||[]).length);
+    if(ps.length < 2){ box.innerHTML = '<p class="qz-note">혼자 풀어서 비교할 사람이 없어요.</p>'; return; }
+    const stat = qs.map((q,i) => ({ q, i, hit: ps.filter(p => (p.marks||[])[i]).length }));
+    stat.sort((a,b) => a.hit - b.hit);
+    box.innerHTML = stat.slice(0,3).map(x => `<div class="qz-rv">
+        <div class="rate">${x.i+1}번 문제 · ${ps.length}명 중 ${x.hit}명 정답 (${Math.round(100*x.hit/ps.length)}%)</div>
+        <div class="txt">${esc(x.q.q)}</div>
+        <div class="ans">정답 · ${esc(x.q.opts[x.q.ans])}</div>
+      </div>`).join('');
+  }
+}
+
+/* ---------- 폭죽 ---------- */
+function confetti(){
+  const cv = $('qzConfetti');
+  if(!cv) return;
+  cv.style.display = 'block';
+  const cx = cv.getContext('2d');
+  const W = cv.width  = window.innerWidth;
+  const H = cv.height = window.innerHeight;
+  const COLORS = ['#0f3d3e','#2f7d6f','#d4a637','#e8dcc3','#b04a3a','#f4efe6'];
+  const bits = [];
+  for(let i=0;i<160;i++){
+    bits.push({ x: Math.random()*W, y: -20 - Math.random()*H*0.5,
+      w: 6+Math.random()*7, h: 9+Math.random()*9,
+      vy: 2.2+Math.random()*3.2, vx: -1.4+Math.random()*2.8,
+      rot: Math.random()*Math.PI, vr: -0.12+Math.random()*0.24,
+      c: COLORS[Math.floor(Math.random()*COLORS.length)] });
+  }
+  const t0 = Date.now();
+  (function frame(){
+    const age = Date.now() - t0;
+    cx.clearRect(0,0,W,H);
+    bits.forEach(b => {
+      b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.vy += 0.028;
+      cx.save(); cx.translate(b.x,b.y); cx.rotate(b.rot);
+      cx.globalAlpha = age > 2600 ? Math.max(0, 1 - (age-2600)/1400) : 1;
+      cx.fillStyle = b.c; cx.fillRect(-b.w/2,-b.h/2,b.w,b.h); cx.restore();
+    });
+    if(age < 4000) requestAnimationFrame(frame);
+    else { cx.clearRect(0,0,W,H); cv.style.display='none'; }
+  })();
+}
+
+/* ---------- 나가기 ---------- */
+function cleanup(){
+  stopLoop();
+  if(roomUnsub){ roomUnsub(); roomUnsub = null; }
+  if(playerUnsub){ playerUnsub(); playerUnsub = null; }
+  ST = null;
+}
+window.hmQuizLeave = () => { cleanup(); pane('qzHome'); renderHome(); };
+window.hmQuizRestart = () => { cleanup(); pane('qzHome'); renderHome(); };
+window.hmQuizExit = () => {
+  cleanup();
+  $('view-quiz').style.display = 'none';
+  $('view-map').style.display  = 'flex';
+  setTimeout(()=>{ try{ window.map && window.map.invalidateSize(); }catch(e){} }, 50);
+};
+window.showQuiz = (code) => {
+  ['view-map','view-list','view-species','view-board'].forEach(v => { const e=$(v); if(e) e.style.display='none'; });
+  $('view-quiz').style.display = 'block';
+  pane('qzHome'); renderHome();
+  if(code){ $('qzJoinCode').value = code; $('qzJoinName').focus(); }
+};
+
+/* ---------- 버튼 연결 ---------- */
+$('qzCreateBtn').addEventListener('click', createRoom);
+$('qzJoinBtn').addEventListener('click', joinRoom);
+$('qzStartBtn').addEventListener('click', startGame);
+$('qzTabWrong').addEventListener('click', () => renderReview('wrong'));
+$('qzTabHard').addEventListener('click',  () => renderReview('hard'));
+$('qzCopyBtn').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?quiz=' + ST.code;
+  navigator.clipboard.writeText(link).then(
+    () => say('초대 링크를 복사했어요. 카톡이나 문자로 붙여넣으세요.'),
+    () => say('복사가 안 됐어요. 코드 ' + ST.code + ' 를 알려주세요.'));
+});
+$('qzShareBtn').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?quiz=' + ST.code;
+  if(navigator.share){
+    navigator.share({ title:'국가유산지도 퀴즈', text:'국가유산 퀴즈에 초대합니다 (코드 ' + ST.code + ')', url: link }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(link).then(
+      () => say('이 기기에서는 공유창이 없어서 링크를 복사했어요.'),
+      () => say('코드 ' + ST.code + ' 를 알려주세요.'));
+  }
+});
+
+/* ---------- 링크로 들어온 경우 ---------- */
+(function(){
+  const m = /[?&]quiz=(\d{4})/.exec(location.search);
+  if(m) setTimeout(() => window.showQuiz(m[1]), 300);
+})();
+</script>
+
 </body>
 </html>
