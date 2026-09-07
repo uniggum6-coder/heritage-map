@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v10 (2026-09-07)">
+  <meta name="hm-build" content="v11 (2026-09-07)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -211,7 +211,7 @@
   .qz-answer-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:16px;
                   text-align:center;}
   .qz-answer-card img{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#f2efe9;
-                      margin-top:12px;display:block;}
+                      margin:12px auto 0;display:block;}
   .qz-answer-name{font-size:18px;font-weight:800;color:var(--teal,#0f3d3e);line-height:1.4;word-break:keep-all;}
   .qz-answer-meta{font-size:12.5px;color:#8a9595;margin-top:5px;}
   .qz-next{text-align:center;font-size:12.5px;color:#98a3a3;margin-top:18px;}
@@ -273,7 +273,8 @@
   @media(max-width:520px){
     .qz-fields{grid-template-columns:1fr;}
     .qz-code{font-size:36px;letter-spacing:8px;}
-    .qz-answer-card img{width:84px;height:64px;}
+    /* 폰에서는 화면을 더 넉넉히 써서 사진을 크게 */
+    .qz-answer-card img{max-height:52vh;}
   }
 
   .icard .tag{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--teal);padding:2px 8px;border-radius:10px;margin-bottom:6px;}
@@ -769,7 +770,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v10 (2026-09-07)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v11 (2026-09-07)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
