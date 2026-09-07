@@ -163,6 +163,10 @@
   .qz-field.on{background:#e8f0ef;border-color:var(--teal,#0f3d3e);font-weight:700;color:var(--teal,#0f3d3e);}
   .qz-field input{margin:0;}
   .qz-field small{color:#98a3a3;font-weight:400;}
+  .qz-secs{display:flex;gap:8px;margin-bottom:14px;}
+  .qz-sec{flex:1;padding:10px 0;border:1px solid var(--line,#e3ddd2);border-radius:8px;background:#fbf9f5;
+          font-size:13.5px;cursor:pointer;font-family:inherit;color:#5c6a6a;}
+  .qz-sec.on{background:#e8f0ef;border-color:var(--teal,#0f3d3e);color:var(--teal,#0f3d3e);font-weight:800;}
   .qz-name-row{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;color:#5c6a6a;}
   .qz-name-row input{flex:1;padding:9px 10px;border:1px solid var(--line,#e3ddd2);border-radius:8px;font-size:14px;min-width:0;}
   .qz-btn{padding:10px 18px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:8px;
@@ -479,6 +483,8 @@
           <h3>방 만들기</h3>
           <p class="qz-sub">어떤 분야로 낼까요? (여러 개 고르면 섞여서 나와요)</p>
           <div id="qzFields" class="qz-fields"></div>
+          <p class="qz-sub" style="margin-top:14px">한 문제에 몇 초 줄까요?</p>
+          <div id="qzSecs" class="qz-secs"></div>
           <label class="qz-name-row">이름 <input type="text" id="qzHostName" maxlength="12" placeholder="이름을 적어주세요"></label>
           <button class="qz-btn qz-btn-main" id="qzCreateBtn">방 만들고 시작하기</button>
         </div>
@@ -2556,11 +2562,13 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 const QN        = 10;      // 문제 수
-const ANSWER_MS = 20000;   // 문제 푸는 시간
 const REVEAL_MS = 5000;    // 정답 공개 시간
-const STEP_MS   = ANSWER_MS + REVEAL_MS;
 const LEAD_MS   = 4000;    // 시작 버튼 누르고 첫 문제까지
 const PER_HIT   = 10;      // 맞히면 점수
+const SEC_CHOICES = [20, 30, 40, 60];   // 방장이 고를 수 있는 문제 시간
+// 문제 푸는 시간은 방마다 다름 (방장이 정함)
+function ansMs(){ return ((ST && ST.room && ST.room.answerSec) || 20) * 1000; }
+function stepMs(){ return ansMs() + REVEAL_MS; }
 
 const FIELD_DEFS = [
   { slug:'nature',     label:'자연유산',         hint:'천연기념물·명승' },
@@ -2648,9 +2656,22 @@ function renderHome(){
   });
   const first = box.querySelector('input');
   if(first){ first.checked = true; first.closest('.qz-field').classList.add('on'); }
+  const secBox = $('qzSecs');
+  secBox.innerHTML = SEC_CHOICES.map((n,i) =>
+    `<button type="button" class="qz-sec${i===0?' on':''}" data-sec="${n}">${n}초</button>`).join('');
+  secBox.querySelectorAll('.qz-sec').forEach(b => {
+    b.addEventListener('click', () => {
+      secBox.querySelectorAll('.qz-sec').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
   $('qzHostName').value = defaultName();
   $('qzJoinName').value = defaultName();
   if(/KAKAOTALK/i.test(navigator.userAgent)) $('qzKakaoNote').style.display = 'block';
+  // 공유창은 휴대폰에서만 제대로 뜬다 — PC에서는 숨기고 코드 복사만 남긴다
+  const isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const shareBtn = $('qzShareBtn');
+  if(shareBtn) shareBtn.style.display = (isPhone && navigator.share) ? '' : 'none';
 }
 
 /* ---------- 방 만들기 / 참가 ---------- */
@@ -2676,8 +2697,10 @@ async function createRoom(){
     try{ localStorage.setItem('hmQuizName', name); }catch(e){}
     const qs   = await pickQuestions(slugs);
     const code = await freshCode();
+    const secBtn = $('qzSecs').querySelector('.qz-sec.on');
+    const answerSec = secBtn ? Number(secBtn.dataset.sec) : 20;
     await setDoc(doc(db,'quizRooms',code), {
-      hostUid: u.uid, hostName: name, fields: slugs,
+      hostUid: u.uid, hostName: name, fields: slugs, answerSec,
       state: 'waiting', createdMs: Date.now(), questions: qs
     });
     await joinAs(code, name, true);
@@ -2777,12 +2800,26 @@ async function startGame(){
 function questions(extra){ return extra ? (ST.room.extraQuestions||[]) : (ST.room.questions||[]); }
 function startAt(extra){ return extra ? (ST.room.extraStartAt||0) : (ST.room.startAt||0); }
 
+// 정답 화면에서 곧바로 보이도록 사진을 미리 받아둔다
+const preloaded = [];
+function preloadPhotos(qs){
+  (qs || []).forEach(q => {
+    if(!q.i) return;
+    const im = new Image();
+    im.src = q.i;
+    preloaded.push(im);            // 참조를 남겨야 브라우저가 안 버림
+    im.onerror = () => {           // 썸네일이 없으면 원본으로 한 번 더
+      const o = new Image(); o.src = q.i.replace('/thumb/','/'); preloaded.push(o);
+    };
+  });
+}
 function stopLoop(){ if(tick){ clearInterval(tick); tick = null; } }
 function startLoop(extra){
   stopLoop();
   ST.extra = !!extra;
   ST.shownIdx = -1; ST.shownPhase = '';
   ST.answered = {};
+  preloadPhotos(questions(extra));
   tick = setInterval(() => step(extra), 200);
   step(extra);
 }
@@ -2793,10 +2830,11 @@ function step(extra){
   if(el < 0){                                   // 시작 카운트다운
     showCountdown(Math.ceil(-el/1000)); return;
   }
-  const idx = Math.floor(el / STEP_MS);
+  const SM = stepMs(), AM = ansMs();
+  const idx = Math.floor(el / SM);
   if(idx >= qs.length){ stopLoop(); finishMine(extra); return; }
-  const into  = el % STEP_MS;
-  const asking = into < ANSWER_MS;
+  const into  = el % SM;
+  const asking = into < AM;
   const key = idx + (asking ? 'q' : 'r');
   if(key !== ST.shownPhase){
     ST.shownPhase = key;
@@ -2804,11 +2842,11 @@ function step(extra){
     else       drawReveal(idx, qs[idx], extra);
   }
   if(asking){
-    const left = Math.ceil((ANSWER_MS - into)/1000);
+    const left = Math.ceil((AM - into)/1000);
     $('qzClock').textContent = left;
-    $('qzTimerBar').style.width = (100 * (ANSWER_MS - into) / ANSWER_MS) + '%';
+    $('qzTimerBar').style.width = (100 * (AM - into) / AM) + '%';
   } else {
-    $('qzNextSec').textContent = Math.ceil((STEP_MS - into)/1000);
+    $('qzNextSec').textContent = Math.ceil((SM - into)/1000);
   }
 }
 
