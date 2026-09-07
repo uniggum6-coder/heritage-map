@@ -508,7 +508,7 @@
       <div id="qzHome" class="qz-pane">
         <div class="qz-top">
           <h2>🎯 국가유산 퀴즈</h2>
-          <button class="qz-back" onclick="window.hmQuizExit()">✕ 닫기</button>
+          <button class="qz-back" onclick="window.hmCloseView()">✕ 닫기</button>
         </div>
         <p class="qz-lead">10문제를 풀고 점수를 겨뤄요. 혼자 해도 되고, 코드를 나눠주면 여럿이 같이 할 수 있어요.</p>
 
@@ -598,7 +598,7 @@
         <div id="qzReviewBox" class="qz-review"></div>
         <div class="qz-result-btns">
           <button class="qz-btn qz-btn-main" onclick="window.hmQuizRestart()">다시 하기</button>
-          <button class="qz-btn" onclick="window.hmQuizExit()">지도로 돌아가기</button>
+          <button class="qz-btn" onclick="window.hmCloseView()">지도로 돌아가기</button>
         </div>
       </div>
 
@@ -619,7 +619,7 @@
       <div id="rcHome" class="qz-pane">
         <div class="qz-top">
           <h2>🏃 팀 대결</h2>
-          <button class="qz-back" onclick="window.hmRaceExit()">✕ 닫기</button>
+          <button class="qz-back" onclick="window.hmCloseView()">✕ 닫기</button>
         </div>
         <p class="qz-lead">팀을 나눠 정해진 시간 안에 국가유산을 많이 찾아 인증하는 대결이에요. 현장체험학습이나 가족 나들이에 쓰면 좋아요.</p>
 
@@ -689,7 +689,7 @@
         <div id="rcRankList" class="qz-ranks"></div>
         <div id="rcDetail" class="qz-review"></div>
         <div class="qz-result-btns">
-          <button class="qz-btn" onclick="window.hmRaceExit()">지도로 돌아가기</button>
+          <button class="qz-btn" onclick="window.hmCloseView()">지도로 돌아가기</button>
         </div>
       </div>
 
@@ -3676,5 +3676,69 @@ $('rcShareBtn').addEventListener('click', () => {
 })();
 </script>
 
+
+<!-- ---- 휴대폰 뒤로가기: 앱이 꺼지지 않고 지도로 돌아가게 ---- -->
+<script>
+window.addEventListener('load', function(){
+  var VIEWS = ['view-quiz','view-race','view-board','view-species','view-list'];
+
+  function visibleView(){
+    for(var i=0;i<VIEWS.length;i++){
+      var e = document.getElementById(VIEWS[i]);
+      if(e && getComputedStyle(e).display !== 'none') return VIEWS[i];
+    }
+    return null;
+  }
+  function backToMap(){
+    var v = visibleView();
+    if(!v) return false;
+    if(v === 'view-quiz' && window.hmQuizExit){ window.hmQuizExit(); return true; }
+    if(v === 'view-race' && window.hmRaceExit){ window.hmRaceExit(); return true; }
+    document.getElementById(v).style.display = 'none';
+    var m = document.getElementById('view-map');
+    if(m) m.style.display = 'flex';
+    setTimeout(function(){ try{ window.map && window.map.invalidateSize(); }catch(e){} }, 50);
+    return true;
+  }
+  window.hmBackToMap = backToMap;
+
+  // ✕ 버튼도 뒤로가기와 똑같이 동작시켜서 기록이 남지 않게
+  window.hmCloseView = function(){
+    try{
+      if(history.state && history.state.hmView){ history.back(); return; }
+    }catch(e){}
+    backToMap();
+  };
+
+  // 전체 화면을 열 때 기록을 하나 쌓아둔다 → 뒤로가기가 앱을 끄지 않고 이 기록을 소비함
+  ['showQuiz','showRace','showBoard','showSpeciesList'].forEach(function(fn){
+    var orig = window[fn];
+    if(typeof orig !== 'function') return;
+    window[fn] = function(){
+      var r = orig.apply(this, arguments);
+      try{
+        if(!history.state || !history.state.hmView) history.pushState({ hmView: 1 }, '');
+      }catch(e){}
+      return r;
+    };
+  });
+
+  // 기존 "← 지도로 돌아가기" 버튼들도 기록을 정리하도록
+  ['tabMapBtnFromSpecies','tabMapBtnFromBoard','tabMapBtn','tabMapBtnFromList'].forEach(function(id){
+    var b = document.getElementById(id);
+    if(!b) return;
+    b.addEventListener('click', function(){
+      try{ if(history.state && history.state.hmView) history.back(); }catch(e){}
+    });
+  });
+
+  window.addEventListener('popstate', function(){
+    // 사진 확대가 열려 있으면 그건 사진 쪽에서 처리함
+    var lb = document.getElementById('hmLightbox');
+    if(lb && lb.classList.contains('on')) return;
+    backToMap();
+  });
+});
+</script>
 </body>
 </html>
