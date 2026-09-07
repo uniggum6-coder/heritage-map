@@ -207,10 +207,11 @@
   .qz-verdict.ok{color:#1f7a4d;}
   .qz-verdict.no{color:#b04a3a;}
   .qz-verdict small{display:block;font-size:13px;font-weight:400;color:#7b8888;margin-top:6px;}
-  .qz-answer-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:14px;
-                  display:flex;gap:14px;align-items:center;}
-  .qz-answer-card img{width:104px;height:78px;object-fit:cover;border-radius:8px;background:#eee;flex:0 0 auto;}
-  .qz-answer-name{font-size:16px;font-weight:700;color:var(--teal,#0f3d3e);line-height:1.4;word-break:keep-all;}
+  .qz-answer-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:16px;
+                  text-align:center;}
+  .qz-answer-card img{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#f2efe9;
+                      margin-top:12px;display:block;}
+  .qz-answer-name{font-size:18px;font-weight:800;color:var(--teal,#0f3d3e);line-height:1.4;word-break:keep-all;}
   .qz-answer-meta{font-size:12.5px;color:#8a9595;margin-top:5px;}
   .qz-next{text-align:center;font-size:12.5px;color:#98a3a3;margin-top:18px;}
   #qzResult{position:relative;}
@@ -231,7 +232,10 @@
           font-size:13px;cursor:pointer;font-family:inherit;color:#5c6a6a;}
   .qz-tab.on{background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);font-weight:700;}
   .qz-review{display:grid;gap:10px;margin-bottom:20px;}
-  .qz-rv{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:10px;padding:13px;font-size:13px;line-height:1.7;}
+  .qz-rv{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:10px;padding:13px;font-size:13px;line-height:1.7;overflow:hidden;}
+  .qz-rv-img{float:right;width:96px;height:72px;object-fit:cover;border-radius:7px;background:#f2efe9;
+             margin:0 0 8px 12px;cursor:zoom-in;}
+  .qz-rv .ans{clear:both;}
   .qz-rv .rate{font-size:12px;color:#b04a3a;font-weight:700;margin-bottom:5px;}
   .qz-rv .ans{color:var(--teal,#0f3d3e);font-weight:700;margin-top:7px;}
   .qz-rv .txt{color:#5c6a6a;word-break:keep-all;}
@@ -290,6 +294,26 @@
   #quizBtn:hover{background:#f6d072;}
   #raceBtn{padding:8px 13px;background:#7fb3a3;color:#0d2a26;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
   #raceBtn:hover{background:#93c4b5;}
+  .hb-menu-wrap{position:relative;}
+  #hmMenuBtn{padding:8px 13px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;
+             font-size:15px;line-height:1;font-weight:700;cursor:pointer;}
+  #hmMenuBtn:hover{background:rgba(255,255,255,.3);}
+  .hb-menu-panel{display:none;position:fixed;z-index:12000;
+                 background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;
+                 box-shadow:0 8px 28px rgba(0,0,0,.22);padding:7px;min-width:190px;}
+  .hb-menu-panel.open{display:block;}
+  #hmMenu > button{display:block;width:100%;text-align:left;padding:10px 13px;border:0;background:none;
+                          font-size:13.5px;font-family:inherit;color:#22302f;cursor:pointer;border-radius:8px;
+                          white-space:nowrap;}
+  #hmMenu > button:hover{background:#f0ece4;}
+  .hb-menu-sep{height:1px;background:var(--line,#e3ddd2);margin:6px 4px;}
+  #hmMenu .lang-switcher{background:#f0ece4;margin:4px;justify-content:center;}
+  #hmMenu .lang-btn{color:#5c6a6a;}
+  #hmMenu .lang-btn.active{background:var(--teal,#0f3d3e);color:#fff;opacity:1;}
+  /* 폰에서는 헤더의 닉네임/로그아웃 버튼을 숨기고 메뉴 안에서 쓴다 */
+  @media(max-width:760px){
+    .auth-area #nickBtn, .auth-area #logoutBtn{display:none;}
+  }
   #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #charPickerBtn:hover{background:rgba(255,255,255,.28);}
   .lang-switcher{display:flex;align-items:center;background:rgba(255,255,255,.16);border-radius:20px;padding:3px;gap:2px;}
@@ -421,17 +445,26 @@
     </div>
     <div class="hb-actions">
       <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
-      <button id="helpBtn" data-i18n="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
-      <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
-      <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
-      <button id="boardBtn" data-i18n="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
       <button id="quizBtn" data-i18n="quizBtn" class="hb-quiz" onclick="window.showQuiz && window.showQuiz()">🎯 퀴즈</button>
       <button id="raceBtn" data-i18n="raceBtn" onclick="window.showRace && window.showRace()">🏃 팀 대결</button>
-      <div class="lang-switcher" id="langSwitcher">
-        <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
-        <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
-        <button class="lang-btn" data-lang="cn" onclick="window.hmSetLang && window.hmSetLang('cn')">中</button>
-        <button class="lang-btn" data-lang="jp" onclick="window.hmSetLang && window.hmSetLang('jp')">日</button>
+      <div class="hb-menu-wrap">
+        <button id="hmMenuBtn" aria-label="메뉴" onclick="window.hmToggleMenu && window.hmToggleMenu()">☰</button>
+        <div id="hmMenu" class="hb-menu-panel">
+          <button id="helpBtn" data-i18n="helpBtn" onclick="window.hmMenuPick(function(){ window.showHelpModal && window.showHelpModal(); })">방문 인증 안내</button>
+          <button id="rankBtn" data-i18n="rankBtn" onclick="window.hmMenuPick(function(){ window.showHallOfFame && window.showHallOfFame(); })">🏆 명예의 전당</button>
+          <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.hmMenuPick(function(){ window.showCharPicker && window.showCharPicker(); })">🎎 내 캐릭터</button>
+          <button id="boardBtn" data-i18n="boardBtn" onclick="window.hmMenuPick(function(){ window.showBoard && window.showBoard(); })">💬 게시판</button>
+          <div class="hb-menu-sep"></div>
+          <div class="lang-switcher" id="langSwitcher">
+            <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
+            <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
+            <button class="lang-btn" data-lang="cn" onclick="window.hmSetLang && window.hmSetLang('cn')">中</button>
+            <button class="lang-btn" data-lang="jp" onclick="window.hmSetLang && window.hmSetLang('jp')">日</button>
+          </div>
+          <div class="hb-menu-sep" id="hmMenuAuthSep"></div>
+          <button id="hmMenuNick" onclick="window.hmMenuPick(function(){ var b=document.getElementById('nickBtn'); b && b.click(); })">닉네임 변경</button>
+          <button id="hmMenuLogout" onclick="window.hmMenuPick(function(){ var b=document.getElementById('logoutBtn'); b && b.click(); })">로그아웃</button>
+        </div>
       </div>
       <div class="auth-area" id="authArea">
         <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
@@ -578,11 +611,9 @@
       <div id="qzReveal" class="qz-pane" style="display:none">
         <div class="qz-verdict" id="qzVerdict"></div>
         <div class="qz-answer-card">
+          <div class="qz-answer-name" id="qzAnswerName"></div>
+          <div class="qz-answer-meta" id="qzAnswerMeta"></div>
           <img id="qzRevealImg" alt="" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){this.src=s.replace('/thumb/','/');}else{this.style.display='none';}">
-          <div>
-            <div class="qz-answer-name" id="qzAnswerName"></div>
-            <div class="qz-answer-meta" id="qzAnswerMeta"></div>
-          </div>
         </div>
         <div class="qz-next">다음 문제 <span id="qzNextSec">5</span>초 전</div>
       </div>
@@ -704,7 +735,7 @@
 
 <div class="msg-overlay" id="helpOverlay"><div class="help-box">
   <h3 data-i18n="helpTitle">📍 방문 인증이 뭔가요?</h3>
-  <div class="step"><div class="step-num">1</div><p data-i18n-html="helpStep1">유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)</p></div>
+  <div class="step"><div class="step-num">1</div><p data-i18n-html="helpStep1">유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 100m 이내여야 인증돼요)</p></div>
   <div class="step"><div class="step-num">2</div><p data-i18n-html="helpStep2">인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.</p></div>
   <div class="step"><div class="step-num">3</div><p data-i18n-html="helpStep3">인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.</p></div>
   <div class="rank-grid">
@@ -803,7 +834,7 @@ const I18N = {
     btnClose: '닫기',
     btnGotIt: '확인했어요',
     helpTitle: '📍 방문 인증이 뭔가요?',
-    helpStep1: '유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)',
+    helpStep1: '유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 100m 이내여야 인증돼요)',
     helpStep2: '인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.',
     helpStep3: '인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.',
     rankGridVisits: '방문 수',
@@ -860,7 +891,7 @@ const I18N = {
     btnClose: 'Close',
     btnGotIt: 'Got it',
     helpTitle: '📍 What is Visit Verification?',
-    helpStep1: 'Visit the heritage site in person and tap the <b>"Verify Visit"</b> button in the map popup to confirm your location. (You must be within 200m of the site.)',
+    helpStep1: 'Visit the heritage site in person and tap the <b>"Verify Visit"</b> button in the map popup to confirm your location. (You must be within 100m of the site.)',
     helpStep2: 'Once verified, a green <b>checkmark (✓)</b> stays on that heritage marker on the map, so you can see at a glance where you\'ve been.',
     helpStep3: 'As your verified visit count grows, your <b>rank</b> automatically goes up, like a Joseon-era government post. It\'s shown next to your name in the top right.',
     rankGridVisits: 'Visits',
@@ -917,7 +948,7 @@ const I18N = {
     btnClose: '关闭',
     btnGotIt: '知道了',
     helpTitle: '📍 什么是访问认证？',
-    helpStep1: '亲自前往遗产现场，点击地图弹窗中的<b>"现场认证"</b>按钮确认位置。（需在现场200米以内才能认证）',
+    helpStep1: '亲自前往遗产现场，点击地图弹窗中的<b>"现场认证"</b>按钮确认位置。（需在现场100米以内才能认证）',
     helpStep2: '认证成功后，地图上该遗产标记会显示绿色<b>对勾（✓）</b>，一目了然地看到自己去过的地方。',
     helpStep3: '随着认证的遗产数量增加，<b>等级</b>会像朝鲜时代官职一样自动提升。显示在右上角我的名字旁边。',
     rankGridVisits: '访问数',
@@ -974,7 +1005,7 @@ const I18N = {
     btnClose: '閉じる',
     btnGotIt: '確認しました',
     helpTitle: '📍 訪問認証とは？',
-    helpStep1: '遺産の現場に実際に訪問し、地図ポップアップの<b>「現地認証」</b>ボタンを押すと位置が確認されます。（現地から200m以内である必要があります）',
+    helpStep1: '遺産の現場に実際に訪問し、地図ポップアップの<b>「現地認証」</b>ボタンを押すと位置が確認されます。（現地から100m以内である必要があります）',
     helpStep2: '認証に成功すると、地図上のその遺産マーカーに緑色の<b>チェック（✓）</b>が表示されます。自分がどこを訪れたか一目でわかります。',
     helpStep3: '認証した遺産数が増えると、朝鮮時代の官職のように<b>ランク</b>が自動的に上がります。右上の自分の名前の横に表示されます。',
     rankGridVisits: '訪問数',
@@ -2360,6 +2391,7 @@ function hmPlaceLine(names){
   return names[0] + ' 외 ' + (names.length - 1) + '건';
 }
 
+const VERIFY_RADIUS_M = 100;   // 현장 인증이 인정되는 거리
 window.hmVerifyVisit = (hid, targetLat, targetLon) => {
   if(!currentUser){
     window.showMsg('현장 인증을 하려면 먼저 구글 계정으로 로그인해주세요. (오른쪽 위 로그인 버튼)');
@@ -2372,8 +2404,8 @@ window.hmVerifyVisit = (hid, targetLat, targetLon) => {
   window.showLoadingMsg('📍 위치 확인 중…');
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const dist = haversineMeters(pos.coords.latitude, pos.coords.longitude, targetLat, targetLon);
-    if(dist > 200){
-      window.showMsg(`현재 위치가 유산 현장에서 약 ${Math.round(dist).toLocaleString()}m 떨어져 있어요. 현장 200m 이내에서 다시 시도해주세요.`);
+    if(dist > VERIFY_RADIUS_M){
+      window.showMsg(`현재 위치가 유산 현장에서 약 ${Math.round(dist).toLocaleString()}m 떨어져 있어요. 현장 ${VERIFY_RADIUS_M}m 이내에서 다시 시도해주세요.`);
       return;
     }
     try{
@@ -2417,6 +2449,7 @@ window.hmVerifyVisit = (hid, targetLat, targetLon) => {
   }, {enableHighAccuracy:true, timeout:10000});
 };
 
+const BULK_RADIUS_M = 100;   // 주변 일괄인증이 훑는 거리
 window.hmBulkVerify = () => {
   if(!currentUser){
     window.showMsg('일괄 인증을 하려면 먼저 구글 계정으로 로그인해주세요. (오른쪽 위 로그인 버튼)');
@@ -2432,12 +2465,12 @@ window.hmBulkVerify = () => {
     const nearby = allMarkers.filter(m => {
       if(visitedIds.has(m._hid)) return false; // 이미 인증한 건 제외
       const dist = haversineMeters(myLat, myLon, m._d.la, m._d.lo);
-      if(dist > 200) return false;
+      if(dist > BULK_RADIUS_M) return false;
       m.__dist = dist;
       return true;
     }).sort((a,b) => a.__dist - b.__dist);   // 가까운 순
     if(nearby.length === 0){
-      window.showMsg('현재 위치 200m 이내에 아직 인증 안 한 유산이 없어요.');
+      window.showMsg(`현재 위치 ${BULK_RADIUS_M}m 이내에 아직 인증 안 한 유산이 없어요.`);
       return;
     }
     document.getElementById('msgOverlay').style.display = 'none';
@@ -2955,12 +2988,12 @@ const preloaded = [];
 function preloadPhotos(qs){
   (qs || []).forEach(q => {
     if(!q.i) return;
-    const im = new Image();
-    im.src = q.i;
-    preloaded.push(im);            // 참조를 남겨야 브라우저가 안 버림
-    im.onerror = () => {           // 썸네일이 없으면 원본으로 한 번 더
-      const o = new Image(); o.src = q.i.replace('/thumb/','/'); preloaded.push(o);
-    };
+    const big = new Image();       // 정답 화면에 크게 나올 원본
+    big.src = q.i.replace('/thumb/','/');
+    preloaded.push(big);
+    const small = new Image();     // 복습 화면에 작게 나올 썸네일
+    small.src = q.i;
+    preloaded.push(small);
   });
 }
 function stopLoop(){ if(tick){ clearInterval(tick); tick = null; } }
@@ -3046,7 +3079,8 @@ function drawReveal(idx, q, extra){
         ? `시간 초과<small>정답은 ${'①②③④'[q.ans]} 였어요 · 지금 ${cur}점</small>`
         : `✕ 아쉬워요<small>고른 답 ${'①②③④'[pick]} · 정답은 ${'①②③④'[q.ans]} · 지금 ${cur}점</small>`);
   const img = $('qzRevealImg');
-  if(q.i){ img.style.display=''; img.src = q.i; } else { img.style.display='none'; }
+  if(q.i){ img.style.display=''; img.src = q.i.replace('/thumb/','/'); }   // 크게 보이므로 원본
+  else { img.style.display='none'; }
   $('qzAnswerName').textContent = q.opts[q.ans];
   $('qzAnswerMeta').textContent = [q.c, (q.r||'') + ' ' + (q.s||'')].join(' · ').trim();
 }
@@ -3123,6 +3157,12 @@ async function showResult(){
   renderReview('wrong');
 }
 
+// 복습 화면에 글 옆으로 흐르는 작은 사진
+function rvImg(q){
+  if(!q.i) return '';
+  return `<img class="qz-rv-img hm-zoomable" loading="lazy" src="${esc(q.i)}"
+      onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">`;
+}
 function renderReview(kind){
   $('qzTabWrong').classList.toggle('on', kind==='wrong');
   $('qzTabHard').classList.toggle('on', kind==='hard');
@@ -3133,6 +3173,7 @@ function renderReview(kind){
     const items = qs.map((q,i)=>({q,i})).filter(x => !mine[x.i]);
     if(!items.length){ box.innerHTML = '<p class="qz-note">틀린 문제가 없어요. 완벽합니다!</p>'; return; }
     box.innerHTML = items.map(x => `<div class="qz-rv">
+        ${rvImg(x.q)}
         <div class="txt">${esc(x.q.q)}</div>
         <div class="ans">정답 · ${esc(x.q.opts[x.q.ans])}</div>
       </div>`).join('');
@@ -3142,6 +3183,7 @@ function renderReview(kind){
     const stat = qs.map((q,i) => ({ q, i, hit: ps.filter(p => (p.marks||[])[i]).length }));
     stat.sort((a,b) => a.hit - b.hit);
     box.innerHTML = stat.slice(0,3).map(x => `<div class="qz-rv">
+        ${rvImg(x.q)}
         <div class="rate">${x.i+1}번 문제 · ${ps.length}명 중 ${x.hit}명 정답 (${Math.round(100*x.hit/ps.length)}%)</div>
         <div class="txt">${esc(x.q.q)}</div>
         <div class="ans">정답 · ${esc(x.q.opts[x.q.ans])}</div>
@@ -3738,6 +3780,40 @@ window.addEventListener('load', function(){
     if(lb && lb.classList.contains('on')) return;
     backToMap();
   });
+});
+</script>
+
+<!-- ---- 헤더 메뉴 ---- -->
+<script>
+window.hmToggleMenu = function(){
+  var m = document.getElementById('hmMenu');
+  if(!m) return;
+  var open = m.classList.contains('open');
+  if(!open){
+    // 로그인 상태에 따라 닉네임/로그아웃 줄을 보이거나 감춘다
+    var on = !!document.getElementById('logoutBtn');
+    ['hmMenuNick','hmMenuLogout','hmMenuAuthSep'].forEach(function(id){
+      var e = document.getElementById(id); if(e) e.style.display = on ? '' : 'none';
+    });
+    // 헤더가 잘라내지 않도록 화면 기준으로 자리를 잡는다
+    var b = document.getElementById('hmMenuBtn');
+    if(b){
+      var r = b.getBoundingClientRect();
+      m.style.top   = Math.round(r.bottom + 8) + 'px';
+      m.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+    }
+  }
+  m.classList.toggle('open', !open);
+};
+window.hmMenuPick = function(fn){
+  var m = document.getElementById('hmMenu'); if(m) m.classList.remove('open');
+  setTimeout(fn, 10);
+};
+document.addEventListener('click', function(ev){
+  var m = document.getElementById('hmMenu');
+  if(!m || !m.classList.contains('open')) return;
+  if(ev.target.closest && ev.target.closest('.hb-menu-wrap')) return;
+  m.classList.remove('open');
 });
 </script>
 </body>
