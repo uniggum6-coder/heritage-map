@@ -249,6 +249,7 @@
   footer{font-size:11px;color:var(--muted);text-align:center;padding:8px;background:var(--card);border-top:1px solid var(--line);}
   .msg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:9999;}
   .msg-box{background:#fff;padding:24px;border-radius:12px;max-width:360px;text-align:center;}
+  .msg-box #msgText{white-space:pre-line;margin:0;line-height:1.75;word-break:keep-all;}
   .msg-box button{margin-top:14px;padding:8px 20px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;}
   #helpBtn, #bulkVerifyBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #helpBtn:hover, #bulkVerifyBtn:hover{background:rgba(255,255,255,.28);}
@@ -556,7 +557,6 @@
 
       <!-- 결과 -->
       <div id="qzResult" class="qz-pane" style="display:none">
-        <canvas id="qzConfetti"></canvas>
         <h2 class="qz-result-title">🏆 최종 순위</h2>
         <div id="qzRankList" class="qz-ranks"></div>
         <div class="qz-result-tabs">
@@ -2222,6 +2222,21 @@ window.hmDeleteBoardPost = async (postId) => {
   }
 };
 
+// 인증 결과 문구에 쓸 유산 이름
+function hmNameOf(hid){
+  try{
+    const m = (window.allMarkers || allMarkers || []).find(x => x._hid === hid);
+    return (m && m._d && m._d.n) ? m._d.n : '';
+  }catch(e){ return ''; }
+}
+// 여러 건이면: 가장 가까운 곳 이름 + 외 N건
+function hmPlaceLine(names){
+  if(!names.length) return '';
+  if(names.length === 1) return names[0];
+  if(names.length <= 3) return names.join(', ');
+  return names[0] + ' 외 ' + (names.length - 1) + '건';
+}
+
 window.hmVerifyVisit = (hid, targetLat, targetLon) => {
   if(!currentUser){
     window.showMsg('현장 인증을 하려면 먼저 구글 계정으로 로그인해주세요. (오른쪽 위 로그인 버튼)');
@@ -2266,7 +2281,9 @@ window.hmVerifyVisit = (hid, targetLat, targetLon) => {
       }, {merge:true});
       updateAuthUI(newPlaceCount, newRank, newItemCount);
       window.markVisitedOnMap && window.markVisitedOnMap(hid);
-      window.showMsg(`인증 완료! 현재 등급: ${newRank} (${newPlaceCount}곳)`);
+      window.hmConfetti && window.hmConfetti();
+      const nm = hmNameOf(hid);
+      window.showMsg(`🎉 인증 완료!\n\n${nm ? '📍 ' + nm + '\n\n' : ''}현재 등급: ${newRank} (${newPlaceCount}곳)`);
     }catch(err){
       window.showMsg('인증 중 오류가 발생했습니다: ' + err.message);
     }
@@ -2290,14 +2307,18 @@ window.hmBulkVerify = () => {
     const nearby = allMarkers.filter(m => {
       if(visitedIds.has(m._hid)) return false; // 이미 인증한 건 제외
       const dist = haversineMeters(myLat, myLon, m._d.la, m._d.lo);
-      return dist <= 200;
-    });
+      if(dist > 200) return false;
+      m.__dist = dist;
+      return true;
+    }).sort((a,b) => a.__dist - b.__dist);   // 가까운 순
     if(nearby.length === 0){
       window.showMsg('현재 위치 200m 이내에 아직 인증 안 한 유산이 없어요.');
       return;
     }
     document.getElementById('msgOverlay').style.display = 'none';
-    const proceed = window.confirm(`이 주변에서 ${nearby.length}건을 찾았어요.\n\n한 번에 인증하면 ${nearby.length}건 모두 "인증 완료" 표시는 되지만, 등급 계산상으로는 같은 위치라 "1곳"으로만 카운트돼요.\n\n계속할까요?`);
+    const preview = nearby.slice(0, 5).map(m => '· ' + m._d.n).join('\n')
+                    + (nearby.length > 5 ? `\n· … 외 ${nearby.length - 5}건` : '');
+    const proceed = window.confirm(`이 주변에서 ${nearby.length}건을 찾았어요.\n\n${preview}\n\n한 번에 인증하면 ${nearby.length}건 모두 "인증 완료" 표시는 되지만, 등급 계산상으로는 같은 위치라 "1곳"으로만 카운트돼요.\n\n계속할까요?`);
     if(!proceed) return;
     window.showLoadingMsg(`📍 ${nearby.length}건 인증하는 중…`);
     try{
@@ -2327,7 +2348,9 @@ window.hmBulkVerify = () => {
       }, {merge:true});
       updateAuthUI(newPlaceCount, newRank, newItemCount);
       nearby.forEach(m => window.markVisitedOnMap && window.markVisitedOnMap(m._hid));
-      window.showMsg(`${nearby.length}건 인증 완료! (이 위치는 1곳으로 카운트돼요) 현재 등급: ${newRank} (${newPlaceCount}곳)`);
+      window.hmConfetti && window.hmConfetti();
+      const line = hmPlaceLine(nearby.map(m => m._d.n));
+      window.showMsg(`🎉 ${nearby.length}건 인증 완료!\n\n📍 ${line}\n\n(이 위치는 1곳으로 카운트돼요)\n현재 등급: ${newRank} (${newPlaceCount}곳)`);
     }catch(err){
       window.showMsg('일괄 인증 중 오류가 발생했습니다: ' + err.message);
     }
@@ -3001,8 +3024,13 @@ function renderReview(kind){
 
 /* ---------- 폭죽 ---------- */
 function confetti(){
-  const cv = $('qzConfetti');
-  if(!cv) return;
+  let cv = document.getElementById('hmConfettiCanvas');
+  if(!cv){
+    cv = document.createElement('canvas');
+    cv.id = 'hmConfettiCanvas';
+    cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:100001;display:none;';
+    document.body.appendChild(cv);
+  }
   cv.style.display = 'block';
   const cx = cv.getContext('2d');
   const W = cv.width  = window.innerWidth;
@@ -3030,6 +3058,7 @@ function confetti(){
     else { cx.clearRect(0,0,W,H); cv.style.display='none'; }
   })();
 }
+window.hmConfetti = confetti;   // 방문 인증에서도 씀
 
 /* ---------- 나가기 ---------- */
 function cleanup(){
