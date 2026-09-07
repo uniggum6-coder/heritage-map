@@ -1,0 +1,3049 @@
+<!DOCTYPE html>
+<html lang="ko" translate="no">
+<head>
+  <meta name="google" content="notranslate">
+  <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
+  <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<meta property="og:title" content="국가유산지도">
+<meta property="og:description" content="전국 국가유산 위치 안내 — 문화유산·자연유산을 지도에서 확인하세요">
+<meta property="og:image" content="https://uniggum6-coder.github.io/heritage-map/share-card.png?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://uniggum6-coder.github.io/heritage-map/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="국가유산지도">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "국가유산지도",
+  "alternateName": ["Korean Heritage Map", "국가유산 지도"],
+  "url": "https://uniggum6-coder.github.io/",
+  "description": "천연기념물, 명승, 국보, 보물, 사적 등 전국 국가유산 14,000여 건의 위치를 지도에서 확인하는 서비스",
+  "inLanguage": "ko"
+}
+</script>
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3d3e">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-64.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="국가유산지도">
+<title>국가유산지도 — 전국 국가유산 위치 안내</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+<style>
+  :root{
+    --navy:#0f3d3e; --teal:#1f6f6b; --teal-light:#4fa39d; --sand:#f4efe6;
+    --ink:#1c2b2b; --muted:#6b7d7c; --line:#e2ddd2; --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html{color-scheme:light;}
+  body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--sand);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;padding:0;position:relative;overflow:hidden;flex:none;max-height:200px;transition:max-height .25s ease,opacity .2s ease;}
+  header.header-hidden{max-height:0;opacity:0;}
+  .headerbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;position:relative;z-index:2;
+    flex-wrap:wrap;gap:10px;}
+  /* 버튼 줄: 화면이 좁아지면 자리가 모자란 만큼 다음 줄로 넘긴다.
+     (예전에는 640px 이하에서만 줄바꿈이 돼서, 태블릿처럼 그보다 넓은 화면에서는
+      한 줄에 밀어 넣다가 오른쪽 끝의 닉네임 변경·로그아웃이 화면 밖으로 잘렸음) */
+  .headerbar .hb-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    justify-content:flex-end;min-width:0;max-width:100%;}
+  .brand{display:flex;flex-direction:column;gap:2px;}
+  .brand .brand-title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;}
+  .brand .src-note{font-size:11px;font-weight:400;opacity:0.7;margin-left:10px;}
+  .brand .logo-mark{height:26px;width:auto;flex:none;}
+  .brand .brand-sub{font-size:12px;opacity:0.8;margin-left:22px;}
+  #tabListBtn{margin-top:14px;width:100%;padding:9px;background:var(--teal);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  #tabListBtn:hover{background:var(--navy);}
+  #tabMapBtn{margin:20px 28px 4px;padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;}
+  #tabMapBtn:hover{background:var(--teal);}
+  main{display:flex;flex:1;min-height:0;}
+  #view-map{display:flex;width:100%;height:100%;position:relative;}
+  aside{width:300px;min-width:260px;background:var(--card);border-right:1px solid var(--line);padding:18px;overflow-y:auto;transition:margin-left .25s ease;position:relative;}
+  aside.collapsed{margin-left:-300px;}
+  .sheet-handle{display:none;}
+  .sidebar-logo-card{
+    display:flex;align-items:center;gap:12px;
+    background:var(--sand);border-radius:10px;
+    padding:14px;margin-bottom:18px;
+  }
+  .sidebar-logo-card img{height:88px;width:auto;flex:none;}
+  .sidebar-logo-card span{font-weight:700;font-size:15px;color:var(--navy);}
+  .sidebar-logo-card .catchphrase{display:flex;flex-direction:column;gap:8px;}
+  .sidebar-logo-card .catchphrase strong{font-size:23px;font-weight:700;color:var(--navy);}
+  .sidebar-logo-card .catchphrase{font-size:14px;font-weight:500;color:var(--navy);}
+
+  #sidebarToggle{
+    position:absolute;top:50%;left:300px;transform:translateY(-50%);z-index:1000;
+    width:28px;height:90px;background:#fff;border:1px solid var(--line);border-left:none;
+    border-radius:0 10px 10px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    box-shadow:2px 0 6px rgba(0,0,0,.18);transition:left .25s ease;font-size:18px;color:#e0392b;font-weight:700;
+  }
+  aside.collapsed ~ #sidebarToggle{left:0;}
+  aside h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 8px;}
+  aside h3:first-child{margin-top:0;}
+  input[type=text]{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;}
+  select{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;}
+  .cat-list input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex:none;}
+  .cat-list label{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;cursor:pointer;}
+  .cat-swatch{width:11px;height:11px;border-radius:3px;flex:none;}
+  .group-swatch{width:16px;height:16px;border-radius:4px;flex:none;}
+  #resetBtn{margin-top:14px;width:100%;padding:9px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+  #resetBtn:hover{background:var(--teal);}
+  #count{margin-top:14px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;}
+  #map{flex:1;}
+  .leaflet-popup-content{font-family:inherit;min-width:220px;max-width:280px;max-height:320px;overflow-y:auto;}
+  .popup-cat{display:inline-block;font-size:11px;font-weight:700;color:#fff;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
+  .popup-title{font-size:15px;font-weight:700;margin:0 0 4px;}
+  .popup-meta{font-size:12px;color:var(--muted);margin:0 0 6px;}
+  .popup-img{width:100%;height:110px;object-fit:cover;border-radius:6px;display:block;cursor:zoom-in;}
+  .popup-img-wrap{position:relative;margin-bottom:6px;line-height:0;}
+  .popup-img-zoom{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;
+    background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;pointer-events:none;
+    box-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .popup-img-zoom svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;}
+  .popup-img-wrap::after{content:'';position:absolute;inset:0;border-radius:6px;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(0,0,0,0) 60%,rgba(0,0,0,.18) 100%);}
+  #hmLightbox{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
+  #hmLightbox.on{display:flex;}
+  #hmLightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 6px 30px rgba(0,0,0,.6);
+    transition:transform .25s ease;transform-origin:center center;}
+  #hmLightbox.rot img{border-radius:4px;}
+  #hmLightboxClose,#hmLightboxRotate{position:absolute;top:10px;width:42px;height:42px;border:0;border-radius:50%;
+    background:rgba(255,255,255,.15);color:#fff;font-size:24px;line-height:42px;cursor:pointer;padding:0;}
+  #hmLightboxClose{right:14px;font-size:26px;}
+  #hmLightboxRotate{right:64px;font-size:20px;}
+  #hmLightboxClose:hover,#hmLightboxRotate:hover{background:rgba(255,255,255,.3);}
+  #hmLightboxRotate.on{background:rgba(255,255,255,.42);}
+  #hmLightboxWait{position:absolute;color:#fff;font-size:13px;opacity:.8;}
+  .popup-desc{font-size:12.5px;line-height:1.5;color:#333;}
+  .popup-transit-btn{display:block;padding:8px 6px;background:var(--navy);color:#ffffff !important;text-align:center;text-decoration:none;border-radius:6px;font-size:11.5px;font-weight:700;flex:1;}
+  /* a 태그라 브라우저 기본 링크색이 끼어드는 경우가 있어 모든 상태에서 흰색으로 고정 */
+  .popup-transit-btn:link,.popup-transit-btn:visited,.popup-transit-btn:hover,.popup-transit-btn:active{color:#ffffff !important;text-decoration:none;}
+  .popup-transit-btn:hover{background:var(--teal);}
+  .cluster-pick:hover{background:#f4efe6;}
+  .cluster-pick:last-child{border-bottom:none;}
+  .marker-tip{background:var(--navy);color:#fff;border:none;font-size:12px;padding:5px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);line-height:1.3;text-align:center;}
+  .marker-tip .tip-cat{font-size:10.5px;opacity:0.8;font-weight:500;}
+  .marker-tip .tip-name{font-weight:700;}
+  .marker-tip::before{border-top-color:var(--navy);}
+  /* custom cluster icon (colored by dominant category, opaque, white ring) */
+  .custom-cluster-icon{background:transparent;border:none;}
+  /* intangible list view */
+  #view-list{display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;}
+  .ilist-controls{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .ilist-controls input, .ilist-controls select{max-width:260px;}
+  .icards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+  .icard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;}
+  .icard img{width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;background:#eee;}
+  .icard img.hm-zoomable{cursor:zoom-in;}
+  /* ---------- 퀴즈 ---------- */
+  #view-quiz{background:var(--bg,#f4efe6);}
+  .qz-wrap{max-width:620px;margin:0 auto;padding:20px 16px 60px;}
+  .qz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px;}
+  .qz-top h2{font-size:20px;margin:0;color:var(--teal,#0f3d3e);}
+  .qz-back{background:none;border:0;font-size:13px;color:#7b8888;cursor:pointer;padding:6px;}
+  .qz-lead{font-size:13.5px;color:#5c6a6a;line-height:1.7;margin:0 0 18px;}
+  .qz-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .qz-card h3{margin:0 0 4px;font-size:15px;color:var(--teal,#0f3d3e);}
+  .qz-sub{margin:0 0 10px;font-size:12.5px;color:#8a9595;}
+  .qz-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .qz-field{display:flex;align-items:center;gap:7px;font-size:13px;padding:9px 10px;border:1px solid var(--line,#e3ddd2);
+            border-radius:8px;cursor:pointer;background:#fbf9f5;}
+  .qz-field.on{background:#e8f0ef;border-color:var(--teal,#0f3d3e);font-weight:700;color:var(--teal,#0f3d3e);}
+  .qz-field input{margin:0;}
+  .qz-field small{color:#98a3a3;font-weight:400;}
+  .qz-name-row{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;color:#5c6a6a;}
+  .qz-name-row input{flex:1;padding:9px 10px;border:1px solid var(--line,#e3ddd2);border-radius:8px;font-size:14px;min-width:0;}
+  .qz-btn{padding:10px 18px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:8px;
+          font-size:14px;cursor:pointer;font-family:inherit;color:#2b3a3a;}
+  .qz-btn:hover{background:#f3efe8;}
+  .qz-btn-main{width:100%;background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);
+               font-weight:700;font-size:15px;padding:13px;}
+  .qz-btn-main:hover{background:#155052;}
+  .qz-btn-main:disabled{background:#a8b5b5;border-color:#a8b5b5;cursor:default;}
+  .qz-btn-sm{padding:7px 14px;font-size:13px;}
+  .qz-join-row{display:flex;gap:8px;}
+  .qz-join-row input{padding:9px 10px;border:1px solid var(--line,#e3ddd2);border-radius:8px;font-size:15px;min-width:0;}
+  #qzJoinCode{width:78px;text-align:center;letter-spacing:3px;font-weight:700;}
+  #qzJoinName{flex:1;}
+  .qz-note{font-size:12px;color:#98a3a3;margin:10px 0 0;line-height:1.6;}
+  .qz-code-box{background:var(--teal,#0f3d3e);color:#fff;border-radius:12px;padding:18px;text-align:center;margin-bottom:16px;}
+  .qz-code-label{font-size:12px;opacity:.75;}
+  .qz-code{font-size:42px;font-weight:800;letter-spacing:10px;margin:4px 0 12px;padding-left:10px;}
+  .qz-code-btns{display:flex;gap:8px;justify-content:center;}
+  .qz-players{display:flex;flex-wrap:wrap;gap:6px;}
+  .qz-player{background:#f0ece4;border-radius:14px;padding:5px 12px;font-size:13px;}
+  .qz-player.me{background:var(--teal,#0f3d3e);color:#fff;font-weight:700;}
+  .qz-play-head{display:flex;align-items:center;gap:10px;font-size:13px;color:#5c6a6a;margin-bottom:14px;}
+  .qz-timer{flex:1;height:7px;background:#e3ddd2;border-radius:4px;overflow:hidden;}
+  .qz-timer-bar{height:100%;width:100%;background:var(--teal,#0f3d3e);transition:width .25s linear;}
+  #qzClock{min-width:26px;text-align:right;font-weight:700;color:var(--teal,#0f3d3e);}
+  .qz-qbox{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:18px;margin-bottom:16px;}
+  .qz-question{margin:0;font-size:15px;line-height:1.8;color:#22302f;word-break:keep-all;}
+  .qz-qcat{margin:10px 0 0;font-size:12px;color:#98a3a3;text-align:right;}
+  .qz-options{display:grid;gap:9px;}
+  .qz-opt{text-align:left;padding:14px 16px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:10px;
+          font-size:14.5px;cursor:pointer;font-family:inherit;color:#22302f;line-height:1.5;word-break:keep-all;}
+  .qz-opt:hover{background:#f3efe8;}
+  .qz-opt.picked{background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);font-weight:700;}
+  .qz-opt:disabled{cursor:default;}
+  .qz-opt b{margin-right:8px;opacity:.7;font-weight:700;}
+  .qz-verdict{text-align:center;font-size:22px;font-weight:800;margin:20px 0 18px;}
+  .qz-verdict.ok{color:#1f7a4d;}
+  .qz-verdict.no{color:#b04a3a;}
+  .qz-verdict small{display:block;font-size:13px;font-weight:400;color:#7b8888;margin-top:6px;}
+  .qz-answer-card{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:12px;padding:14px;
+                  display:flex;gap:14px;align-items:center;}
+  .qz-answer-card img{width:104px;height:78px;object-fit:cover;border-radius:8px;background:#eee;flex:0 0 auto;}
+  .qz-answer-name{font-size:16px;font-weight:700;color:var(--teal,#0f3d3e);line-height:1.4;word-break:keep-all;}
+  .qz-answer-meta{font-size:12.5px;color:#8a9595;margin-top:5px;}
+  .qz-next{text-align:center;font-size:12.5px;color:#98a3a3;margin-top:18px;}
+  #qzResult{position:relative;}
+  #qzConfetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99998;display:none;}
+  .qz-result-title{text-align:center;font-size:21px;color:var(--teal,#0f3d3e);margin:14px 0 18px;}
+  .qz-ranks{display:grid;gap:7px;margin-bottom:20px;}
+  .qz-rank{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line,#e3ddd2);
+           border-radius:10px;padding:11px 14px;font-size:14.5px;
+           animation:qzPop .38s cubic-bezier(.2,1.5,.4,1) both;}
+  .qz-rank.me{border-color:var(--teal,#0f3d3e);border-width:2px;background:#f2f7f6;}
+  .qz-rank .no{width:30px;text-align:center;font-weight:800;color:#8a9595;flex:0 0 auto;}
+  .qz-rank .nm{flex:1;font-weight:700;color:#22302f;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qz-rank .sc{font-weight:800;color:var(--teal,#0f3d3e);flex:0 0 auto;}
+  .qz-rank .hit{font-size:11.5px;color:#98a3a3;margin-left:8px;flex:0 0 auto;}
+  @keyframes qzPop{from{opacity:0;transform:translateY(14px) scale(.96);}to{opacity:1;transform:none;}}
+  .qz-result-tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .qz-tab{flex:1;padding:9px;border:1px solid var(--line,#e3ddd2);background:#fff;border-radius:8px;
+          font-size:13px;cursor:pointer;font-family:inherit;color:#5c6a6a;}
+  .qz-tab.on{background:var(--teal,#0f3d3e);color:#fff;border-color:var(--teal,#0f3d3e);font-weight:700;}
+  .qz-review{display:grid;gap:10px;margin-bottom:20px;}
+  .qz-rv{background:#fff;border:1px solid var(--line,#e3ddd2);border-radius:10px;padding:13px;font-size:13px;line-height:1.7;}
+  .qz-rv .rate{font-size:12px;color:#b04a3a;font-weight:700;margin-bottom:5px;}
+  .qz-rv .ans{color:var(--teal,#0f3d3e);font-weight:700;margin-top:7px;}
+  .qz-rv .txt{color:#5c6a6a;word-break:keep-all;}
+  .qz-result-btns{display:grid;gap:8px;}
+  @media(max-width:520px){
+    .qz-fields{grid-template-columns:1fr;}
+    .qz-code{font-size:36px;letter-spacing:8px;}
+    .qz-answer-card img{width:84px;height:64px;}
+  }
+
+  .icard .tag{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--teal);padding:2px 8px;border-radius:10px;margin-bottom:6px;}
+  .icard h4{margin:0 0 4px;font-size:14.5px;}
+  .icard .meta{font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .icard .desc{font-size:12.5px;line-height:1.5;color:#333;}
+  footer{font-size:11px;color:var(--muted);text-align:center;padding:8px;background:var(--card);border-top:1px solid var(--line);}
+  .msg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:9999;}
+  .msg-box{background:#fff;padding:24px;border-radius:12px;max-width:360px;text-align:center;}
+  .msg-box button{margin-top:14px;padding:8px 20px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;}
+  #helpBtn, #bulkVerifyBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #helpBtn:hover, #bulkVerifyBtn:hover{background:rgba(255,255,255,.28);}
+  #rankBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #rankBtn:hover{background:rgba(255,255,255,.28);}
+  #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #boardBtn:hover{background:rgba(255,255,255,.28);}
+  #quizBtn{padding:8px 13px;background:#f0c454;color:#2a2a15;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+  #quizBtn:hover{background:#f6d072;}
+  #charPickerBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #charPickerBtn:hover{background:rgba(255,255,255,.28);}
+  .lang-switcher{display:flex;align-items:center;background:rgba(255,255,255,.16);border-radius:20px;padding:3px;gap:2px;}
+  .lang-btn{padding:5px 10px;background:transparent;color:#fff;opacity:.75;border:none;border-radius:16px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .lang-btn:hover{opacity:1;}
+  .lang-btn.active{background:#fff;color:var(--navy);opacity:1;}
+  .rank-box{background:#fff;padding:22px;border-radius:12px;max-width:400px;text-align:left;max-height:80vh;overflow-y:auto;}
+  .rank-box h3{margin:0 0 14px;font-size:16px;color:var(--navy);}
+  .rank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee;}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-medal{flex:none;width:26px;height:26px;border-radius:50%;background:#f0ede3;color:#555;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+  .rank-row.top1 .rank-medal{background:#f2c14e;color:#5a4200;}
+  .rank-row.top2 .rank-medal{background:#d6d6d6;color:#444;}
+  .rank-row.top3 .rank-medal{background:#e0b085;color:#5a3418;}
+  .rank-info{flex:1;min-width:0;}
+  .rank-name{font-size:13.5px;font-weight:600;color:#222;}
+  .rank-title{font-size:12px;color:#888;}
+  .rank-count{font-size:12.5px;font-weight:700;color:var(--teal);}
+  .rank-box button{margin-top:16px;width:100%;padding:10px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;font-size:13.5px;}
+  .rank-empty{font-size:13px;color:#888;text-align:center;padding:20px 0;}
+  .intro-banner{display:flex;align-items:center;gap:12px;background:#0f6e56;color:#fff;padding:8px 20px;font-size:13px;flex-wrap:wrap;}
+  .intro-banner button{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;}
+  .intro-banner button:hover{background:rgba(255,255,255,.32);}
+  .intro-close{background:none !important;padding:2px 6px !important;margin-left:auto;font-size:14px !important;}
+  .help-box{background:#fff;padding:22px;border-radius:12px;max-width:420px;text-align:left;max-height:80vh;overflow-y:auto;}
+  .help-box h3{margin:0 0 6px;font-size:16px;color:var(--navy);}
+  .help-box .step{display:flex;gap:10px;margin:12px 0;}
+  .help-box .step-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+  .help-box .step p{margin:0;font-size:13.5px;line-height:1.5;}
+  .help-box .rank-note{margin-top:14px;padding:10px 12px;background:#f5f2ea;border-radius:8px;font-size:12.5px;line-height:1.6;color:#555;}
+  .rank-grid{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}
+  .rank-col{border:1px solid #e8e4d8;border-radius:8px;overflow:hidden;}
+  .rg-row{display:flex;justify-content:space-between;padding:6px 10px;font-size:12px;border-top:1px solid #eee;}
+  .rg-row:first-child{border-top:none;}
+  .rg-row span:first-child{color:#888;}
+  .rg-row span:last-child{font-weight:600;color:#333;}
+  .rg-head{background:#f5f2ea;font-weight:700;}
+  .rg-head span{color:#666 !important;font-weight:700 !important;}
+  .help-box button{margin-top:16px;width:100%;padding:10px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;font-size:13.5px;}
+  /* ---- auth / 방문 인증 ---- */
+  .auth-area{display:flex;align-items:center;gap:10px;font-size:13px;flex:none;}
+  #loginBtn{padding:8px 14px;background:#fff;color:var(--navy);border:none;border-radius:20px;font-weight:700;cursor:pointer;font-size:12.5px;white-space:nowrap;}
+  #loginBtn:hover{background:var(--sand);}
+  .user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);padding:5px 12px 5px 6px;border-radius:20px;color:#fff;}
+  .user-chip img{width:26px;height:26px;border-radius:50%;flex:none;}
+  .user-chip .u-name{font-weight:600;font-size:12.5px;}
+  .user-chip .u-rank{font-weight:700;font-size:12px;opacity:.95;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+  .user-chip .u-rank:hover{opacity:1;}
+  .mapae-badge{display:inline-flex;align-items:center;justify-content:center;gap:1px;height:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:10px;font-weight:700;margin-right:4px;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.2) inset;}
+  .auth-area{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+  .user-chip{flex-wrap:wrap;min-width:0;}
+  .user-chip #logoutBtn{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0;}
+  .user-chip #logoutBtn:hover{opacity:1;}
+  .user-chip #nickBtn{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0;}
+  .user-chip #nickBtn:hover{opacity:1;}
+  .popup-verify-btn{display:block;padding:8px 6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;flex:1;}
+  .popup-verify-btn:hover{background:var(--navy);}
+  .popup-verified{padding:8px 6px;background:#2e8b57;color:#fff;text-align:center;border-radius:6px;font-size:11.5px;font-weight:700;flex:1;display:flex;align-items:center;justify-content:center;}
+  .popup-btn-row{display:flex;gap:6px;margin:8px 0 12px;}
+  .visited-check-icon{background:transparent;border:none;}
+
+  /* ---- 모바일 화면 대응 ---- */
+  @media (max-width: 640px){
+    .headerbar{flex-wrap:wrap;padding:12px 14px;gap:8px;}
+    .brand{flex:1 1 100%;min-width:0;}
+    .brand .brand-title{font-size:16px;white-space:nowrap;}
+    .brand .src-note{display:none;}
+    .headerbar .hb-actions{flex:1 1 100%;gap:6px;justify-content:flex-start;}
+    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
+    .lang-btn{padding:4px 8px;font-size:11px;}
+    #loginBtn{padding:6px 10px;font-size:11.5px;}
+    .auth-area{flex-wrap:wrap;gap:6px;}
+    .user-chip{flex-wrap:wrap;}
+    .leaflet-popup-content{max-width:calc(100vw - 70px) !important;min-width:0;}
+    .leaflet-popup-content-wrapper{max-width:calc(100vw - 50px);}
+  }
+  @keyframes hm-pulse-ring{
+    0%{ transform:scale(0.5); opacity:0.9; }
+    100%{ transform:scale(2.4); opacity:0; }
+  }
+  @keyframes hm-pulse-badge{
+    0%, 100%{ transform:scale(1); }
+    50%{ transform:scale(1.12); }
+  }
+  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; }
+  .hm-my-location .hm-ring{
+    position:absolute; top:52px; left:10px; width:36px; height:36px; border-radius:50%;
+    background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hm-ring-pin{ font-size:18px; line-height:1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); pointer-events:none; }
+  .hm-my-location .hm-figure{
+    position:absolute; top:0; left:6px; width:44px; height:78px;
+    display:flex; align-items:flex-end; justify-content:center; z-index:2;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,.6));
+  }
+  .hm-my-location .hm-figure img{ width:44px; height:78px; display:block; }
+  .hm-my-location .hm-label{
+    position:absolute; top:72px; left:0; width:56px; text-align:center; z-index:3;
+    font-size:11px; font-weight:800; color:#fff;
+    text-shadow: -1px -1px 0 #ff5a1f, 1px -1px 0 #ff5a1f, -1px 1px 0 #ff5a1f, 1px 1px 0 #ff5a1f, 0 0 4px rgba(0,0,0,.5);
+    white-space:nowrap;
+  }
+  /* ---- 내 위치 캐릭터 선택 ---- */
+  .char-picker-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:4px;
+  }
+  .char-card{
+    border:1px solid #e8e4d8; border-radius:10px; padding:8px 6px 10px; text-align:center;
+    cursor:pointer; background:#fbf9f4; transition:border-color .15s, background .15s;
+  }
+  .char-card:hover{ border-color:var(--teal, #0f3d3e); }
+  .char-card.selected{ border-color:var(--teal, #0f3d3e); background:#eaf3f1; border-width:2px; }
+  .char-card.locked{ cursor:default; opacity:.55; }
+  .char-card.locked:hover{ border-color:#e8e4d8; }
+  .char-card img{ width:100%; max-width:64px; height:76px; object-fit:contain; display:block; margin:0 auto 4px; }
+  .char-card.locked img{ filter:grayscale(1); }
+  .char-card-noimg{ width:100%; height:76px; display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 4px; }
+  .char-card .char-name{ font-size:12.5px; font-weight:700; color:#333; }
+  .char-card .char-unlock-note{ font-size:10.5px; color:#999; margin-top:2px; line-height:1.3; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="headerbar">
+    <div class="brand">
+      <div class="brand-title"><span data-i18n="brandTitle">국가유산지도</span><span class="src-note" data-i18n="dataSource">데이터 출처: 국가유산청</span></div>
+    </div>
+    <div class="hb-actions">
+      <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
+      <button id="helpBtn" data-i18n="helpBtn" onclick="window.showHelpModal && window.showHelpModal()">방문 인증 안내</button>
+      <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
+      <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.showCharPicker && window.showCharPicker()">🎎 내 캐릭터</button>
+      <button id="boardBtn" data-i18n="boardBtn" onclick="window.showBoard && window.showBoard()">💬 게시판</button>
+      <button id="quizBtn" data-i18n="quizBtn" class="hb-quiz" onclick="window.showQuiz && window.showQuiz()">🎯 퀴즈</button>
+      <div class="lang-switcher" id="langSwitcher">
+        <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
+        <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
+        <button class="lang-btn" data-lang="cn" onclick="window.hmSetLang && window.hmSetLang('cn')">中</button>
+        <button class="lang-btn" data-lang="jp" onclick="window.hmSetLang && window.hmSetLang('jp')">日</button>
+      </div>
+      <div class="auth-area" id="authArea">
+        <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
+      </div>
+    </div>
+  </div>
+  <div id="introBanner" class="intro-banner" style="display:none">
+    <span data-i18n-html="introBanner">📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.</span>
+    <button class="intro-close" onclick="window.dismissIntroBanner && window.dismissIntroBanner()">✕</button>
+  </div>
+</header>
+
+<main>
+  <div id="view-map">
+    <aside>
+      <div class="sheet-handle" id="sheetHandle"></div>
+      <h3 data-i18n="searchTitle">검색</h3>
+      <input type="text" id="searchBox" data-i18n-ph="searchPh" placeholder="이름 또는 주소로 검색">
+
+      <h3 data-i18n="regionTitle">지역</h3>
+      <select id="regionSelect"><option value="" data-i18n="allRegions">전체 지역</option></select>
+      <select id="subRegionSelect" disabled><option value="" data-i18n="allDistricts">전체 시/군/구</option></select>
+
+      <h3 data-i18n="catTitle">지정종목</h3>
+      <div class="cat-list" id="catList"></div>
+
+      <button id="tabListBtn" data-i18n="tabListBtn">무형유산 목록 보기 →</button>
+      <div id="count">표시 중</div>
+    </aside>
+    <div id="sidebarToggle">◀</div>
+    <button id="myLocationBtn" title="내 위치 표시" style="position:absolute;right:14px;bottom:90px;z-index:999;width:42px;height:42px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 1px 5px rgba(0,0,0,.3);font-size:19px;cursor:pointer;">📍</button>
+    <div id="map"></div>
+  </div>
+
+  <div id="view-list">
+    <button id="tabMapBtn" data-i18n="backToMap">← 지도로 돌아가기</button>
+    <div class="ilist-controls">
+      <input type="text" id="ilistSearch" data-i18n-ph="ilistSearchPh" placeholder="무형유산 이름으로 검색">
+      <select id="ilistRegion"><option value="" data-i18n="allRegions">전체 지역</option></select>
+      <select id="ilistCat"><option value="" data-i18n="allTypes">전체 종목</option></select>
+    </div>
+    <div class="icards" id="icards"></div>
+  </div>
+
+  <div id="view-species" style="display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;">
+    <button id="tabMapBtnFromSpecies" data-i18n="backToMap">← 지도로 돌아가기</button>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;" data-i18n-html="speciesDesc">
+      이곳에 있는 유산들은 특정 장소가 아니라 <b>종(種) 자체</b>가 천연기념물로 지정되어 있어서, 지도에 위치를 표시할 수 없어요.
+    </div>
+    <div class="ilist-controls">
+      <input type="text" id="slistSearch" data-i18n-ph="speciesSearchPh" placeholder="이름으로 검색">
+      <select id="slistType"><option value="" data-i18n="speciesAll">전체(동물+식물)</option><option value="동물" data-i18n="speciesAnimal">동물</option><option value="식물" data-i18n="speciesPlant">식물</option></select>
+    </div>
+    <div class="icards" id="scards"></div>
+  </div>
+
+  <div id="view-board" style="display:none;width:100%;height:100%;overflow-y:auto;padding:24px 28px;">
+    <button id="tabMapBtnFromBoard" data-i18n="backToMap">← 지도로 돌아가기</button>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 16px;line-height:1.6;" data-i18n="boardDesc">
+      💬 방문 후기, 질문 등을 자유롭게 남겨보세요. 글쓰기는 로그인 후 가능해요.
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="boardTitleInput" data-i18n-ph="boardTitlePh" placeholder="제목" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;">
+    </div>
+    <textarea id="boardContentInput" data-i18n-ph="boardContentPh" placeholder="내용을 입력하세요" rows="10" style="width:100%;min-height:220px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;resize:vertical;margin-bottom:8px;box-sizing:border-box;"></textarea>
+    <button id="boardSubmitBtn" data-i18n="boardSubmit" style="padding:9px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;">글쓰기</button>
+    <div id="boardListArea" style="margin-top:24px;"></div>
+  </div>
+  <!-- ================= 퀴즈 ================= -->
+  <div id="view-quiz" style="display:none;width:100%;height:100%;overflow-y:auto;">
+    <div class="qz-wrap">
+
+      <!-- 시작 화면 -->
+      <div id="qzHome" class="qz-pane">
+        <div class="qz-top">
+          <h2>🎯 국가유산 퀴즈</h2>
+          <button class="qz-back" onclick="window.hmQuizExit()">✕ 닫기</button>
+        </div>
+        <p class="qz-lead">10문제를 풀고 점수를 겨뤄요. 혼자 해도 되고, 코드를 나눠주면 여럿이 같이 할 수 있어요.</p>
+
+        <div class="qz-card">
+          <h3>방 만들기</h3>
+          <p class="qz-sub">어떤 분야로 낼까요? (여러 개 고르면 섞여서 나와요)</p>
+          <div id="qzFields" class="qz-fields"></div>
+          <label class="qz-name-row">이름 <input type="text" id="qzHostName" maxlength="12" placeholder="이름을 적어주세요"></label>
+          <button class="qz-btn qz-btn-main" id="qzCreateBtn">방 만들고 시작하기</button>
+        </div>
+
+        <div class="qz-card">
+          <h3>코드로 참가하기</h3>
+          <div class="qz-join-row">
+            <input type="text" id="qzJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
+            <input type="text" id="qzJoinName" maxlength="12" placeholder="이름">
+            <button class="qz-btn" id="qzJoinBtn">참가</button>
+          </div>
+          <p class="qz-note" id="qzKakaoNote" style="display:none">
+            카카오톡 안에서 열면 로그인이 막힐 수 있어요. 로그인 없이 참가하는 건 문제없습니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 대기실 -->
+      <div id="qzLobby" class="qz-pane" style="display:none">
+        <div class="qz-top">
+          <h2>참가자 모으는 중</h2>
+          <button class="qz-back" onclick="window.hmQuizLeave()">✕ 나가기</button>
+        </div>
+        <div class="qz-code-box">
+          <div class="qz-code-label">입장 코드</div>
+          <div class="qz-code" id="qzCodeText">----</div>
+          <div class="qz-code-btns">
+            <button class="qz-btn qz-btn-sm" id="qzCopyBtn">코드 복사</button>
+            <button class="qz-btn qz-btn-sm" id="qzShareBtn">공유하기</button>
+          </div>
+        </div>
+        <div class="qz-card">
+          <h3>참가자 <span id="qzPlayerCount">0</span>명</h3>
+          <div id="qzPlayerList" class="qz-players"></div>
+        </div>
+        <div id="qzHostArea" style="display:none">
+          <button class="qz-btn qz-btn-main" id="qzStartBtn">시작하기</button>
+          <p class="qz-note">시작하면 더 들어올 수 없어요.</p>
+        </div>
+        <p class="qz-note" id="qzWaitNote">방장이 시작하기를 기다리는 중이에요.</p>
+      </div>
+
+      <!-- 문제 -->
+      <div id="qzPlay" class="qz-pane" style="display:none">
+        <div class="qz-play-head">
+          <span id="qzProgress">문제 1 / 10</span>
+          <div class="qz-timer"><div class="qz-timer-bar" id="qzTimerBar"></div></div>
+          <span id="qzClock">20</span>
+        </div>
+        <div class="qz-qbox">
+          <p class="qz-question" id="qzQuestion"></p>
+          <p class="qz-qcat" id="qzQCat"></p>
+        </div>
+        <div class="qz-options" id="qzOptions"></div>
+      </div>
+
+      <!-- 정답 공개 -->
+      <div id="qzReveal" class="qz-pane" style="display:none">
+        <div class="qz-verdict" id="qzVerdict"></div>
+        <div class="qz-answer-card">
+          <img id="qzRevealImg" alt="" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){this.src=s.replace('/thumb/','/');}else{this.style.display='none';}">
+          <div>
+            <div class="qz-answer-name" id="qzAnswerName"></div>
+            <div class="qz-answer-meta" id="qzAnswerMeta"></div>
+          </div>
+        </div>
+        <div class="qz-next">다음 문제 <span id="qzNextSec">5</span>초 전</div>
+      </div>
+
+      <!-- 결과 -->
+      <div id="qzResult" class="qz-pane" style="display:none">
+        <canvas id="qzConfetti"></canvas>
+        <h2 class="qz-result-title">🏆 최종 순위</h2>
+        <div id="qzRankList" class="qz-ranks"></div>
+        <div class="qz-result-tabs">
+          <button class="qz-tab on" id="qzTabWrong">내가 틀린 문제</button>
+          <button class="qz-tab" id="qzTabHard">다같이 어려웠던 문제</button>
+        </div>
+        <div id="qzReviewBox" class="qz-review"></div>
+        <div class="qz-result-btns">
+          <button class="qz-btn qz-btn-main" onclick="window.hmQuizRestart()">다시 하기</button>
+          <button class="qz-btn" onclick="window.hmQuizExit()">지도로 돌아가기</button>
+        </div>
+      </div>
+
+      <!-- 연장전 대기 -->
+      <div id="qzWaitExtra" class="qz-pane" style="display:none">
+        <h2 class="qz-result-title">🔥 1등 연장전</h2>
+        <p class="qz-lead" id="qzExtraWho"></p>
+        <p class="qz-note">끝나면 최종 순위가 나와요.</p>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+
+<div class="msg-overlay" id="msgOverlay"><div class="msg-box"><p id="msgText"></p><button data-i18n="btnOK" onclick="document.getElementById('msgOverlay').style.display='none'">확인</button></div></div>
+
+<div class="msg-overlay" id="helpOverlay"><div class="help-box">
+  <h3 data-i18n="helpTitle">📍 방문 인증이 뭔가요?</h3>
+  <div class="step"><div class="step-num">1</div><p data-i18n-html="helpStep1">유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)</p></div>
+  <div class="step"><div class="step-num">2</div><p data-i18n-html="helpStep2">인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.</p></div>
+  <div class="step"><div class="step-num">3</div><p data-i18n-html="helpStep3">인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.</p></div>
+  <div class="rank-grid">
+    <div class="rank-col">
+      <div class="rg-row rg-head"><span data-i18n="rankGridVisits">방문 수</span><span data-i18n="rankGridRank">등급</span></div>
+      <div class="rg-row"><span>1곳</span><span>종9품 참봉</span></div>
+      <div class="rg-row"><span>3곳</span><span>정9품 훈도</span></div>
+      <div class="rg-row"><span>7곳</span><span>종7품 직장</span></div>
+      <div class="rg-row"><span>12곳</span><span>정7품 박사</span></div>
+      <div class="rg-row"><span>18곳</span><span>종6품 도사</span></div>
+      <div class="rg-row"><span>25곳</span><span>정6품 좌랑</span></div>
+    </div>
+    <div class="rank-col">
+      <div class="rg-row rg-head"><span data-i18n="rankGridVisits">방문 수</span><span data-i18n="rankGridRank">등급</span></div>
+      <div class="rg-row"><span>35곳</span><span>종5품 현령</span></div>
+      <div class="rg-row"><span>45곳</span><span>정5품 정랑</span></div>
+      <div class="rg-row"><span>60곳</span><span>종4품 군수</span></div>
+      <div class="rg-row"><span>75곳</span><span>정3품 목사</span></div>
+      <div class="rg-row"><span>95곳</span><span>종2품 관찰사</span></div>
+      <div class="rg-row"><span>120곳</span><span>정1품 영의정</span></div>
+    </div>
+  </div>
+  <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
+  <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
+</div></div>
+
+<div class="msg-overlay" id="rankOverlay"><div class="rank-box">
+  <h3 data-i18n="rankOverlayTitle">🏆 명예의 전당 · 방문 인증 TOP 30</h3>
+  <div id="rankListArea"><div class="rank-empty">불러오는 중…</div></div>
+  <button data-i18n="btnClose" onclick="document.getElementById('rankOverlay').style.display='none'">닫기</button>
+</div></div>
+
+<div class="msg-overlay" id="myVisitsOverlay"><div class="rank-box">
+  <h3 data-i18n="myVisitsTitle">📍 내가 다녀온 곳</h3>
+  <div id="myVisitsArea"><div class="rank-empty">불러오는 중…</div></div>
+  <button data-i18n="btnClose" onclick="document.getElementById('myVisitsOverlay').style.display='none'">닫기</button>
+</div></div>
+
+<div class="msg-overlay" id="charOverlay"><div class="rank-box">
+  <h3 data-i18n="charTitle">🎎 내 캐릭터 고르기</h3>
+  <p style="font-size:12.5px;color:#888;margin:-8px 0 14px;" data-i18n="charDesc">원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.</p>
+  <div class="char-picker-grid" id="charPickerGrid"></div>
+  <button data-i18n="btnOK" onclick="document.getElementById('charOverlay').style.display='none'">확인</button>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="data_map.js"></script>
+<script src="data_intangible.js"></script>
+<script src="data_map_additions.js"></script>
+<script>MAP_DATA.push(...MAP_DATA_ADDITIONS);</script>
+<script src="data_species.js"></script>
+<script src="quiz_manifest.js"></script>
+<script>
+// ---- 영문판(언어 전환) ----
+// 이번 단계에서는 메뉴/버튼/안내문 같은 "화면 UI 글자"만 영어로 바꿈.
+// 유산 이름·설명, 지정종목 목록, 등급 이름, 캐릭터 이름 같은 실제 데이터/콘텐츠는
+// 이번엔 그대로 한글로 남겨두고 나중에 단계적으로 확장함.
+const I18N = {
+  ko: {
+    brandTitle: '국가유산지도',
+    dataSource: '데이터 출처: 국가유산청',
+    bulkVerifyBtn: '📍 주변 일괄인증',
+    helpBtn: '방문 인증 안내',
+    rankBtn: '🏆 명예의 전당',
+    charPickerBtn: '🎎 내 캐릭터',
+    boardBtn: '💬 게시판',
+    quizBtn: '🎯 퀴즈',
+    loginBtnLabel: '🔑 구글로 로그인',
+    nickBtnLabel: '닉네임 변경',
+    logoutBtnLabel: '로그아웃',
+    introBanner: '📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.',
+    searchTitle: '검색',
+    searchPh: '이름 또는 주소로 검색',
+    regionTitle: '지역',
+    allRegions: '전체 지역',
+    allDistricts: '전체 시/군/구',
+    catTitle: '지정종목',
+    tabListBtn: '무형유산 목록 보기 →',
+    countSuffix: '건 표시 중',
+    pickHint: '왼쪽에서 보고 싶은 유산 종류를 선택하세요',
+    backToMap: '← 지도로 돌아가기',
+    ilistSearchPh: '무형유산 이름으로 검색',
+    allTypes: '전체 종목',
+    speciesDesc: '이곳에 있는 유산들은 특정 장소가 아니라 <b>종(種) 자체</b>가 천연기념물로 지정되어 있어서, 지도에 위치를 표시할 수 없어요.',
+    speciesSearchPh: '이름으로 검색',
+    speciesAll: '전체(동물+식물)',
+    speciesAnimal: '동물',
+    speciesPlant: '식물',
+    boardDesc: '💬 방문 후기, 질문 등을 자유롭게 남겨보세요. 글쓰기는 로그인 후 가능해요.',
+    boardTitlePh: '제목',
+    boardContentPh: '내용을 입력하세요',
+    boardSubmit: '글쓰기',
+    btnOK: '확인',
+    btnClose: '닫기',
+    btnGotIt: '확인했어요',
+    helpTitle: '📍 방문 인증이 뭔가요?',
+    helpStep1: '유산 현장에 실제로 방문해서, 지도 팝업의 <b>"현장 인증"</b> 버튼을 누르면 위치를 확인해요. (현장에서 200m 이내여야 인증돼요)',
+    helpStep2: '인증에 성공하면 지도 위 그 유산 마커에 초록색 <b>체크(✓)</b> 표시가 남아요. 내가 어디를 다녀왔는지 한눈에 볼 수 있어요.',
+    helpStep3: '인증한 유산 수가 쌓이면 조선시대 관직처럼 <b>등급</b>이 자동으로 올라가요. 오른쪽 위 내 이름 옆에 표시돼요.',
+    rankGridVisits: '방문 수',
+    rankGridRank: '등급',
+    helpNote: '📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.',
+    rankOverlayTitle: '🏆 명예의 전당 · 방문 인증 TOP 30',
+    myVisitsTitle: '📍 내가 다녀온 곳',
+    charTitle: '🎎 내 캐릭터 고르기',
+    charDesc: '원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.',
+    verifiedLabel: '✅ 인증 완료',
+    verifyBtn: '📍 현장 인증',
+    transitBtn: '🚌 대중교통 길찾기',
+    backToList: '← 목록으로',
+    unknownDate: '지정일 미상',
+    clusterListHint: '이 위치에 {n}건이 있어요. 항목을 선택하세요.',
+    catCountUnit: '{n}건',
+  },
+  en: {
+    brandTitle: 'Korea Heritage Map',
+    dataSource: 'Data source: Korea Heritage Service',
+    bulkVerifyBtn: '📍 Verify Nearby',
+    helpBtn: 'Visit Verification Guide',
+    rankBtn: '🏆 Hall of Fame',
+    charPickerBtn: '🎎 My Character',
+    boardBtn: '💬 Board',
+    quizBtn: '🎯 Quiz',
+    loginBtnLabel: '🔑 Sign in with Google',
+    nickBtnLabel: 'Change Nickname',
+    logoutBtnLabel: 'Log Out',
+    introBanner: '📍 Visit in person to <b>verify your visit</b> and level up your <b>rank</b>.',
+    searchTitle: 'Search',
+    searchPh: 'Search by name or address',
+    regionTitle: 'Region',
+    allRegions: 'All Regions',
+    allDistricts: 'All Districts',
+    catTitle: 'Designation Type',
+    tabListBtn: 'View Intangible Heritage List →',
+    countSuffix: ' shown',
+    pickHint: 'Select a heritage type on the left to begin',
+    backToMap: '← Back to Map',
+    ilistSearchPh: 'Search intangible heritage by name',
+    allTypes: 'All Types',
+    speciesDesc: 'The heritage items here are designated as Natural Monuments based on the <b>species itself</b> rather than a specific location, so they can\'t be shown on the map.',
+    speciesSearchPh: 'Search by name',
+    speciesAll: 'All (Animals + Plants)',
+    speciesAnimal: 'Animals',
+    speciesPlant: 'Plants',
+    boardDesc: '💬 Feel free to leave visit reviews, questions, and more. Sign in to post.',
+    boardTitlePh: 'Title',
+    boardContentPh: 'Write your content here',
+    boardSubmit: 'Post',
+    btnOK: 'OK',
+    btnClose: 'Close',
+    btnGotIt: 'Got it',
+    helpTitle: '📍 What is Visit Verification?',
+    helpStep1: 'Visit the heritage site in person and tap the <b>"Verify Visit"</b> button in the map popup to confirm your location. (You must be within 200m of the site.)',
+    helpStep2: 'Once verified, a green <b>checkmark (✓)</b> stays on that heritage marker on the map, so you can see at a glance where you\'ve been.',
+    helpStep3: 'As your verified visit count grows, your <b>rank</b> automatically goes up, like a Joseon-era government post. It\'s shown next to your name in the top right.',
+    rankGridVisits: 'Visits',
+    rankGridRank: 'Rank',
+    helpNote: '📍 If heritage sites are clustered together like in a museum, you can verify them all at once with the "Verify Nearby" button. Note that rank is based on <b>the number of distinct places you\'ve actually visited, not the number of heritage items</b> — verifying 10 items at one place still counts as "1 place" for rank purposes.<br><br>Sign in with your Google account to get started.',
+    rankOverlayTitle: '🏆 Hall of Fame · Top 30 Verified Visits',
+    myVisitsTitle: '📍 Places I\'ve Visited',
+    charTitle: '🎎 Choose My Character',
+    charDesc: 'Freely choose any character you like. If you don\'t pick one, you\'ll keep the default look.',
+    verifiedLabel: '✅ Verified',
+    verifyBtn: '📍 Verify Visit',
+    transitBtn: '🚌 Transit Directions',
+    backToList: '← Back to List',
+    unknownDate: 'Date unknown',
+    clusterListHint: 'There are {n} items at this location. Please select one.',
+    catCountUnit: '{n}',
+  },
+  cn: {
+    brandTitle: '国家遗产地图',
+    dataSource: '数据来源：韩国国家遗产厅',
+    bulkVerifyBtn: '📍 周边一键认证',
+    helpBtn: '访问认证指南',
+    rankBtn: '🏆 名人堂',
+    charPickerBtn: '🎎 我的角色',
+    boardBtn: '💬 留言板',
+    quizBtn: '🎯 问答',
+    loginBtnLabel: '🔑 使用谷歌登录',
+    nickBtnLabel: '修改昵称',
+    logoutBtnLabel: '退出登录',
+    introBanner: '📍 亲自前往现场即可<b>完成访问认证</b>并提升<b>等级</b>。',
+    searchTitle: '搜索',
+    searchPh: '按名称或地址搜索',
+    regionTitle: '地区',
+    allRegions: '全部地区',
+    allDistricts: '全部市/郡/区',
+    catTitle: '指定类型',
+    tabListBtn: '查看非物质遗产列表 →',
+    countSuffix: ' 项显示中',
+    pickHint: '请在左侧选择要查看的遗产类型',
+    backToMap: '← 返回地图',
+    ilistSearchPh: '按非物质遗产名称搜索',
+    allTypes: '全部类型',
+    speciesDesc: '此处的遗产是以<b>物种本身</b>而非特定地点被指定为天然纪念物，因此无法在地图上标注位置。',
+    speciesSearchPh: '按名称搜索',
+    speciesAll: '全部（动物+植物）',
+    speciesAnimal: '动物',
+    speciesPlant: '植物',
+    boardDesc: '💬 欢迎自由留下访问感想、提问等内容。登录后即可发帖。',
+    boardTitlePh: '标题',
+    boardContentPh: '请输入内容',
+    boardSubmit: '发布',
+    btnOK: '确定',
+    btnClose: '关闭',
+    btnGotIt: '知道了',
+    helpTitle: '📍 什么是访问认证？',
+    helpStep1: '亲自前往遗产现场，点击地图弹窗中的<b>"现场认证"</b>按钮确认位置。（需在现场200米以内才能认证）',
+    helpStep2: '认证成功后，地图上该遗产标记会显示绿色<b>对勾（✓）</b>，一目了然地看到自己去过的地方。',
+    helpStep3: '随着认证的遗产数量增加，<b>等级</b>会像朝鲜时代官职一样自动提升。显示在右上角我的名字旁边。',
+    rankGridVisits: '访问数',
+    rankGridRank: '等级',
+    helpNote: '📍 如果遗产像博物馆一样集中在一处，可以用"周边一键认证"按钮一次性认证。但等级并非按<b>遗产数量</b>，而是按<b>实际去过的地点数量</b>计算——在一个地方认证10项，等级上也只算"1个地方"。<br><br>使用谷歌账号登录即可立即开始。',
+    rankOverlayTitle: '🏆 名人堂 · 访问认证 TOP 30',
+    myVisitsTitle: '📍 我去过的地方',
+    charTitle: '🎎 选择我的角色',
+    charDesc: '请自由选择喜欢的角色。不选择的话将保持默认形象。',
+    verifiedLabel: '✅ 已认证',
+    verifyBtn: '📍 现场认证',
+    transitBtn: '🚌 公共交通路线',
+    backToList: '← 返回列表',
+    unknownDate: '指定日期不详',
+    clusterListHint: '此位置有{n}项，请选择一项。',
+    catCountUnit: '{n}项',
+  },
+  jp: {
+    brandTitle: '国家遺産地図',
+    dataSource: 'データ出典：国家遺産庁',
+    bulkVerifyBtn: '📍 周辺一括認証',
+    helpBtn: '訪問認証案内',
+    rankBtn: '🏆 名誉の殿堂',
+    charPickerBtn: '🎎 マイキャラクター',
+    boardBtn: '💬 掲示板',
+    quizBtn: '🎯 クイズ',
+    loginBtnLabel: '🔑 Googleでログイン',
+    nickBtnLabel: 'ニックネーム変更',
+    logoutBtnLabel: 'ログアウト',
+    introBanner: '📍 現地を訪れて<b>訪問認証</b>をすると<b>ランク</b>を上げることができます。',
+    searchTitle: '検索',
+    searchPh: '名前または住所で検索',
+    regionTitle: '地域',
+    allRegions: '全地域',
+    allDistricts: '全市/郡/区',
+    catTitle: '指定種目',
+    tabListBtn: '無形遺産リストを見る →',
+    countSuffix: '件表示中',
+    pickHint: '左側で表示したい遺産の種類を選んでください',
+    backToMap: '← 地図に戻る',
+    ilistSearchPh: '無形遺産の名前で検索',
+    allTypes: '全種目',
+    speciesDesc: 'ここにある遺産は特定の場所ではなく<b>種そのもの</b>が天然記念物に指定されているため、地図上に位置を表示できません。',
+    speciesSearchPh: '名前で検索',
+    speciesAll: '全て（動物+植物）',
+    speciesAnimal: '動物',
+    speciesPlant: '植物',
+    boardDesc: '💬 訪問レビューや質問などを自由に残してください。投稿にはログインが必要です。',
+    boardTitlePh: 'タイトル',
+    boardContentPh: '内容を入力してください',
+    boardSubmit: '投稿',
+    btnOK: '確認',
+    btnClose: '閉じる',
+    btnGotIt: '確認しました',
+    helpTitle: '📍 訪問認証とは？',
+    helpStep1: '遺産の現場に実際に訪問し、地図ポップアップの<b>「現地認証」</b>ボタンを押すと位置が確認されます。（現地から200m以内である必要があります）',
+    helpStep2: '認証に成功すると、地図上のその遺産マーカーに緑色の<b>チェック（✓）</b>が表示されます。自分がどこを訪れたか一目でわかります。',
+    helpStep3: '認証した遺産数が増えると、朝鮮時代の官職のように<b>ランク</b>が自動的に上がります。右上の自分の名前の横に表示されます。',
+    rankGridVisits: '訪問数',
+    rankGridRank: 'ランク',
+    helpNote: '📍 博物館のように遺産が一箇所に集まっている場合、「周辺一括認証」ボタンで一度に認証できます。ただし、ランクは<b>遺産の数ではなく実際に訪れた場所の数</b>で決まります — 一箇所で10件認証しても、ランク上は「1箇所」です。<br><br>Googleアカウントでログインするとすぐに始められます。',
+    rankOverlayTitle: '🏆 名誉の殿堂・訪問認証 TOP 30',
+    myVisitsTitle: '📍 訪れた場所',
+    charTitle: '🎎 マイキャラクターを選ぶ',
+    charDesc: 'お好きなキャラクターを自由に選んでください。選ばなければデフォルトのままです。',
+    verifiedLabel: '✅ 認証済み',
+    verifyBtn: '📍 現地認証',
+    transitBtn: '🚌 公共交通ルート',
+    backToList: '← リストに戻る',
+    unknownDate: '指定日不明',
+    clusterListHint: 'この場所には{n}件あります。項目を選択してください。',
+    catCountUnit: '{n}件',
+  }
+};
+let hmLang = 'ko';
+try{ hmLang = localStorage.getItem('hmLang') || 'ko'; }catch(e){}
+function hmT(key){
+  const table = I18N[hmLang] || I18N.ko;
+  return (table[key] !== undefined) ? table[key] : (I18N.ko[key] !== undefined ? I18N.ko[key] : key);
+}
+window.hmT = hmT;
+const HM_LANGS = ['ko', 'en', 'cn', 'jp'];
+function applyLanguage(lang){
+  hmLang = HM_LANGS.includes(lang) ? lang : 'ko';
+  window.hmLang = hmLang;
+  try{ localStorage.setItem('hmLang', hmLang); }catch(e){}
+  document.documentElement.lang = ({ ko:'ko', en:'en', cn:'zh', jp:'ja' })[hmLang] || 'ko';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    const table = I18N[hmLang];
+    if(table && table[k] !== undefined) el.textContent = table[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.getAttribute('data-i18n-html');
+    const table = I18N[hmLang];
+    if(table && table[k] !== undefined) el.innerHTML = table[k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.getAttribute('data-i18n-ph');
+    const table = I18N[hmLang];
+    if(table && table[k] !== undefined) el.setAttribute('placeholder', table[k]);
+  });
+  // 로그인 상태에 따라 JS 템플릿으로 그려지는 로그인/닉네임변경/로그아웃 버튼은
+  // data-i18n으로 못 잡으니 지금 떠 있는 걸 직접 다시 씀(없으면 조용히 무시)
+  const nickBtn = document.getElementById('nickBtn'); if(nickBtn) nickBtn.textContent = hmT('nickBtnLabel');
+  const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.textContent = hmT('logoutBtnLabel');
+  const loginBtnEl = document.getElementById('loginBtn'); if(loginBtnEl) loginBtnEl.textContent = hmT('loginBtnLabel');
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === hmLang);
+  });
+  // "N건 표시 중" 문구도 언어에 맞게 다시 그림
+  if(window.hmLastFilteredCount != null){
+    const el = document.getElementById('count');
+    if(el) el.textContent = window.hmNothingPicked ? hmT('pickHint') : (window.hmLastFilteredCount.toLocaleString() + hmT('countSuffix'));
+  }
+  // 이미 지도에 그려진 마커들의 툴팁/팝업도 언어 전환에 맞게 새로 그림
+  // (최초 페이지 로드 시점의 호출에서는 아직 마커가 없어 아무 것도 하지 않고 조용히 지나감)
+  try{
+    if(allMarkers && allMarkers.length){
+      const visited = window.visitedIds || new Set();
+      allMarkers.forEach(m => {
+        if(!m._d) return;
+        m.setTooltipContent(`<div class="tip-cat">${escapeHtml(catLabel(m._d.c))}</div><div class="tip-name">${escapeHtml(hmName(m._d))}</div>`);
+        if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, visited.has(m._hid)));
+      });
+    }
+    // 클러스터 목록/상세 팝업처럼 특정 마커에 안 묶여서 위 forEach로는 못 잡는 팝업이
+    // 지금 열려있으면, 그 내용도 언어에 맞게 새로 그림 (겹친 위치에서 목록으로 고른 항목 등)
+    if(window.__hmActivePopup && window.__hmActivePopupRender && map.hasLayer(window.__hmActivePopup)){
+      window.__hmActivePopup.setContent(window.__hmActivePopupRender());
+    }
+  }catch(e){}
+  // 왼쪽 사이드바의 지정종목(카테고리) 이름들도 언어에 맞게 새로 그림
+  try{
+    document.querySelectorAll('.i18n-cat').forEach(el => {
+      el.textContent = catLabel(el.dataset.cat);
+    });
+  }catch(e){}
+}
+window.applyLanguage = applyLanguage;
+window.hmToggleLang = function(){
+  const NEXT = { ko: 'en', en: 'cn', cn: 'jp', jp: 'ko' };
+  applyLanguage(NEXT[hmLang] || 'ko');
+};
+window.hmSetLang = function(lang){ applyLanguage(lang); };
+applyLanguage(hmLang);
+
+const CAT_COLORS = {
+  // 자연유산 (green family)
+  "천연기념물":"#40916c", "명승":"#74c69d",
+  // 국가지정 문화유산 (red family)
+  "국보":"#7a1f1a", "보물":"#c0392b", "사적":"#e0592b",
+  "국가민속문화유산":"#e8837a", "국가등록문화유산":"#a85c3a",
+  // 시도지정 문화유산 (blue family)
+  "시도유형문화유산":"#1b4f72", "시도민속문화유산":"#2980b9",
+  "시도기념물":"#5dade2", "문화유산자료":"#a9cce3"
+};
+function colorFor(cat){ return CAT_COLORS[cat] || "#555"; }
+function uniqCount(filterFn){ return new Set(MAP_DATA.filter(filterFn).map(d=>d.n)).size; }
+
+const TN_SUB_COLORS = {
+  "동물":"#1b4332", "식물":"#52b788", "지질·지형":"#b08968", "천연보호구역":"#264653", "미분류":"#8d99ae"
+};
+const TN_SUBCATS = ["동물","식물","지질·지형","천연보호구역"];
+function markerColorFor(d){
+  if(d.c === '천연기념물') return TN_SUB_COLORS[d.nc] || TN_SUB_COLORS['미분류'];
+  return colorFor(d.c);
+}
+
+const CAT_GROUPS = {
+  "자연유산": ["천연기념물","명승"],
+  "국가지정 문화유산": ["국보","보물","사적","국가민속문화유산","국가등록문화유산"],
+  "시도지정 문화유산": ["시도유형문화유산","시도민속문화유산","시도기념물","문화유산자료"]
+};
+const GROUP_COLORS = {
+  "자연유산": "#2e8b57",
+  "국가지정 문화유산": "#c0392b",
+  "시도지정 문화유산": "#2980b9"
+};
+const CAT_TO_GROUP = {};
+Object.entries(CAT_GROUPS).forEach(([g, cats]) => cats.forEach(c => CAT_TO_GROUP[c] = g));
+function groupFor(cat){ return CAT_TO_GROUP[cat] || "기타"; }
+function groupColorFor(cat){ return GROUP_COLORS[groupFor(cat)] || "#555"; }
+
+// 지정종목(카테고리) 이름의 영/중/일 번역 — 국가유산청 영문·중문·일문 공식 사이트
+// (english.khs.go.kr, chn.khs.go.kr, jpn.khs.go.kr)의 "국가유산의 종류" 페이지에 나온
+// 공식 명칭을 그대로 사용함. 그룹 이름(자연유산/국가지정 문화유산/시도지정 문화유산)은
+// 이 지도가 편의상 묶어놓은 이름이라 공식 문서에 이 조합 그대로는 없지만, 각 구성 단어
+// (국가지정유산=State-Designated Heritage, 문화유산=Cultural Heritage 등)는 공식 용어임.
+const CAT_I18N = {
+  "자연유산": { en: "Natural Heritage", cn: "自然遗产", jp: "自然遺産" },
+  "국가지정 문화유산": { en: "State-Designated Cultural Heritage", cn: "国家指定文化遗产", jp: "国家指定文化遺産" },
+  "시도지정 문화유산": { en: "City/Province-Designated Cultural Heritage", cn: "市·道指定文化遗产", jp: "市·道指定文化遺産" },
+  "천연기념물": { en: "Natural Monument", cn: "天然纪念物", jp: "天然記念物" },
+  "명승": { en: "Scenic Site", cn: "名胜", jp: "名勝" },
+  "국보": { en: "National Treasure", cn: "国宝", jp: "国宝" },
+  "보물": { en: "Treasure", cn: "宝物", jp: "宝物" },
+  "사적": { en: "Historic Site", cn: "史迹", jp: "史跡" },
+  "국가민속문화유산": { en: "National Folklore Cultural Heritage", cn: "国家民俗文化遗产", jp: "国家民俗文化遺産" },
+  "국가등록문화유산": { en: "State-Registered Cultural Heritage", cn: "国家登录遗产", jp: "国家登録遺産" },
+  "시도유형문화유산": { en: "City/Province Tangible Cultural Heritage", cn: "物质文化遗产", jp: "有形文化遺産" },
+  "시도기념물": { en: "City/Province Monument", cn: "纪念物", jp: "記念物" },
+  "시도민속문화유산": { en: "City/Province Folklore Cultural Heritage", cn: "民俗文化遗产", jp: "民俗文化遺産" },
+  "문화유산자료": { en: "Cultural Heritage Material", cn: "国家遗产资料", jp: "国家遺産資料" },
+  "동물": { en: "Animals", cn: "动物", jp: "動物" },
+  "식물": { en: "Plants", cn: "植物", jp: "植物" },
+  "지질·지형": { en: "Geology / Landform", cn: "地质·地形", jp: "地質・地形" },
+  "천연보호구역": { en: "Nature Reserve", cn: "天然保护区", jp: "天然保護区域" },
+  // 아래 둘은 국가유산청 공식 지정종목명이 아니라 이 지도가 붙인 설명 문구라, 다른 화면 UI 글자와
+  // 같은 방식으로 자연스럽게 번역함(공식 용어 검증 대상 아님)
+  "서식지·번식지·도래지·사육지": { en: "Habitat / Breeding Ground / Wintering Site / Farm", cn: "栖息地·繁殖地·越冬地·饲养地", jp: "生息地・繁殖地・飛来地・飼育地" },
+  "자생지·군락지": { en: "Native Habitat / Colony", cn: "自生地·群落地", jp: "自生地・群落地" },
+  "종 지정": { en: "Species-level Designation", cn: "物种指定", jp: "種指定" }
+};
+function catLabel(name){
+  if(!name) return name;
+  if(hmLang === 'ko') return name;
+  const t = CAT_I18N[name];
+  return (t && t[hmLang]) ? t[hmLang] : name;
+}
+
+function showMsg(t){ 
+  document.getElementById('msgText').textContent = t; 
+  document.getElementById('msgOverlay').querySelector('button').style.display = '';
+  document.getElementById('msgOverlay').style.display='flex'; 
+}
+window.showMsg = showMsg;
+function showLoadingMsg(t){
+  document.getElementById('msgText').textContent = t;
+  document.getElementById('msgOverlay').querySelector('button').style.display = 'none';
+  document.getElementById('msgOverlay').style.display='flex';
+}
+window.showLoadingMsg = showLoadingMsg;
+
+window.showHelpModal = function(){
+  document.getElementById('helpOverlay').style.display = 'flex';
+};
+window.dismissIntroBanner = function(){
+  document.getElementById('introBanner').style.display = 'none';
+  try{ localStorage.setItem('hm_intro_seen', '1'); }catch(e){}
+};
+(function(){
+  let seen = false;
+  try{ seen = localStorage.getItem('hm_intro_seen') === '1'; }catch(e){}
+  if(!seen){
+    document.getElementById('introBanner').style.display = 'flex';
+    document.getElementById('helpOverlay').style.display = 'flex';
+    try{ localStorage.setItem('hm_intro_seen', '1'); }catch(e){}
+  }
+})();
+
+// ---- 방문 인증: 유산별 고유 ID (이름+좌표 기반 안정적 해시, 데이터 순서가 바뀌어도 동일하게 유지됨) ----
+function computeHeritageId(d){
+  const str = (d.n||'') + '|' + d.la + '|' + d.lo;
+  let hash = 0;
+  for(let i=0; i<str.length; i++){ hash = (hash*31 + str.charCodeAt(i)) | 0; }
+  return 'h' + Math.abs(hash).toString(36);
+}
+var markerByHid = {};
+var checkLayer = null;
+var visitedLayer = null;
+
+// 방문 표시는 분류 색을 덮지 않는다. 유산의 원은 분류 색 그대로 두고,
+// 그 원 한가운데에 흰색 ✓만 얹는다. (예전에는 초록 동그라미를 옆에 따로 붙여서,
+// 방문만 하면 문화유산도 자연유산처럼 초록으로 보이는 문제가 있었음)
+function makeVisitedCheckIcon(){
+  return L.divIcon({
+    html:'<div style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
+        +'color:#fff;font-size:13px;font-weight:900;line-height:1;'
+        +'text-shadow:0 0 2px rgba(0,0,0,.8),0 1px 2px rgba(0,0,0,.55);">✓</div>',
+    className:'visited-check-icon', iconSize:[20,20], iconAnchor:[10,10]
+  });
+}
+function markVisitedOnMap(hid){
+  const marker = markerByHid[hid];
+  if(!marker) return;
+  marker.setPopupContent(buildPopup(marker._d, hid, true));
+  marker._visited = true;
+  // 방문한 곳은 분류 체크와 무관하게 보여야 하므로 필터를 한 번 다시 돌린다
+  if(window.applyFilters) window.applyFilters(); else refreshVisitedMarks();
+}
+// 지도에 실제로 그려져 있는(필터를 통과했고, 묶음으로 접혀 있지 않은) 유산에만 ✓를 얹는다.
+function refreshVisitedMarks(){
+  if(!checkLayer || !visitedLayer) return;
+  checkLayer.clearLayers();
+  const visited = window.visitedIds || new Set();
+  visitedLayer.eachLayer(function(m){
+    if(!m._hid || !visited.has(m._hid)) return;
+    const cm = L.marker([m._d.la, m._d.lo], {icon: makeVisitedCheckIcon(), interactive:false, zIndexOffset:400});
+    checkLayer.addLayer(cm);
+  });
+}
+window.refreshVisitedMarks = refreshVisitedMarks;
+function clearVisitedMarks(){
+  if(checkLayer) checkLayer.clearLayers();
+  allMarkers.forEach(m => { m._visited = false; m._checkMark = null; if(m._hid) m.setPopupContent(buildPopup(m._d, m._hid, false)); });
+  // 로그아웃하면 방문 표시가 사라지므로, 지도에 직접 올려둔 유산들도 다시 묶음으로 되돌린다
+  if(window.applyFilters) window.applyFilters();
+}
+
+// ---- MAP VIEW ----
+let map, clusterGroup;
+let allMarkers = [];
+
+function initMap(){
+  L.Path.CLICK_TOLERANCE = 20; // widen the clickable hit area around thin/small paths
+  const koreaBounds = L.latLngBounds([30.5, 121.0], [41.5, 135.0]);
+  map = L.map('map', {
+    zoomControl:true,
+    minZoom:6,
+    maxBounds: koreaBounds,
+    maxBoundsViscosity: 0.7
+  }).setView([36.2, 127.8], 7);
+  // "내 위치" 마커 전용 pane: 항상 다른 마커/클러스터보다 위에 그려지고, 클릭도 항상 이쪽이 먼저
+  // 받도록(겹쳐 있어도 캐릭터 고르기가 확실히 열리도록) 별도 pane의 z-index를 markerPane(600)보다 높게 둠.
+  map.createPane('myLocPane');
+  map.getPane('myLocPane').style.zIndex = 650;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18, minZoom:6, noWrap:true,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  // spiderfy(부채꼴 펼치기) 효과를 어떤 경우에도 절대 사용하지 않도록 완전히 비활성화
+  // (겹친 곳은 목록 팝업으로만 안내하므로 부채꼴은 불필요)
+  L.MarkerCluster.prototype.spiderfy = function(){};
+  L.MarkerCluster.prototype.unspiderfy = function(){};
+  clusterGroup = L.markerClusterGroup({
+    maxClusterRadius:50,
+    zoomToBoundsOnClick:false,
+    spiderfyOnMaxZoom:false,
+    iconCreateFunction: function(cluster){
+      const children = cluster.getAllChildMarkers();
+      const counts = {};
+      children.forEach(m => { const g = groupFor(m._d.c); counts[g] = (counts[g]||0) + 1; });
+      let topGroup = null, topCount = -1;
+      for(const g in counts){ if(counts[g] > topCount){ topCount = counts[g]; topGroup = g; } }
+      const color = GROUP_COLORS[topGroup] || "#555";
+      const count = children.length;
+      const size = count < 10 ? 34 : (count < 50 ? 44 : 54);
+      const fontSize = count < 100 ? 13 : 11;
+      return L.divIcon({
+        html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${fontSize}px;">${count}</div>`,
+        className: 'custom-cluster-icon',
+        iconSize: L.point(size, size)
+      });
+    }
+  });
+
+  MAP_DATA.forEach((d, idx) => {
+    const hid = computeHeritageId(d);
+    const marker = L.circleMarker([d.la, d.lo], {
+      radius:10, fillColor: markerColorFor(d), color:"#fff", weight:2, fillOpacity:1, opacity:1
+    });
+    marker._d = d;
+    marker._hid = hid;
+    marker.bindPopup(buildPopup(d, hid, false));
+    marker.bindTooltip(`<div class="tip-cat">${escapeHtml(catLabel(d.c))}</div><div class="tip-name">${escapeHtml(hmName(d))}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
+    markerByHid[hid] = marker;
+    allMarkers.push(marker);
+    // 여기서 바로 지도에 올리지 않는다. 초기 체크 상태(전부 해제)에 맞춰
+    // 아래 applyFilters()가 표시할 마커만 골라서 올린다.
+  });
+  map.addLayer(clusterGroup);
+  checkLayer = L.layerGroup().addTo(map);
+  // 방문한 곳은 묶음(클러스터)에 넣지 않고 항상 개별로 보이게 한다.
+  visitedLayer = L.layerGroup().addTo(map);
+  // 확대/이동으로 묶음이 풀리거나 접힐 때마다 ✓ 위치를 다시 계산
+  map.on('zoomend moveend', function(){ refreshVisitedMarks(); });
+  clusterGroup.on('animationend', function(){ refreshVisitedMarks(); });
+
+  // ---- 내 위치 표시 (로그인 여부와 무관, 저장 없이 화면에만 표시) ----
+  // 실시간으로 위치를 계속 추적(watchPosition)하면서, 실제 이동 속도를 계산해
+  // 달리는 애니메이션의 빠르기를 자동으로 바꿔줌 (차량 이동=빠르게, 도보=느리게)
+  let myLocationMarker = null;
+  let myLocationWatchId = null;
+  let myLocPrev = null; // {lat, lon, t}
+
+  // ---- 내 위치 캐릭터 선택 (남승도 컨셉) ----
+  // 방문 인증 개수(placeCount, 등급 계산에 쓰는 것과 동일한 값)가 unlockAt 이상이면 해제됨.
+  // 로그인 여부와 무관하게 기기(localStorage)에 저장되고, 로그인한 경우 Firestore에도 동기화되어
+  // 다른 기기에서도 유지됨. 인증 카운트는 updateAuthUI가 호출될 때마다 window.hmPlaceCount로 갱신됨.
+  const CHARACTERS = [
+    {id:'eobu',     file:'characters/char-eobu.png',     name:'어부',  unlockAt:1},
+    {id:'siin',     file:'characters/char-siin.png',     name:'시인',  unlockAt:7},
+    {id:'jung',     file:'characters/char-hallyang.png', name:'스님',    unlockAt:18},
+    {id:'hallyang', file:'characters/char-jung.png',     name:'한량',  unlockAt:35},
+    {id:'miin',     file:'characters/char-miin.png',     name:'미인',  unlockAt:60},
+  ];
+  function getMyLocationIconSrc(){
+    // 캐릭터를 아직 고르지 않았으면 그림 없이 원+글씨만 보이도록 null을 반환
+    // (예전 기본 캐릭터 그림은 더 이상 지도에 표시하지 않음)
+    const sel = localStorage.getItem('hmMyCharacter');
+    const found = CHARACTERS.find(c => c.id === sel);
+    return found ? found.file : null;
+  }
+  function myLocationFigureHtml(){
+    const src = getMyLocationIconSrc();
+    return src ? ('<div class="hm-figure"><img src="' + src + '" alt="내 위치"></div>') : '';
+  }
+  // 캐릭터를 아직 안 골랐을 때, 원 안에 위치 핀(📍) 표시를 넣어서 "여기 누르면 된다"는 게
+  // 눈에 잘 띄게 함(사람 캐릭터 그림이 아니라 그냥 위치 핀 아이콘이라 예전 캐릭터와는 다름).
+  function myLocationRingHtml(){
+    const hasChar = !!getMyLocationIconSrc();
+    return '<div class="hm-ring">' + (hasChar ? '' : '<span class="hm-ring-pin">📍</span>') + '</div>';
+  }
+  function applyMyLocationIcon(){
+    if(!myLocationMarker) return;
+    const el = myLocationMarker.getElement();
+    if(!el) return;
+    const wrap = el.querySelector('.hm-my-location');
+    if(!wrap) return;
+    // 매번 통째로 다시 그려서(부분 수정으로 인한 누락/버그를 피함) 항상 최신 상태를 반영함
+    const ring = wrap.querySelector('.hm-ring');
+    if(ring) ring.outerHTML = myLocationRingHtml();
+    const existingFig = wrap.querySelector('.hm-figure');
+    if(existingFig) existingFig.remove();
+    const newRing = wrap.querySelector('.hm-ring');
+    if(newRing) newRing.insertAdjacentHTML('afterend', myLocationFigureHtml());
+  }
+  // 로그인 시(별도 <script type="module"> 블록)에서 계정에 저장된 캐릭터를 적용할 수 있도록 전역에 노출
+  window.applyMyLocationIcon = applyMyLocationIcon;
+  function renderCharPicker(){
+    const grid = document.getElementById('charPickerGrid');
+    if(!grid) return;
+    const selected = localStorage.getItem('hmMyCharacter');
+    let html = `<div class="char-card${!selected ? ' selected' : ''}" onclick="window.hmSelectCharacter(null)">
+      <div class="char-card-noimg">📍</div>
+      <div class="char-name">기본(그림 없음)</div>
+    </div>`;
+    // 잠금 없이 5개 캐릭터 전부 바로 고를 수 있게 함
+    CHARACTERS.forEach(c => {
+      const cls = 'char-card' + (selected === c.id ? ' selected' : '');
+      html += `<div class="${cls}" onclick="window.hmSelectCharacter('${c.id}')">
+        <img src="${c.file}" alt="${c.name}">
+        <div class="char-name">${c.name}</div>
+      </div>`;
+    });
+    grid.innerHTML = html;
+  }
+  window.showCharPicker = function(){
+    renderCharPicker();
+    document.getElementById('charOverlay').style.display = 'flex';
+  };
+  window.hmSelectCharacter = function(id){
+    if(id){
+      const c = CHARACTERS.find(x => x.id === id);
+      if(!c) return;
+      localStorage.setItem('hmMyCharacter', id);
+    } else {
+      localStorage.removeItem('hmMyCharacter');
+    }
+    applyMyLocationIcon();
+    renderCharPicker();
+    window.hmSyncCharacterToFirestore && window.hmSyncCharacterToFirestore(id);
+  };
+
+  function haversineMetersLoc(lat1, lon1, lat2, lon2){
+    const R = 6371000, toRad = v => v*Math.PI/180;
+    const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // 속도(m/s) -> 애니메이션 한 걸음 주기(초). 느릴수록 길게(느긋한 걸음), 빠를수록 짧게(빠른 뜀박질)
+  function speedToDuration(speedMps){
+    const clamped = Math.max(0, Math.min(speedMps, 12));
+    const duration = 1.4 - clamped * 0.11; // 0m/s→1.4s(느긋), 12m/s(약 43km/h, 차량)→약 0.08s
+    return Math.max(0.28, duration);
+  }
+
+  function updateMyLocation(pos, moveMap){
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    const now = pos.timestamp || Date.now();
+
+    // 속도 계산: 기기가 제공하는 speed값이 있으면 우선 사용, 없으면 이전 위치와의 거리/시간으로 직접 계산
+    let speedMps = (typeof pos.coords.speed === 'number' && pos.coords.speed >= 0) ? pos.coords.speed : null;
+    if(speedMps === null && myLocPrev){
+      const dt = (now - myLocPrev.t) / 1000;
+      if(dt > 0.5){
+        const dist = haversineMetersLoc(myLocPrev.lat, myLocPrev.lon, lat, lon);
+        speedMps = dist / dt;
+      }
+    }
+    if(speedMps === null) speedMps = 0;
+    myLocPrev = {lat, lon, t: now};
+
+    const isFirstFix = !myLocationMarker;
+    if(!myLocationMarker){
+      const html = '<div class="hm-my-location">' + myLocationRingHtml() +
+        myLocationFigureHtml() +
+        '<div class="hm-label">내 위치</div></div>';
+      const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
+      // 지도 위 마커를 눌러서 캐릭터를 고르는 동작은 없앰(터치할 때마다 창이 떠서 불편하다는
+      // 피드백) — 캐릭터는 이제 상단 바의 "🎎 내 캐릭터" 버튼으로만 바꿀 수 있음.
+      // interactive:false로 둬서 이 마커는 클릭에 반응하지 않고, 클릭은 그대로 지도(또는
+      // 그 아래 다른 마커)로 전달됨.
+      myLocationMarker = L.marker([lat, lon], {icon: myLocIcon, interactive:false, zIndexOffset:2000, pane:'myLocPane'}).addTo(map);
+      // 안전장치: 위치 추적을 껐다 다시 켤 때(마커를 지웠다 새로 만들 때), 새로 만든 마커가
+      // 화면에 바로 그려지지 않고 지도를 한 번 건드려야 나타나는 경우가 있어서,
+      // 강제로 리플로우를 한 번 발생시켜 곧바로 화면에 그려지도록 함.
+      const myLocEl = myLocationMarker.getElement();
+      if(myLocEl){ void myLocEl.offsetHeight; }
+      // 내 위치를 찾아도 지도는 움직이지 않는다. 보고 있던 화면(전국 지도 등)이 그대로 유지되고
+      // 그 위에 내 위치 표시만 나타난다. 확대도 하지 않고 이동도 하지 않음.
+    } else {
+      myLocationMarker.setLatLng([lat, lon]);
+    }
+    updateMyLocationScale();
+  }
+
+  // 줌 아웃(전국 지도)일 땐 내 위치를 크게 키워서 한눈에 찾기 쉽게, 줌인할수록 원래(1배) 크기로 줄어듦
+  function updateMyLocationScale(){
+    if(!myLocationMarker) return;
+    const el = myLocationMarker.getElement();
+    if(!el) return;
+    const z = map.getZoom(); // minZoom 6 ~ 대략 18
+    // 줌인했을 때(z>=13) 크기는 그대로 1배 유지, 줌 아웃(전국 지도)일 때 커지는 정도만 절반으로 줄임
+    const scale = Math.max(1, Math.min(1.8, 1 + (13 - z) * 0.11));
+    el.style.transform += ''; // Leaflet이 위치 이동에 쓰는 transform은 건드리지 않고, 안쪽 wrapper만 확대
+    const wrap = el.querySelector('.hm-my-location');
+    if(wrap) wrap.style.transform = 'scale(' + scale.toFixed(2) + ')';
+  }
+  map.on('zoomend', updateMyLocationScale);
+
+  function startMyLocationTracking(silent){
+    if(!navigator.geolocation || myLocationWatchId !== null) return;
+    const btn = document.getElementById('myLocationBtn');
+    myLocationWatchId = navigator.geolocation.watchPosition((pos) => updateMyLocation(pos, !silent), () => {
+      // 페이지 열자마자 조용히 시도하는 경우엔, 허락 안 했다고 오류창을 띄우지 않음(부담 없게)
+      if(!silent) window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
+      myLocationWatchId = null;
+      btn.style.background = '#fff';
+    }, {enableHighAccuracy:true, timeout:15000, maximumAge:2000});
+    btn.style.background = '#ffe4d6';
+  }
+  function stopMyLocationTracking(){
+    if(myLocationWatchId !== null){ navigator.geolocation.clearWatch(myLocationWatchId); myLocationWatchId = null; }
+    myLocPrev = null;
+    if(myLocationMarker){ map.removeLayer(myLocationMarker); myLocationMarker = null; }
+    document.getElementById('myLocationBtn').style.background = '#fff';
+  }
+  document.getElementById('myLocationBtn').addEventListener('click', () => {
+    if(!navigator.geolocation){
+      window.showMsg('이 브라우저에서는 위치 정보를 사용할 수 없어요.');
+      return;
+    }
+    if(myLocationWatchId !== null){ stopMyLocationTracking(); }
+    else{ startMyLocationTracking(false); }
+  });
+  // 지도를 열면(권한이 이미 허용돼 있는 경우) 조용히 자동으로 내 위치 표시 시작 — 거부해도 오류창 안 띄움
+  startMyLocationTracking(true);
+
+  // Custom cluster click: small clusters show a pick-list (more reliable than spiderfy legs),
+  // large clusters zoom in toward their bounds.
+  clusterGroup.on('clusterclick', function(e){
+    const cluster = e.layer;
+    const children = cluster.getAllChildMarkers().slice().sort((a,b) => {
+      const ca = a._d.c || '', cb = b._d.c || '';
+      if(ca !== cb) return ca.localeCompare(cb, 'ko');
+      return (a._d.n||'').localeCompare(b._d.n||'', 'ko');
+    }); // 유산 종류(지정종목)별로 묶고, 같은 종류 안에서는 이름순 정렬
+    window.__hmClusterChildren = children; // 현재 열린 목록의 항목들을 전역에 저장해두고 클릭 시 참조
+    window.__hmClusterPopupInfo = null; // 아래에서 채움
+    // 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우(예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
+    // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
+    // renderList를 함수로 저장해두면, 목록 팝업이 열려있는 채로 언어를 바꿔도(applyLanguage) 이름들을 다시 그릴 수 있음
+    const renderList = () => {
+      let lastCat = null;
+      const items = children.map((m,i) => {
+        const d = m._d;
+        const groupHeader = d.c !== lastCat
+          ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(catLabel(d.c))} (${escapeHtml(hmT('catCountUnit').replace('{n}', children.filter(c=>c._d.c===d.c).length))})</div>`
+          : '';
+        lastCat = d.c;
+        return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
+          <div style="font-size:13px;font-weight:600;">${escapeHtml(hmName(d))}</div>
+        </div>`;
+      }).join('');
+      return `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">${escapeHtml(hmT('clusterListHint').replace('{n}', children.length))}</div>
+        ${items}
+      </div>`;
+    };
+    window.__hmClusterPopupInfo = { latlng: cluster.getLatLng(), render: renderList };
+    window.__hmActivePopup = L.popup({maxWidth:280}).setLatLng(cluster.getLatLng()).setContent(renderList()).openOn(map);
+    window.__hmActivePopupRender = renderList;
+  });
+  window.hmBackToClusterList = function(){
+    const info = window.__hmClusterPopupInfo;
+    if(!info) return;
+    map.closePopup();
+    setTimeout(() => {
+      window.__hmActivePopup = L.popup({maxWidth:280}).setLatLng(info.latlng).setContent(info.render()).openOn(map);
+      window.__hmActivePopupRender = info.render;
+    }, 10);
+  };
+  window.hmPickCluster = function(idx){
+    const list = window.__hmClusterChildren || [];
+    const m = list[idx];
+    if(!m) return;
+    map.closePopup();
+    // 클러스터에 묶여 화면에 개별적으로 표시되지 않는 마커는 지도에 아직 붙어있지 않은 상태라
+    // marker.openPopup()이 동작하지 않으므로(마커 자체가 아니라) 별도의 팝업을 직접 띄움.
+    // renderDetail을 함수로 저장해두면, 이 팝업이 열려있는 채로 언어를 바꿔도(applyLanguage) 내용을 다시 그릴 수 있음
+    const fromList = !!window.__hmClusterPopupInfo;
+    const renderDetail = () => buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid), fromList);
+    setTimeout(() => {
+      window.__hmActivePopup = L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(renderDetail()).openOn(map);
+      window.__hmActivePopupRender = renderDetail;
+    }, 10);
+  };
+  updateCount(MAP_DATA.length);
+}
+
+function buildPopup(d, hid, visited, fromList){
+  const img = d.i ? `<div class="popup-img-wrap"><img class="popup-img" loading="lazy" src="${escapeHtml(d.i)}" onerror="if(!this.dataset.hmFb &amp;&amp; this.src.indexOf('/thumb/')>-1){this.dataset.hmFb='1';this.src=this.src.replace('/thumb/','/');}else{this.parentNode.style.display='none';}"><span class="popup-img-zoom"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/><path d="M10.5 7.5 v6 M7.5 10.5 h6"/></svg></span></div>` : '';
+  const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
+  const verifyBtn = visited
+    ? `<div class="popup-verified">${escapeHtml(hmT('verifiedLabel'))}</div>`
+    : `<button class="popup-verify-btn" onclick="window.hmVerifyVisit && window.hmVerifyVisit('${hid}', ${d.la}, ${d.lo})">${escapeHtml(hmT('verifyBtn'))}</button>`;
+  const backBtn = fromList
+    ? `<div onclick="window.hmBackToClusterList && window.hmBackToClusterList()" style="cursor:pointer;font-size:12px;color:var(--teal,#1f6f6b);font-weight:600;margin-bottom:6px;">${escapeHtml(hmT('backToList'))}</div>`
+    : '';
+  return `<div>
+    ${backBtn}
+    <span class="popup-cat" style="background:${markerColorFor(d)}">${escapeHtml(catLabel(d.c))}${d.nc ? ' · '+escapeHtml(catLabel(d.nc)) : ''}</span>
+    <div class="popup-title">${escapeHtml(hmName(d))}</div>
+    <div class="popup-meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||hmT('unknownDate'))}</div>
+    <div class="popup-btn-row">
+      ${verifyBtn}
+      <a class="popup-transit-btn" href="${kakaoUrl}" target="_blank" rel="noopener">${escapeHtml(hmT('transitBtn'))}</a>
+    </div>
+    ${img}
+    <div class="popup-desc">${escapeHtml(d.a||'')}${hmDesc(d) ? '<br><br>'+escapeHtml(hmDesc(d)) : ''}</div>
+  </div>`;
+}
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// 영문 이름/설명이 있는 항목(현재 천연기념물 379건)에 한해 언어 토글이 'en'일 때 영문을 표시하고,
+// 그 외 모든 항목은 한국어로 자연스럽게 대체(fallback) 표시합니다.
+function hmName(d){
+  // 중국어/일본어는 공식 이름(en_n 같은) 필드가 없으므로 이름은 항상 한국어로 표시
+  if(hmLang === 'en' && d.en_n) return d.en_n;
+  return d.n;
+}
+function hmDesc(d){
+  if(hmLang === 'en' && d.en_e) return d.en_e;
+  if(hmLang === 'cn' && d.cn_e) return d.cn_e;
+  if(hmLang === 'jp' && d.jp_e) return d.jp_e;
+  return d.e;
+}
+
+function updateCount(n){
+  window.hmLastFilteredCount = n;
+  // 처음에는 아무 분류도 체크돼 있지 않다. 그때 "0건"만 뜨면 고장난 것처럼 보이므로
+  // 무엇을 해야 하는지 안내 문구를 대신 보여준다.
+  const sb = document.getElementById('searchBox');
+  const anyChecked = document.querySelector('.catChk:checked') !== null
+                     || (sb && sb.value.trim() !== '');
+  const el = document.getElementById('count');
+  if(!anyChecked){ el.textContent = hmT('pickHint'); window.hmNothingPicked = true; return; }
+  window.hmNothingPicked = false;
+  el.textContent = n.toLocaleString() + hmT('countSuffix');
+}
+
+function populateFilters(){
+  const regionSel = document.getElementById('regionSelect');
+  const regions = [...new Set(MAP_DATA.map(d=>d.r))].sort();
+  regions.forEach(r => { const o=document.createElement('option'); o.value=r; o.textContent=r; regionSel.appendChild(o); });
+
+  const cats = [...new Set(MAP_DATA.map(d=>d.c))];
+  const catList = document.getElementById('catList');
+  Object.entries(CAT_GROUPS).forEach(([groupName, groupCats]) => {
+    const present = groupCats.filter(c => cats.includes(c));
+    if(present.length === 0) return;
+    const groupTotal = present.reduce((sum,c) => sum + uniqCount(d=>d.c===c), 0);
+
+    const heading = document.createElement('div');
+    heading.className = 'group-heading';
+    heading.style.cssText = 'font-weight:700;font-size:13.5px;margin:8px 0;color:var(--navy);display:flex;align-items:center;gap:8px;padding:10px 8px;border-radius:8px;background:#faf8f4;';
+    heading.innerHTML = `
+      <input type="checkbox" class="groupChk" data-group="${groupName}" style="width:16px;height:16px;flex:none;cursor:pointer;">
+      <span class="group-swatch" style="background:${GROUP_COLORS[groupName]||'#555'}"></span>
+      <span class="group-label" style="flex:1;cursor:pointer;"><span class="i18n-cat" data-cat="${groupName}">${catLabel(groupName)}</span> <span style="color:#999;font-weight:500;">(${groupTotal.toLocaleString()})</span></span>
+      <span class="group-arrow" style="cursor:pointer;font-size:11px;color:#999;transition:transform .2s;">▶</span>
+    `;
+    catList.appendChild(heading);
+
+    const subWrap = document.createElement('div');
+    subWrap.className = 'group-sub';
+    subWrap.style.cssText = 'display:none;padding:2px 0 6px;';
+    present.forEach(c => {
+      const label = document.createElement('label');
+      label.style.paddingLeft = '10px';
+      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}"> <span class="cat-swatch" style="background:${colorFor(c)}"></span> <span class="i18n-cat" data-cat="${c}">${catLabel(c)}</span> <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
+      subWrap.appendChild(label);
+
+      if(c === '천연기념물'){
+        label.style.cursor = 'default';
+        const natArrow = document.createElement('span');
+        natArrow.textContent = '▶';
+        natArrow.style.cssText = 'cursor:pointer;font-size:10px;color:#999;margin-left:4px;transition:transform .2s;';
+        label.appendChild(natArrow);
+
+        const natWrap = document.createElement('div');
+        natWrap.style.cssText = 'display:none;padding:2px 0 4px 26px;';
+
+        const SUB_LABELS = { '동물':'서식지·번식지·도래지·사육지', '식물':'자생지·군락지' };
+        ['동물','식물'].forEach(nc => {
+          const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
+          const spCount = (typeof SPECIES_DATA !== 'undefined') ? SPECIES_DATA.filter(s => s.g === nc).length : 0;
+          if(ncCount === 0 && spCount === 0) return;
+
+          // 동물/식물도 지질·지형/천연보호구역과 같은 층으로 보이도록 체크박스를 단
+          // 상위 라벨로 만든다. 여기 체크박스는 아래 하위 항목(서식지/자생지)을 함께 켜고 끈다.
+          // 4가지(동물/식물/지질·지형/천연보호구역)가 같은 층으로 보이도록 굵기를 통일하고,
+          // 동물·식물의 세부 항목은 평소엔 접어둔다(▶ 눌러 펼침).
+          const header = document.createElement('label');
+          header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
+          const subArrow = document.createElement('span');
+          subArrow.textContent = '▶';
+          subArrow.style.cssText = 'cursor:pointer;font-size:10px;color:#999;margin-left:4px;transition:transform .2s;';
+          header.appendChild(subArrow);
+          natWrap.appendChild(header);
+
+          const kidWrap = document.createElement('div');
+          kidWrap.style.cssText = 'display:none;padding-left:16px;';
+          if(ncCount > 0){
+            const ncLabel = document.createElement('label');
+            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
+            kidWrap.appendChild(ncLabel);
+          }
+          if(spCount > 0){
+            const spLabel = document.createElement('label');
+            spLabel.style.cssText = 'cursor:pointer;';
+            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="종 지정">${catLabel('종 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
+            spLabel.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); window.showSpeciesList(nc); });
+            kidWrap.appendChild(spLabel);
+          }
+          natWrap.appendChild(kidWrap);
+
+          const toggleKid = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const open = kidWrap.style.display !== 'none';
+            kidWrap.style.display = open ? 'none' : 'block';
+            subArrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+          };
+          subArrow.addEventListener('click', toggleKid);
+        });
+
+        ['지질·지형','천연보호구역'].forEach(nc => {
+          const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
+          if(ncCount === 0) return;
+          const ncLabel = document.createElement('label');
+          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
+          natWrap.appendChild(ncLabel);
+        });
+
+        subWrap.appendChild(natWrap);
+
+        const toggleNat = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const open = natWrap.style.display !== 'none';
+          natWrap.style.display = open ? 'none' : 'block';
+          natArrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+        };
+        natArrow.addEventListener('click', toggleNat);
+      }
+    });
+    catList.appendChild(subWrap);
+
+    const arrow = heading.querySelector('.group-arrow');
+    const toggleExpand = () => {
+      const open = subWrap.style.display !== 'none';
+      subWrap.style.display = open ? 'none' : 'block';
+      arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+    };
+    heading.querySelector('.group-label').addEventListener('click', toggleExpand);
+    arrow.addEventListener('click', toggleExpand);
+  });
+  document.querySelectorAll('.catChk').forEach(chk => chk.addEventListener('change', () => {
+    // "천연기념물" 체크박스를 직접 켜거나 끄면, 그 안의 동물/식물/지질·지형/천연보호구역
+    // 하위 체크박스도 같은 상태로 맞춰줌 (하위만 체크된 채 상위가 꺼져 있어서 아무것도
+    // 안 보이는 혼란을 막기 위함)
+    if(chk.value === '천연기념물'){
+      document.querySelectorAll('.natChk').forEach(n => { n.checked = chk.checked; });
+      document.querySelectorAll('.natParentChk').forEach(n => { n.checked = chk.checked; });
+    }
+    syncGroupCheckboxState(chk.dataset.group);
+    applyFilters();
+  }));
+  // 동물/식물 상위 체크박스: 자기 하위 항목(서식지·자생지)을 함께 켜고 끈다.
+  document.querySelectorAll('.natParentChk').forEach(pchk => pchk.addEventListener('change', () => {
+    const nc = pchk.dataset.nc;
+    document.querySelectorAll(`.natChk[value="${nc}"]`).forEach(n => { n.checked = pchk.checked; });
+    const natChk = document.querySelector('.catChk[value="천연기념물"]');
+    if(natChk){
+      const anyChecked = [...document.querySelectorAll('.natChk')].some(n => n.checked);
+      natChk.checked = anyChecked;
+      syncGroupCheckboxState(natChk.dataset.group);
+    }
+    applyFilters();
+  }));
+  // 하위 항목이 바뀌면 상위(동물/식물) 체크박스 상태도 맞춰준다.
+  function syncNatParents(){
+    document.querySelectorAll('.natParentChk').forEach(pchk => {
+      const kids = [...document.querySelectorAll(`.natChk[value="${pchk.dataset.nc}"]`)];
+      if(kids.length) pchk.checked = kids.some(k => k.checked);
+    });
+  }
+  document.querySelectorAll('.natChk').forEach(nchk => nchk.addEventListener('change', () => {
+    syncNatParents();
+    // 반대 방향: 동물/식물/지질·지형/천연보호구역 중 하나라도 체크되면 상위 "천연기념물"
+    // 체크박스도 자동으로 켜주고, 전부 해제되면 같이 꺼줌 — 그래야 하위 체크박스를
+    // 켰는데 지도에 아무것도 안 뜨는 문제가 생기지 않음
+    const natChk = document.querySelector('.catChk[value="천연기념물"]');
+    if(natChk){
+      const anyChecked = [...document.querySelectorAll('.natChk')].some(n => n.checked);
+      natChk.checked = anyChecked;
+      syncGroupCheckboxState(natChk.dataset.group);
+    }
+    applyFilters();
+  }));
+  document.querySelectorAll('.groupChk').forEach(gchk => gchk.addEventListener('change', () => {
+    const group = gchk.dataset.group;
+    const cats = [...document.querySelectorAll(`.catChk[data-group="${group}"]`)];
+    cats.forEach(c => c.checked = gchk.checked);
+    // 천연기념물이 이 그룹에 속해 있으면 그 아래 세부 항목(동물/식물/지질·지형/천연보호구역)도
+    // 함께 켜고 꺼야 한다. 이걸 빼면 지도에서는 사라졌는데 목록에는 체크가 남아 헷갈린다.
+    if(cats.some(c => c.value === '천연기념물')){
+      document.querySelectorAll('.natChk').forEach(n => { n.checked = gchk.checked; });
+      document.querySelectorAll('.natParentChk').forEach(n => { n.checked = gchk.checked; });
+    }
+    gchk.indeterminate = false;
+    applyFilters();
+  }));
+}
+
+function populateSubRegions(region){
+  const subSel = document.getElementById('subRegionSelect');
+  subSel.innerHTML = '<option value="">전체 시/군/구</option>';
+  if(!region){
+    subSel.disabled = true;
+    return;
+  }
+  subSel.disabled = false;
+  const subs = [...new Set(MAP_DATA.filter(d => d.r === region && d.s).map(d => d.s))].sort((a,b)=>a.localeCompare(b,'ko'));
+  subs.forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; subSel.appendChild(o); });
+}
+
+function syncGroupCheckboxState(group){
+  const subs = [...document.querySelectorAll(`.catChk[data-group="${group}"]`)];
+  const groupChk = document.querySelector(`.groupChk[data-group="${group}"]`);
+  if(!groupChk) return;
+  const checkedCount = subs.filter(s => s.checked).length;
+  if(checkedCount === 0){ groupChk.checked = false; groupChk.indeterminate = false; }
+  else if(checkedCount === subs.length){ groupChk.checked = true; groupChk.indeterminate = false; }
+  else { groupChk.checked = false; groupChk.indeterminate = true; }
+}
+
+// 검색어를 낱말로 쪼갠다. "강화 은행나무" → ["강화","은행나무"]
+function hmTokens(q){
+  return (q || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+}
+// 낱말이 모두 들어 있으면 순서가 달라도 찾아준다.
+// "강화 은행나무" 로도 "강화 볼음도 은행나무" 가 검색된다.
+function hmHit(tokens, ...fields){
+  if(!tokens.length) return true;
+  const hay = fields.filter(Boolean).join(' ').toLowerCase();
+  for(let i = 0; i < tokens.length; i++){
+    if(hay.indexOf(tokens[i]) === -1) return false;
+  }
+  return true;
+}
+
+function applyFilters(){
+  document.getElementById('count').textContent = '처리 중…';
+  // defer the heavy work one tick so the browser can paint "처리 중" first
+  setTimeout(() => {
+    const q = document.getElementById('searchBox').value.trim().toLowerCase();
+    const qTok = hmTokens(q);
+    const region = document.getElementById('regionSelect').value;
+    const subRegion = document.getElementById('subRegionSelect').value;
+    const checked = [...document.querySelectorAll('.catChk:checked')].map(c=>c.value);
+    const checkedSet = new Set(checked);
+    const checkedNat = new Set([...document.querySelectorAll('.natChk:checked')].map(c=>c.value));
+    const searchAll = !!q && checkedSet.size === 0;
+
+    // 내가 방문한 곳은 분류 체크와 상관없이 항상 지도에 표시한다.
+    // (체크를 하나도 안 한 상태로 지도를 열어도 내 발자취는 보이도록)
+    const visitedSet = window.visitedIds || new Set();
+
+    const matched = [];
+    const clustered = [];
+    const visitedOnes = [];
+    for(let i = 0; i < allMarkers.length; i++){
+      const m = allMarkers[i];
+      const d = m._d;
+      const isVisited = !!(m._hid && visitedSet.has(m._hid));
+      // 아무 분류도 체크하지 않은 채 검색어만 입력한 경우에는 전체에서 찾아준다.
+      // (체크를 먼저 해야만 검색이 되면 "검색이 안 된다"고 느끼게 됨)
+      if(!searchAll && !isVisited){
+        if(!checkedSet.has(d.c)) continue;
+        if(d.c === '천연기념물' && !checkedNat.has(d.nc)) continue;
+      }
+      if(region && d.r !== region) continue;
+      if(subRegion && d.s !== subRegion) continue;
+      if(q && !hmHit(qTok, d.n, d.a)) continue;
+      matched.push(m);
+      if(isVisited) visitedOnes.push(m); else clustered.push(m);
+    }
+    // 방문한 곳은 묶음에 넣지 않고 지도에 바로 올린다(전국 지도에서도 개별로 보이도록)
+    clusterGroup.clearLayers();
+    if(visitedLayer) visitedLayer.clearLayers();
+    clusterGroup.addLayers(clustered); // bulk add — much faster than addLayer in a loop
+    if(visitedLayer) visitedOnes.forEach(m => visitedLayer.addLayer(m));
+    updateCount(matched.length);
+    refreshVisitedMarks();
+  }, 0);
+}
+
+window.applyFilters = applyFilters;
+document.getElementById('searchBox').addEventListener('input', applyFilters);
+document.getElementById('regionSelect').addEventListener('change', () => {
+  populateSubRegions(document.getElementById('regionSelect').value);
+  applyFilters();
+});
+document.getElementById('subRegionSelect').addEventListener('change', applyFilters);
+
+// ---- INTANGIBLE LIST VIEW ----
+function initIntangibleList(){
+  const regionSel = document.getElementById('ilistRegion');
+  const regions = [...new Set(INTANGIBLE_DATA.map(d=>d.r))].sort();
+  regions.forEach(r => { const o=document.createElement('option'); o.value=r; o.textContent=r; regionSel.appendChild(o); });
+
+  const catSel = document.getElementById('ilistCat');
+  const cats = [...new Set(INTANGIBLE_DATA.map(d=>d.c))].sort();
+  cats.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; catSel.appendChild(o); });
+
+  renderIntangible();
+  document.getElementById('ilistSearch').addEventListener('input', renderIntangible);
+  regionSel.addEventListener('change', renderIntangible);
+  catSel.addEventListener('change', renderIntangible);
+}
+
+function renderIntangible(){
+  const q = document.getElementById('ilistSearch').value.trim().toLowerCase();
+  const region = document.getElementById('ilistRegion').value;
+  const cat = document.getElementById('ilistCat').value;
+  const wrap = document.getElementById('icards');
+  wrap.innerHTML = '';
+  const filtered = INTANGIBLE_DATA.filter(d => {
+    if(region && d.r !== region) return false;
+    if(cat && d.c !== cat) return false;
+    if(q && !hmHit(hmTokens(q), d.n)) return false;
+    return true;
+  }).sort((a,b) => (a.n||'').localeCompare(b.n||'', 'ko')).slice(0, 300);
+
+  filtered.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'icard';
+    const img = d.i ? `<img src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
+    div.innerHTML = `
+      ${img}
+      <span class="tag">${escapeHtml(d.c)}</span>
+      <h4>${escapeHtml(d.n)}</h4>
+      <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')} · ${escapeHtml(d.d||hmT('unknownDate'))}${d.o ? ' · '+escapeHtml(d.o) : ''}</div>
+      <div class="desc">${escapeHtml(d.e||'')}</div>
+    `;
+    wrap.appendChild(div);
+  });
+  if(filtered.length === 300){
+    const note = document.createElement('div');
+    note.style.cssText = 'grid-column:1/-1;text-align:center;color:#888;font-size:12px;padding:10px;';
+    note.textContent = '검색 결과가 많아 상위 300건만 표시했어요. 검색어를 좁혀보세요.';
+    wrap.appendChild(note);
+  }
+}
+
+// ---- TABS ----
+document.getElementById('tabMapBtn').addEventListener('click', () => {
+  document.getElementById('view-map').style.display='flex';
+  document.getElementById('view-list').style.display='none';
+  setTimeout(()=>map.invalidateSize(), 50);
+});
+document.getElementById('tabListBtn').addEventListener('click', () => {
+  document.getElementById('view-map').style.display='none';
+  document.getElementById('view-list').style.display='block';
+});
+
+window.showSpeciesList = function(type){
+  document.getElementById('view-map').style.display='none';
+  document.getElementById('view-list').style.display='none';
+  document.getElementById('view-species').style.display='block';
+  document.getElementById('slistType').value = type || '';
+  renderSpecies();
+};
+function backToMapFromSpecies(){
+  document.getElementById('view-species').style.display='none';
+  document.getElementById('view-map').style.display='flex';
+  setTimeout(()=>map.invalidateSize(), 50);
+}
+document.getElementById('tabMapBtnFromSpecies').addEventListener('click', backToMapFromSpecies);
+function renderSpecies(){
+  const q = document.getElementById('slistSearch').value.trim().toLowerCase();
+  const type = document.getElementById('slistType').value;
+  const wrap = document.getElementById('scards');
+  wrap.innerHTML = '';
+  const filtered = (typeof SPECIES_DATA !== 'undefined' ? SPECIES_DATA : []).filter(d => {
+    if(type && d.g !== type) return false;
+    if(q && !hmHit(hmTokens(q), d.n)) return false;
+    return true;
+  }).sort((a,b) => (a.n||'').localeCompare(b.n||'', 'ko'));
+  filtered.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'icard';
+    const simg = d.i ? `<img class="hm-zoomable" loading="lazy" src="${escapeHtml(d.i)}" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">` : '';
+    div.innerHTML = `
+      ${simg}
+      <span class="tag" style="background:${TN_SUB_COLORS[d.g]||'#8d99ae'}">${escapeHtml(d.c)} · ${escapeHtml(d.g)}</span>
+      <h4>${escapeHtml(d.n)}</h4>
+      <div class="meta">${escapeHtml(d.r||'')} ${escapeHtml(d.s||'')}</div>
+      <div class="desc">${escapeHtml(d.e||'')}</div>
+    `;
+    wrap.appendChild(div);
+  });
+  if(filtered.length === 0){
+    const note = document.createElement('div');
+    note.style.cssText = 'grid-column:1/-1;text-align:center;color:#888;font-size:13px;padding:20px;';
+    note.textContent = '해당하는 항목이 없어요.';
+    wrap.appendChild(note);
+  }
+}
+document.getElementById('slistSearch').addEventListener('input', renderSpecies);
+document.getElementById('slistType').addEventListener('change', renderSpecies);
+
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  const aside = document.querySelector('#view-map aside');
+  const toggle = document.getElementById('sidebarToggle');
+  const header = document.querySelector('header');
+  aside.classList.toggle('collapsed');
+  const isCollapsed = aside.classList.contains('collapsed');
+  toggle.textContent = isCollapsed ? '▶' : '◀';
+  setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+});
+
+document.getElementById('sheetHandle').addEventListener('click', () => {
+  const aside = document.querySelector('#view-map aside');
+  aside.classList.toggle('sheet-expanded');
+  setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+});
+
+// ---- INIT ----
+try{
+  populateFilters();
+  document.getElementById('regionSelect').value = '';
+  populateSubRegions('');
+  initMap();
+  initIntangibleList();
+  applyFilters();   // 마커 생성이 끝난 뒤 체크 상태에 맞춰 표시
+}catch(err){
+  showMsg('페이지를 불러오는 중 오류가 발생했습니다: ' + err.message);
+  console.error(err);
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW 등록 실패', err));
+  });
+}
+</script>
+
+<!-- ---- 방문 인증: 구글 로그인 + Firebase ---- -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, limit, writeBatch, addDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC7s_WqkcibTKsgbF7nQG3XrfW2njkDmEo",
+  authDomain: "gukganyusan-map.firebaseapp.com",
+  projectId: "gukganyusan-map",
+  storageBucket: "gukganyusan-map.firebasestorage.app",
+  messagingSenderId: "988369827491",
+  appId: "1:988369827491:web:5fc6f627329386ca08f116",
+  measurementId: "G-LGEBJYPM2Q"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// 조선시대 관직·품계 등급 체계 (누적 방문 수 기준, 12단계)
+const RANKS = [
+  {min:120, title:"정1품 영의정"}, {min:95, title:"종2품 관찰사"},
+  {min:75,  title:"정3품 목사"},   {min:60, title:"종4품 군수"},
+  {min:45,  title:"정5품 정랑"},   {min:35, title:"종5품 현령"},
+  {min:25,  title:"정6품 좌랑"},   {min:18, title:"종6품 도사"},
+  {min:12,  title:"정7품 박사"},   {min:7,  title:"종7품 직장"},
+  {min:3,   title:"정9품 훈도"},   {min:1,  title:"종9품 참봉"}
+];
+function rankFor(count){
+  for(const r of RANKS){ if(count >= r.min) return r.title; }
+  return "미인증";
+}
+// RANKS는 높은 등급이 배열 앞쪽 → 마패용 레벨(1~12, 참봉=1, 영의정=12)로 변환
+function rankLevel(count){
+  for(let i=0;i<RANKS.length;i++){ if(count >= RANKS[i].min) return RANKS.length - i; }
+  return 0;
+}
+// 등급은 "인증한 유산 개수"가 아니라 "실제로 다녀온 서로 다른 장소 개수"로 매김.
+// 단순히 좌표를 반올림해서 묶으면 절/박물관처럼 건물이 넓게 퍼진 곳(수백 m)은
+// 여러 장소로 잘못 쪼개지므로, 서로 400m 이내인 것들을 실제 거리 기준으로 하나로
+// 묶는 방식(Union-Find)을 씀 — 체인으로 연결되면 전체가 한 덩어리가 됨.
+const PLACE_CLUSTER_METERS = 400;
+function computeVisitedClusters(){
+  const pts = [];
+  visitedIds.forEach(hid => {
+    const m = markerByHid[hid];
+    if(m) pts.push(m._d);
+  });
+  const n = pts.length;
+  const parent = pts.map((_, i) => i);
+  function find(i){ while(parent[i] !== i){ parent[i] = parent[parent[i]]; i = parent[i]; } return i; }
+  function union(i, j){ const ri = find(i), rj = find(j); if(ri !== rj) parent[ri] = rj; }
+  for(let i = 0; i < n; i++){
+    for(let j = i + 1; j < n; j++){
+      if(haversineMeters(pts[i].la, pts[i].lo, pts[j].la, pts[j].lo) <= PLACE_CLUSTER_METERS){
+        union(i, j);
+      }
+    }
+  }
+  const groups = {};
+  for(let i = 0; i < n; i++){
+    const r = find(i);
+    if(!groups[r]) groups[r] = [];
+    groups[r].push(pts[i]);
+  }
+  return Object.values(groups);
+}
+function computePlaceCount(){
+  return computeVisitedClusters().length;
+}
+// 디지털 마패 뱃지: 등급이 높을수록 말 그림 개수가 늘어남 (조선시대 마패 모티프)
+function mapaeHTML(level){
+  if(level <= 0) return '';
+  const tier = level <= 4 ? ['#c99a5b','#7c5324'] : level <= 8 ? ['#d7d7d7','#8f8f8f'] : ['#f4cd5e','#a97c1e'];
+  return `<span class="mapae-badge" style="background:radial-gradient(circle at 35% 30%, ${tier[0]}, ${tier[1]})" title="디지털 마패 · ${level}단계">🐴${level}</span>`;
+}
+
+// 하버사인 공식: 두 좌표 간 거리(m)
+function haversineMeters(lat1, lon1, lat2, lon2){
+  const R = 6371000;
+  const toRad = v => v * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+let currentUser = null;
+let visitedIds = new Set();
+window.visitedIds = visitedIds;
+let currentNickname = '';
+
+function updateAuthUI(placeCount, rank, itemCount){
+  // 내 위치 캐릭터 잠금 해제 판단에 쓰는 인증 개수를 항상 최신으로 유지
+  // (로그인/로그아웃/단일 인증/주변 일괄 인증 등 모든 경로가 이 함수를 거쳐감)
+  window.hmPlaceCount = placeCount || 0;
+  const area = document.getElementById('authArea');
+  if(currentUser){
+    const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
+    const nick = (currentNickname || '닉네임 없음').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
+    const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃'}[k] || k));
+    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${t('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${t('logoutBtnLabel')}</button></div>`;
+  } else {
+    const t = window.hmT || ((k) => ({loginBtnLabel:'🔑 구글로 로그인'}[k] || k));
+    area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">${t('loginBtnLabel')}</button>`;
+  }
+}
+
+// 카카오톡·라인 등 앱 안에서 열린 브라우저인지
+function hmInAppBrowser(){
+  return /KAKAOTALK|NAVER|Line\/|Instagram|FBAN|FBAV|DaumApps/i.test(navigator.userAgent || '');
+}
+// 팝업이 막히는 환경(아이폰 사파리, 홈 화면 앱 등)에서는 화면 전환 방식으로 넘어감
+const POPUP_BLOCKED = new Set([
+  'auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/cancelled-popup-request',
+  'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'
+]);
+window.hmLogin = () => {
+  if(hmInAppBrowser()){
+    window.showMsg && window.showMsg(
+      '카카오톡·네이버 앱 안에서는 구글 로그인이 막혀요.\n\n' +
+      '오른쪽 위 ⋮ (아이폰은 아래 공유 아이콘) → "다른 브라우저로 열기"를 눌러 크롬이나 사파리로 연 뒤 로그인해주세요.\n\n' +
+      '로그인 없이 지도를 보거나 퀴즈에 참가하는 건 그대로 됩니다.');
+    return;
+  }
+  signInWithPopup(auth, provider).catch(err => {
+    if(POPUP_BLOCKED.has(err && err.code)){
+      signInWithRedirect(auth, provider).catch(e2 => {
+        window.showMsg ? window.showMsg('로그인에 실패했습니다: ' + e2.message) : alert('로그인 실패: ' + e2.message);
+      });
+      return;
+    }
+    window.showMsg ? window.showMsg('로그인에 실패했습니다: ' + err.message) : alert('로그인 실패: ' + err.message);
+  });
+};
+// 화면 전환 방식으로 로그인하고 돌아왔을 때 결과 받기
+getRedirectResult(auth).catch(err => {
+  if(err && err.code && err.code !== 'auth/no-auth-event'){
+    console.warn('로그인 복귀 처리 실패', err);
+  }
+});
+window.hmLogout = () => { signOut(auth); };
+
+window.hmChangeNickname = async () => {
+  if(!currentUser) return;
+  const input = window.prompt('명예의 전당에 표시할 닉네임을 입력해주세요 (2~12자)', currentNickname || '');
+  if(input === null) return;
+  const trimmed = input.trim().slice(0, 12);
+  if(trimmed.length < 2){
+    window.showMsg('닉네임은 2자 이상 입력해주세요.');
+    return;
+  }
+  try{
+    await setDoc(doc(db, 'users', currentUser.uid), {nickname: trimmed}, {merge:true});
+    currentNickname = trimmed;
+    const uSnap = await getDoc(doc(db, 'users', currentUser.uid));
+    const d = uSnap.data() || {};
+    updateAuthUI(d.totalVisits || 0, d.rank || rankFor(0));
+  }catch(err){
+    window.showMsg('닉네임 저장에 실패했어요: ' + err.message);
+  }
+};
+
+const ADMIN_EMAIL = 'uniggum6@gmail.com';
+
+window.showHallOfFame = async () => {
+  document.getElementById('rankOverlay').style.display = 'flex';
+  const area = document.getElementById('rankListArea');
+  area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
+  const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+  try{
+    const q = query(collection(db, 'users'), orderBy('totalVisits', 'desc'), limit(30));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      area.innerHTML = '<div class="rank-empty">아직 인증 기록이 없어요. 첫 번째 인증자가 되어보세요!</div>';
+      return;
+    }
+    const medalCls = ['top1','top2','top3'];
+    let html = '';
+    let i = 0;
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const total = d.totalVisits || 0;
+      if(total <= 0) return;
+      i++;
+      const cls = medalCls[i-1] || '';
+      const uid = docSnap.id;
+      const name = (d.nickname || '닉네임 미설정').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const adminBtn = isAdmin ? `<button onclick="window.hmAdminViewUserVisits('${uid}', '${name.replace(/'/g,"")}')" style="margin-left:8px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px;border:none;background:var(--navy);color:#fff;cursor:pointer;">방문기록</button>` : '';
+      html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${d.rank || ''}</div></div><div class="rank-count">${total}곳${adminBtn}</div></div>`;
+    });
+    area.innerHTML = html || '<div class="rank-empty">아직 인증 기록이 없어요. 첫 번째 인증자가 되어보세요!</div>';
+  }catch(err){
+    area.innerHTML = '<div class="rank-empty">순위를 불러오지 못했어요.</div>';
+  }
+};
+
+// ---- 관리자 전용: 다른 사람의 방문기록 보기 (ADMIN_EMAIL 계정 로그인시에만 버튼 노출) ----
+window.hmAdminViewUserVisits = async (uid, nickname) => {
+  if(!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  document.getElementById('myVisitsOverlay').style.display = 'flex';
+  const area = document.getElementById('myVisitsArea');
+  document.querySelector('#myVisitsOverlay h3').textContent = `📍 ${nickname}님이 다녀온 곳`;
+  area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
+  try{
+    const q = query(collection(db, 'visits'), where('userId', '==', uid));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      area.innerHTML = '<div class="rank-empty">인증 기록이 없어요.</div>';
+      return;
+    }
+    const hids = snap.docs.map(d => d.data().heritageId);
+    const pts = [];
+    hids.forEach(hid => {
+      const m = markerByHid[hid];
+      if(m) pts.push(m._d);
+    });
+    const n = pts.length;
+    const parent = pts.map((_, i) => i);
+    function find(i){ while(parent[i] !== i){ parent[i] = parent[parent[i]]; i = parent[i]; } return i; }
+    function union(i, j){ const ri = find(i), rj = find(j); if(ri !== rj) parent[ri] = rj; }
+    for(let i = 0; i < n; i++){
+      for(let j = i + 1; j < n; j++){
+        if(haversineMeters(pts[i].la, pts[i].lo, pts[j].la, pts[j].lo) <= 400) union(i, j);
+      }
+    }
+    const groups = {};
+    for(let i = 0; i < n; i++){ const r = find(i); if(!groups[r]) groups[r] = []; groups[r].push(pts[i]); }
+    const clusters = Object.values(groups).sort((a,b) => (a[0].n||'').localeCompare(b[0].n||'', 'ko'));
+    let html = '';
+    clusters.forEach(items => {
+      const rep = items[0];
+      const extra = items.length > 1 ? ` 외 ${items.length-1}건` : '';
+      html += `<div class="rank-row"><div class="rank-info"><div class="rank-name">${escapeHtml(rep.n)}${extra}</div><div class="rank-title">${escapeHtml(rep.r||'')} ${escapeHtml(rep.s||'')}</div></div></div>`;
+    });
+    area.innerHTML = html || '<div class="rank-empty">지도에서 찾을 수 없는 유산이에요.</div>';
+  }catch(err){
+    area.innerHTML = '<div class="rank-empty">불러오지 못했어요: ' + err.message + '</div>';
+  }
+};
+
+window.showMyVisits = () => {
+  document.getElementById('myVisitsOverlay').style.display = 'flex';
+  const area = document.getElementById('myVisitsArea');
+  if(!currentUser){
+    area.innerHTML = '<div class="rank-empty">로그인 후 이용할 수 있어요.</div>';
+    return;
+  }
+  if(visitedIds.size === 0){
+    area.innerHTML = '<div class="rank-empty">아직 인증한 곳이 없어요. 지도에서 유산을 눌러 "현장 인증"을 해보세요!</div>';
+    return;
+  }
+  // 장소별로 묶어서, 한 장소에 여러 유산이 있으면 대표 이름 + 나머지 건수로 표시
+  const groups = computeVisitedClusters().sort((a,b) => (a[0].n||'').localeCompare(b[0].n||'', 'ko'));
+  let html = '';
+  groups.forEach(items => {
+    const rep = items[0];
+    const extra = items.length > 1 ? ` 외 ${items.length-1}건` : '';
+    html += `<div class="rank-row"><div class="rank-info"><div class="rank-name">${escapeHtml(rep.n)}${extra}</div><div class="rank-title">${escapeHtml(rep.r||'')} ${escapeHtml(rep.s||'')}</div></div></div>`;
+  });
+  area.innerHTML = html;
+};
+
+window.showBoard = () => {
+  document.getElementById('view-map').style.display='none';
+  document.getElementById('view-list').style.display='none';
+  document.getElementById('view-species').style.display='none';
+  document.getElementById('view-board').style.display='block';
+  renderBoard();
+};
+function backToMapFromBoard(){
+  document.getElementById('view-board').style.display='none';
+  document.getElementById('view-map').style.display='flex';
+  setTimeout(()=>map.invalidateSize(), 50);
+}
+document.getElementById('tabMapBtnFromBoard').addEventListener('click', backToMapFromBoard);
+
+async function renderBoard(){
+  const area = document.getElementById('boardListArea');
+  area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
+  try{
+    const q = query(collection(db, 'boardPosts'), orderBy('createdAt', 'desc'), limit(100));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      area.innerHTML = '<div class="rank-empty">아직 글이 없어요. 첫 글을 남겨보세요!</div>';
+      return;
+    }
+    let html = '';
+    snap.forEach(docSnap => {
+      const p = docSnap.data();
+      const id = docSnap.id;
+      const date = p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      const nick = escapeHtml(p.authorNick || '익명');
+      const canDelete = currentUser && p.authorUid === currentUser.uid;
+      const delBtn = canDelete ? `<button onclick="window.hmDeleteBoardPost('${id}')" style="margin-left:8px;font-size:11.5px;color:#c0392b;background:none;border:none;cursor:pointer;text-decoration:underline;">삭제</button>` : '';
+      html += `<div class="icard" style="margin-bottom:10px;">
+        <h4 style="margin:0 0 4px;">${escapeHtml(p.title||'')}</h4>
+        <div class="meta">${nick} · ${date}${delBtn}</div>
+        <div class="desc" style="white-space:pre-wrap;">${escapeHtml(p.content||'')}</div>
+      </div>`;
+    });
+    area.innerHTML = html;
+  }catch(err){
+    area.innerHTML = '<div class="rank-empty">불러오지 못했어요: ' + err.message + '</div>';
+  }
+}
+
+document.getElementById('boardSubmitBtn').addEventListener('click', async () => {
+  if(!currentUser){
+    window.showMsg('글쓰기는 로그인 후 이용할 수 있어요. (오른쪽 위 로그인 버튼)');
+    return;
+  }
+  const title = document.getElementById('boardTitleInput').value.trim();
+  const content2 = document.getElementById('boardContentInput').value.trim();
+  if(!title || !content2){
+    window.showMsg('제목과 내용을 모두 입력해주세요.');
+    return;
+  }
+  try{
+    await addDoc(collection(db, 'boardPosts'), {
+      title: title,
+      content: content2,
+      authorUid: currentUser.uid,
+      authorNick: currentNickname || currentUser.displayName || '익명',
+      createdAt: Date.now()
+    });
+    document.getElementById('boardTitleInput').value = '';
+    document.getElementById('boardContentInput').value = '';
+    renderBoard();
+  }catch(err){
+    window.showMsg('글 등록에 실패했어요: ' + err.message);
+  }
+});
+
+window.hmDeleteBoardPost = async (postId) => {
+  if(!currentUser) return;
+  if(!window.confirm('이 글을 삭제할까요?')) return;
+  try{
+    await deleteDoc(doc(db, 'boardPosts', postId));
+    renderBoard();
+  }catch(err){
+    window.showMsg('삭제에 실패했어요: ' + err.message);
+  }
+};
+
+window.hmVerifyVisit = (hid, targetLat, targetLon) => {
+  if(!currentUser){
+    window.showMsg('현장 인증을 하려면 먼저 구글 계정으로 로그인해주세요. (오른쪽 위 로그인 버튼)');
+    return;
+  }
+  if(!navigator.geolocation){
+    window.showMsg('이 브라우저에서는 위치 정보를 사용할 수 없어요.');
+    return;
+  }
+  window.showLoadingMsg('📍 위치 확인 중…');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const dist = haversineMeters(pos.coords.latitude, pos.coords.longitude, targetLat, targetLon);
+    if(dist > 200){
+      window.showMsg(`현재 위치가 유산 현장에서 약 ${Math.round(dist).toLocaleString()}m 떨어져 있어요. 현장 200m 이내에서 다시 시도해주세요.`);
+      return;
+    }
+    try{
+      const visitDocId = currentUser.uid + '_' + hid;
+      const visitRef = doc(db, 'visits', visitDocId);
+      const existing = await getDoc(visitRef);
+      if(existing.exists()){
+        window.showMsg('이미 인증을 완료한 유산이에요!');
+        return;
+      }
+      await setDoc(visitRef, {
+        userId: currentUser.uid,
+        heritageId: hid,
+        visitedAt: new Date().toISOString(),
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude
+      });
+      visitedIds.add(hid);
+      const newPlaceCount = computePlaceCount();
+      const newItemCount = visitedIds.size;
+      const newRank = rankFor(newPlaceCount);
+      await setDoc(doc(db, 'users', currentUser.uid), {
+        displayName: currentUser.displayName,
+        email: currentUser.email,
+        totalVisits: newItemCount,
+        totalPlaces: newPlaceCount,
+        rank: newRank
+      }, {merge:true});
+      updateAuthUI(newPlaceCount, newRank, newItemCount);
+      window.markVisitedOnMap && window.markVisitedOnMap(hid);
+      window.showMsg(`인증 완료! 현재 등급: ${newRank} (${newPlaceCount}곳)`);
+    }catch(err){
+      window.showMsg('인증 중 오류가 발생했습니다: ' + err.message);
+    }
+  }, () => {
+    window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
+  }, {enableHighAccuracy:true, timeout:10000});
+};
+
+window.hmBulkVerify = () => {
+  if(!currentUser){
+    window.showMsg('일괄 인증을 하려면 먼저 구글 계정으로 로그인해주세요. (오른쪽 위 로그인 버튼)');
+    return;
+  }
+  if(!navigator.geolocation){
+    window.showMsg('이 브라우저에서는 위치 정보를 사용할 수 없어요.');
+    return;
+  }
+  window.showLoadingMsg('📍 주변 유산을 찾는 중…');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const myLat = pos.coords.latitude, myLon = pos.coords.longitude;
+    const nearby = allMarkers.filter(m => {
+      if(visitedIds.has(m._hid)) return false; // 이미 인증한 건 제외
+      const dist = haversineMeters(myLat, myLon, m._d.la, m._d.lo);
+      return dist <= 200;
+    });
+    if(nearby.length === 0){
+      window.showMsg('현재 위치 200m 이내에 아직 인증 안 한 유산이 없어요.');
+      return;
+    }
+    document.getElementById('msgOverlay').style.display = 'none';
+    const proceed = window.confirm(`이 주변에서 ${nearby.length}건을 찾았어요.\n\n한 번에 인증하면 ${nearby.length}건 모두 "인증 완료" 표시는 되지만, 등급 계산상으로는 같은 위치라 "1곳"으로만 카운트돼요.\n\n계속할까요?`);
+    if(!proceed) return;
+    window.showLoadingMsg(`📍 ${nearby.length}건 인증하는 중…`);
+    try{
+      const batch = writeBatch(db);
+      nearby.forEach(m => {
+        const visitDocId = currentUser.uid + '_' + m._hid;
+        const visitRef = doc(db, 'visits', visitDocId);
+        batch.set(visitRef, {
+          userId: currentUser.uid,
+          heritageId: m._hid,
+          visitedAt: new Date().toISOString(),
+          lat: myLat,
+          lon: myLon
+        });
+      });
+      await batch.commit();
+      nearby.forEach(m => visitedIds.add(m._hid));
+      const newPlaceCount = computePlaceCount();
+      const newItemCount = visitedIds.size;
+      const newRank = rankFor(newPlaceCount);
+      await setDoc(doc(db, 'users', currentUser.uid), {
+        displayName: currentUser.displayName,
+        email: currentUser.email,
+        totalVisits: newItemCount,
+        totalPlaces: newPlaceCount,
+        rank: newRank
+      }, {merge:true});
+      updateAuthUI(newPlaceCount, newRank, newItemCount);
+      nearby.forEach(m => window.markVisitedOnMap && window.markVisitedOnMap(m._hid));
+      window.showMsg(`${nearby.length}건 인증 완료! (이 위치는 1곳으로 카운트돼요) 현재 등급: ${newRank} (${newPlaceCount}곳)`);
+    }catch(err){
+      window.showMsg('일괄 인증 중 오류가 발생했습니다: ' + err.message);
+    }
+  }, () => {
+    window.showMsg('위치 권한이 필요해요. 브라우저 설정에서 위치 접근을 허용한 뒤 다시 시도해주세요.');
+  }, {enableHighAccuracy:true, timeout:10000});
+};
+
+// 내 위치 캐릭터 선택을 로그인 계정에도 저장(다른 기기에서도 이어서 보이도록). 실패해도 조용히 무시.
+window.hmSyncCharacterToFirestore = async (charId) => {
+  if(!currentUser) return;
+  try{
+    await setDoc(doc(db, 'users', currentUser.uid), {myCharacter: charId || null}, {merge:true});
+  }catch(e){ console.warn('캐릭터 저장 실패:', e); }
+};
+
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if(user){
+    const uRef = doc(db, 'users', user.uid);
+    const uSnap = await getDoc(uRef);
+    let rank = rankFor(0);
+    if(uSnap.exists()){
+      rank = uSnap.data().rank || rank;
+      currentNickname = uSnap.data().nickname || '';
+      // 이 계정으로 저장해둔 캐릭터가 있으면(다른 기기 포함) 이어서 보이게 동기화
+      const savedChar = uSnap.data().myCharacter;
+      if(savedChar){ localStorage.setItem('hmMyCharacter', savedChar); }
+      else{ localStorage.removeItem('hmMyCharacter'); }
+      window.applyMyLocationIcon && window.applyMyLocationIcon();
+    } else {
+      await setDoc(uRef, {displayName:user.displayName, email:user.email, totalVisits:0, totalPlaces:0, rank}, {merge:true});
+      currentNickname = '';
+    }
+    const q = query(collection(db, 'visits'), where('userId', '==', user.uid));
+    const snap = await getDocs(q);
+    visitedIds = new Set(snap.docs.map(docSnap => docSnap.data().heritageId));
+
+    // ---- 좌표 이전(마이그레이션): 천연기념물센터 4건이 전시관→표본동으로 좌표가 바뀌면서
+    // 예전 좌표 기준으로 계산된 인증기록(hid)이 새 hid와 달라져 "미인증"처럼 보이는 문제를 자동 복구.
+    // 예전 좌표로 인증한 기록이 있으면, 지금 이 계정으로 로그인하는 순간 새 hid로 된 인증기록을 자동 생성해줌.
+    try{
+      // 유산 좌표를 나중에 수정할 때마다, 아래 목록에 {이름, 예전좌표} 한 줄만 추가하면
+      // "예전 좌표 기준으로 인증했던 사람"의 인증 기록이 새 좌표로 자동 복사됨.
+      // 여러 번 옮긴 유산은 여러 줄(예전1, 예전2...)을 다 추가해두면 전부 커버됨.
+      const COORD_MIGRATIONS = [
+        // 2026-08-14: 포항 두호층 3건+나무화석 — 천연기념물센터 전시관 → 표본동으로 이동
+        {n:'포항 금광리 신생대 나무화석', oldLa:36.3676596, oldLo:127.3925611},
+        {n:'포항 신생대 두호층 결핵체', oldLa:36.3676596, oldLo:127.3925611},
+        {n:'포항 신생대 두호층 결핵체(2025-2)', oldLa:36.3676596, oldLo:127.3925611},
+        {n:'포항 신생대 두호층 고래화석', oldLa:36.3676596, oldLo:127.3925611},
+      ];
+      let migrated = false;
+      for(const item of COORD_MIGRATIONS){
+        const oldHid = computeHeritageId({n:item.n, la:item.oldLa, lo:item.oldLo});
+        const newMarker = Object.values(markerByHid).find(m => m._d.n === item.n);
+        if(!newMarker) continue;
+        const newHid = newMarker._hid;
+        if(visitedIds.has(oldHid) && !visitedIds.has(newHid)){
+          await setDoc(doc(db, 'visits', user.uid + '_' + newHid), {
+            userId: user.uid, heritageId: newHid, visitedAt: new Date().toISOString(), migratedFrom: oldHid
+          });
+          visitedIds.add(newHid);
+          migrated = true;
+        }
+      }
+      if(migrated){ window.visitedIds = visitedIds; }
+    }catch(e){ console.warn('좌표 이전 마이그레이션 실패:', e); }
+
+    window.visitedIds = visitedIds;
+    const placeCount = computePlaceCount();
+    const itemCount = visitedIds.size;
+    rank = rankFor(placeCount);
+    // 저장된 rank/카운트가 예전 방식(유산개수 기준)일 수 있으니, 접속 시 다시 계산해서 동기화
+    await setDoc(uRef, {totalVisits: itemCount, totalPlaces: placeCount, rank}, {merge:true});
+    updateAuthUI(placeCount, rank, itemCount);
+    // 팝업 내용만 먼저 갱신하고, ✓ 다시 그리기는 마지막에 한 번만 (건수가 많아도 느려지지 않게)
+    visitedIds.forEach(hid => {
+      const m = markerByHid[hid];
+      if(m){ m._visited = true; m.setPopupContent(buildPopup(m._d, hid, true)); }
+    });
+    window.applyFilters ? window.applyFilters() : (window.refreshVisitedMarks && window.refreshVisitedMarks());
+    if(!currentNickname){
+      setTimeout(() => { window.hmChangeNickname && window.hmChangeNickname(); }, 300);
+    }
+  } else {
+    visitedIds = new Set();
+    window.visitedIds = visitedIds;
+    updateAuthUI(0, rankFor(0), 0);
+    window.clearVisitedMarks && window.clearVisitedMarks();
+  }
+});
+</script>
+<div id="hmLightbox" role="dialog" aria-modal="true">
+  <div id="hmLightboxWait">…</div>
+  <img id="hmLightboxImg" alt="">
+  <button id="hmLightboxRotate" type="button" aria-label="rotate" title="사진 돌리기">&#8635;</button>
+  <button id="hmLightboxClose" type="button" aria-label="close">&times;</button>
+</div>
+<script>
+(function(){
+  var box = document.getElementById('hmLightbox');
+  var im  = document.getElementById('hmLightboxImg');
+  var wait= document.getElementById('hmLightboxWait');
+  var rotBtn = document.getElementById('hmLightboxRotate');
+  if(!box || !im) return;
+
+  var pushed = false;
+  var rotated = false;
+
+  // 사진을 90도 돌렸을 때, 세로 화면에 꽉 차도록 크기를 다시 계산한다.
+  // 돌린 뒤에는 화면의 세로 길이가 사진의 가로 자리, 화면의 가로 길이가 사진의 세로 자리가 된다.
+  function applyRotation(){
+    if(!im) return;
+    if(!rotated){
+      im.style.transform = '';
+      im.style.maxWidth = '100%';
+      im.style.maxHeight = '100%';
+      im.style.width = '';
+      im.style.height = '';
+      if(rotBtn) rotBtn.classList.remove('on');
+      box.classList.remove('rot');
+      return;
+    }
+    var pad = 32;
+    var vw = Math.max(80, window.innerWidth  - pad);
+    var vh = Math.max(80, window.innerHeight - pad);
+    var nw = im.naturalWidth  || vh;
+    var nh = im.naturalHeight || vw;
+    // 돌린 상태에서 사진의 가로는 화면의 세로(vh) 안에, 세로는 화면의 가로(vw) 안에 들어가야 한다
+    var scale = Math.min(vh / nw, vw / nh);
+    var w = Math.round(nw * scale);
+    var h = Math.round(nh * scale);
+    im.style.maxWidth = 'none';
+    im.style.maxHeight = 'none';
+    im.style.width  = w + 'px';
+    im.style.height = h + 'px';
+    im.style.transform = 'rotate(90deg)';
+    if(rotBtn) rotBtn.classList.add('on');
+    box.classList.add('rot');
+  }
+
+  function toggleRotate(){
+    rotated = !rotated;
+    applyRotation();
+  }
+  window.addEventListener('resize', function(){ if(rotated) applyRotation(); });
+
+  function open(src){
+    rotated = false;
+    applyRotation();
+    im.removeAttribute('src');
+    im.style.visibility = 'hidden';
+    wait.style.display = 'block';
+    box.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    im.dataset.hmFb = '';
+    im.src = src;
+    // 휴대폰 뒤로가기로 사진만 닫히고 지도는 유지되도록 기록을 하나 쌓는다
+    if(!pushed){
+      try { history.pushState({ hmLb: 1 }, ''); pushed = true; } catch(e){}
+    }
+  }
+  function close(fromPop){
+    if(!box.classList.contains('on')) return;
+    rotated = false;
+    applyRotation();
+    box.classList.remove('on');
+    document.body.style.overflow = '';
+    im.removeAttribute('src');
+    if(pushed){
+      pushed = false;
+      if(!fromPop){ try { history.back(); } catch(e){} }
+    }
+  }
+  window.hmCloseLightbox = close;
+
+  window.addEventListener('popstate', function(){
+    if(box.classList.contains('on')) close(true);
+  });
+
+  im.addEventListener('load', function(){
+    wait.style.display = 'none';
+    im.style.visibility = 'visible';
+    applyRotation();
+  });
+  im.addEventListener('error', function(){
+    // 원본이 없으면 작은 사진이라도 보여준다
+    if(!im.dataset.hmFb && im.src.indexOf('/thumb/') === -1){
+      im.dataset.hmFb = '1';
+      im.src = im.src.replace('/unisearch/images/', '/unisearch/images/__T__/')
+                     .replace(/\/__T__\/([a-z_]+)\//, '/$1/thumb/');
+      return;
+    }
+    wait.textContent = '!';
+    wait.style.display = 'block';
+  });
+
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    if(t && (t.id === 'hmLightboxRotate' || (t.parentNode && t.parentNode.id === 'hmLightboxRotate'))){
+      ev.preventDefault(); ev.stopPropagation(); toggleRotate(); return;
+    }
+    if(t && t.id === 'hmLightboxClose'){ close(); return; }
+    if(t === box){ close(); return; }
+    if(t && t.classList && (t.classList.contains('popup-img') || t.classList.contains('hm-zoomable'))){
+      var s = t.getAttribute('src') || '';
+      if(!s) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      wait.textContent = '···';
+      open(s.replace('/thumb/', '/'));
+    }
+  }, true);
+
+  document.addEventListener('keydown', function(ev){
+    if(ev.key === 'Escape' && box.classList.contains('on')) close();
+  });
+})();
+</script>
+<!-- ---- 국가유산 퀴즈 ---- -->
+<script type="module">
+import { getApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
+  collection, getDocs, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const app  = getApp();
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const QN        = 10;      // 문제 수
+const ANSWER_MS = 20000;   // 문제 푸는 시간
+const REVEAL_MS = 5000;    // 정답 공개 시간
+const STEP_MS   = ANSWER_MS + REVEAL_MS;
+const LEAD_MS   = 4000;    // 시작 버튼 누르고 첫 문제까지
+const PER_HIT   = 10;      // 맞히면 점수
+
+const FIELD_DEFS = [
+  { slug:'nature',     label:'자연유산',         hint:'천연기념물·명승' },
+  { slug:'national',   label:'국가지정 문화유산', hint:'국보·보물·사적' },
+  { slug:'local',      label:'시도지정 문화유산', hint:'시도유형·기념물' },
+  { slug:'intangible', label:'무형유산',         hint:'국가·시도무형' }
+];
+
+let ST = null;        // 현재 게임 상태
+let roomUnsub = null, playerUnsub = null, tick = null;
+
+/* ---------- 유틸 ---------- */
+const $ = id => document.getElementById(id);
+function esc(s){ return window.escapeHtml ? window.escapeHtml(s) : String(s==null?'':s); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pane(id){
+  ['qzHome','qzLobby','qzPlay','qzReveal','qzResult','qzWaitExtra'].forEach(p=>{
+    const el = $(p); if(el) el.style.display = (p===id ? 'block' : 'none');
+  });
+}
+function say(m){ window.showMsg ? window.showMsg(m) : alert(m); }
+
+/* ---------- 문제 조각 불러오기 ---------- */
+const loadedChunks = {};
+function loadScript(src){
+  return new Promise((ok, no) => {
+    if(loadedChunks[src]) return ok();
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => { loadedChunks[src] = 1; ok(); };
+    s.onerror = () => no(new Error('불러오기 실패: ' + src));
+    document.head.appendChild(s);
+  });
+}
+// 고른 분야마다 조각 하나씩 무작위로 받아서 문제를 뽑는다
+async function pickQuestions(slugs){
+  const pool = [];
+  for(const slug of slugs){
+    const info = (typeof QUIZ_MANIFEST !== 'undefined') ? QUIZ_MANIFEST[slug] : null;
+    if(!info) continue;
+    const n  = Math.floor(Math.random() * info.chunks) + 1;
+    const fn = 'quiz_' + slug + '_' + String(n).padStart(2,'0') + '.js';
+    await loadScript(fn);
+    const arr = window[info.var] || [];
+    arr.forEach(x => pool.push(x));
+  }
+  if(pool.length < QN + 3) throw new Error('문제가 모자라요. 다른 분야를 골라주세요.');
+  const picked = shuffle(pool.slice()).slice(0, QN);
+  return picked.map(it => {
+    // 오답 3개 — 같은 세부 분류에서 먼저 찾고, 모자라면 전체에서
+    let cand = pool.filter(x => x.c === it.c && x.a !== it.a).map(x => x.a);
+    if(cand.length < 3) cand = pool.filter(x => x.a !== it.a).map(x => x.a);
+    const wrong = shuffle([...new Set(cand)]).slice(0,3);
+    const opts  = shuffle([it.a, ...wrong]);
+    return { q:it.q, c:it.c, r:it.r, s:it.s, i:it.i, opts, ans:opts.indexOf(it.a) };
+  });
+}
+
+/* ---------- 로그인 (없으면 익명으로) ---------- */
+function ensureUser(){
+  return new Promise((ok, no) => {
+    if(auth.currentUser) return ok(auth.currentUser);
+    const off = onAuthStateChanged(auth, u => {
+      if(u){ off(); ok(u); }
+    });
+    signInAnonymously(auth).catch(e => { off(); no(e); });
+  });
+}
+function defaultName(){
+  const u = auth.currentUser;
+  if(u && !u.isAnonymous && u.displayName) return u.displayName;
+  try{ const n = localStorage.getItem('hmQuizName'); if(n) return n; }catch(e){}
+  return '';
+}
+
+/* ---------- 시작 화면 ---------- */
+function renderHome(){
+  const box = $('qzFields');
+  box.innerHTML = FIELD_DEFS.map(f =>
+    `<label class="qz-field" data-slug="${f.slug}">
+       <input type="checkbox" value="${f.slug}"><span>${f.label} <small>${f.hint}</small></span>
+     </label>`).join('');
+  box.querySelectorAll('input').forEach(cb => {
+    cb.addEventListener('change', () => cb.closest('.qz-field').classList.toggle('on', cb.checked));
+  });
+  const first = box.querySelector('input');
+  if(first){ first.checked = true; first.closest('.qz-field').classList.add('on'); }
+  $('qzHostName').value = defaultName();
+  $('qzJoinName').value = defaultName();
+  if(/KAKAOTALK/i.test(navigator.userAgent)) $('qzKakaoNote').style.display = 'block';
+}
+
+/* ---------- 방 만들기 / 참가 ---------- */
+async function freshCode(){
+  for(let t=0;t<12;t++){
+    const c = String(Math.floor(1000 + Math.random()*9000));
+    const snap = await getDoc(doc(db,'quizRooms',c));
+    if(!snap.exists()) return c;
+    const st = snap.data();
+    if(Date.now() - (st.createdMs||0) > 24*3600*1000) return c;   // 하루 지난 방은 재사용
+  }
+  throw new Error('방 코드를 만들지 못했어요. 잠시 뒤 다시 해주세요.');
+}
+
+async function createRoom(){
+  const slugs = [...$('qzFields').querySelectorAll('input:checked')].map(x => x.value);
+  if(!slugs.length) return say('분야를 하나 이상 골라주세요.');
+  const name = ($('qzHostName').value || '').trim();
+  if(name.length < 1) return say('이름을 적어주세요.');
+  const btn = $('qzCreateBtn'); btn.disabled = true; btn.textContent = '문제를 고르는 중…';
+  try{
+    const u = await ensureUser();
+    try{ localStorage.setItem('hmQuizName', name); }catch(e){}
+    const qs   = await pickQuestions(slugs);
+    const code = await freshCode();
+    await setDoc(doc(db,'quizRooms',code), {
+      hostUid: u.uid, hostName: name, fields: slugs,
+      state: 'waiting', createdMs: Date.now(), questions: qs
+    });
+    await joinAs(code, name, true);
+  }catch(e){
+    say('방을 만들지 못했어요: ' + e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = '방 만들고 시작하기';
+  }
+}
+
+async function joinRoom(){
+  const code = ($('qzJoinCode').value || '').trim();
+  const name = ($('qzJoinName').value || '').trim();
+  if(!/^\d{4}$/.test(code)) return say('입장 코드 4자리를 넣어주세요.');
+  if(!name) return say('이름을 적어주세요.');
+  const btn = $('qzJoinBtn'); btn.disabled = true;
+  try{
+    await ensureUser();
+    const snap = await getDoc(doc(db,'quizRooms',code));
+    if(!snap.exists()) return say('그런 방이 없어요. 코드를 다시 확인해주세요.');
+    if(snap.data().state !== 'waiting') return say('이미 시작한 방이에요.');
+    try{ localStorage.setItem('hmQuizName', name); }catch(e){}
+    await joinAs(code, name, false);
+  }catch(e){
+    say('참가하지 못했어요: ' + e.message);
+  }finally{ btn.disabled = false; }
+}
+
+async function joinAs(code, name, isHost){
+  const u = auth.currentUser;
+  ST = { code, name, uid: u.uid, isHost, room:null, myMarks:[], myScore:0,
+         answered:{}, shownIdx:-1, phase:'', extraMarks:[], extraScore:0 };
+  await setDoc(doc(db,'quizRooms',code,'players',u.uid), {
+    name, score:0, marks:[], extraScore:0, extraMarks:[], joinedMs: Date.now()
+  });
+  watchRoom();
+}
+
+/* ---------- 방 상태 지켜보기 ---------- */
+function watchRoom(){
+  if(roomUnsub) roomUnsub();
+  roomUnsub = onSnapshot(doc(db,'quizRooms',ST.code), snap => {
+    if(!snap.exists()) return;
+    ST.room = snap.data();
+    route();
+  });
+}
+function watchPlayers(on){
+  if(playerUnsub){ playerUnsub(); playerUnsub = null; }
+  if(!on) return;
+  playerUnsub = onSnapshot(collection(db,'quizRooms',ST.code,'players'), snap => {
+    const list = []; snap.forEach(d => list.push(d.data()));
+    $('qzPlayerCount').textContent = list.length;
+    $('qzPlayerList').innerHTML = list
+      .sort((a,b)=>(a.joinedMs||0)-(b.joinedMs||0))
+      .map(p => `<span class="qz-player${p.name===ST.name?' me':''}">${esc(p.name)}</span>`).join('');
+  });
+}
+
+function route(){
+  const r = ST.room;
+  if(r.state === 'waiting'){
+    if(ST.phase !== 'lobby'){
+      ST.phase = 'lobby';
+      pane('qzLobby');
+      $('qzCodeText').textContent = ST.code;
+      $('qzHostArea').style.display = ST.isHost ? 'block' : 'none';
+      $('qzWaitNote').style.display = ST.isHost ? 'none' : 'block';
+      watchPlayers(true);
+    }
+  } else if(r.state === 'playing'){
+    if(ST.phase !== 'play'){ ST.phase = 'play'; watchPlayers(false); startLoop(false); }
+  } else if(r.state === 'extra'){
+    if(ST.phase !== 'extra'){
+      ST.phase = 'extra';
+      const tied = r.tied || [];
+      if(tied.indexOf(ST.uid) > -1){ startLoop(true); }
+      else {
+        stopLoop(); pane('qzWaitExtra');
+        $('qzExtraWho').textContent = (r.tiedNames||[]).join(' · ') + ' 님이 연장전을 푸는 중이에요.';
+      }
+    }
+  } else if(r.state === 'done'){
+    if(ST.phase !== 'done'){ ST.phase = 'done'; stopLoop(); showResult(); }
+  }
+}
+
+/* ---------- 시작 ---------- */
+async function startGame(){
+  const btn = $('qzStartBtn'); btn.disabled = true;
+  try{
+    await updateDoc(doc(db,'quizRooms',ST.code), { state:'playing', startAt: Date.now() + LEAD_MS });
+  }catch(e){ say('시작하지 못했어요: ' + e.message); btn.disabled = false; }
+}
+
+/* ---------- 게임 진행 ---------- */
+function questions(extra){ return extra ? (ST.room.extraQuestions||[]) : (ST.room.questions||[]); }
+function startAt(extra){ return extra ? (ST.room.extraStartAt||0) : (ST.room.startAt||0); }
+
+function stopLoop(){ if(tick){ clearInterval(tick); tick = null; } }
+function startLoop(extra){
+  stopLoop();
+  ST.extra = !!extra;
+  ST.shownIdx = -1; ST.shownPhase = '';
+  ST.answered = {};
+  tick = setInterval(() => step(extra), 200);
+  step(extra);
+}
+
+function step(extra){
+  const qs = questions(extra), t0 = startAt(extra);
+  const el = Date.now() - t0;
+  if(el < 0){                                   // 시작 카운트다운
+    showCountdown(Math.ceil(-el/1000)); return;
+  }
+  const idx = Math.floor(el / STEP_MS);
+  if(idx >= qs.length){ stopLoop(); finishMine(extra); return; }
+  const into  = el % STEP_MS;
+  const asking = into < ANSWER_MS;
+  const key = idx + (asking ? 'q' : 'r');
+  if(key !== ST.shownPhase){
+    ST.shownPhase = key;
+    if(asking) drawQuestion(idx, qs[idx], qs.length);
+    else       drawReveal(idx, qs[idx], extra);
+  }
+  if(asking){
+    const left = Math.ceil((ANSWER_MS - into)/1000);
+    $('qzClock').textContent = left;
+    $('qzTimerBar').style.width = (100 * (ANSWER_MS - into) / ANSWER_MS) + '%';
+  } else {
+    $('qzNextSec').textContent = Math.ceil((STEP_MS - into)/1000);
+  }
+}
+
+function showCountdown(sec){
+  if(ST.shownPhase !== 'cd'){ ST.shownPhase = 'cd'; pane('qzPlay'); }
+  $('qzProgress').textContent = '곧 시작해요';
+  $('qzQuestion').textContent = sec + '초 뒤에 첫 문제가 나와요.';
+  $('qzQCat').textContent = '';
+  $('qzOptions').innerHTML = '';
+  $('qzClock').textContent = sec;
+  $('qzTimerBar').style.width = '100%';
+}
+
+function drawQuestion(idx, q, total){
+  pane('qzPlay');
+  $('qzProgress').textContent = `문제 ${idx+1} / ${total}`;
+  $('qzQuestion').textContent = q.q;
+  $('qzQCat').textContent = '(' + q.c + ')';
+  const wrap = $('qzOptions');
+  wrap.innerHTML = q.opts.map((o,i) =>
+    `<button class="qz-opt" data-i="${i}"><b>${'①②③④'[i]}</b>${esc(o)}</button>`).join('');
+  wrap.querySelectorAll('.qz-opt').forEach(b => {
+    b.addEventListener('click', () => {
+      if(ST.answered[idx] !== undefined) return;
+      const pick = Number(b.dataset.i);
+      ST.answered[idx] = pick;
+      wrap.querySelectorAll('.qz-opt').forEach(x => { x.disabled = true; });
+      b.classList.add('picked');
+    });
+  });
+}
+
+function drawReveal(idx, q, extra){
+  const pick = ST.answered[idx];
+  const ok   = (pick === q.ans);
+  if(extra){ ST.extraMarks[idx] = ok?1:0; if(ok) ST.extraScore += PER_HIT; }
+  else     { ST.myMarks[idx]    = ok?1:0; if(ok) ST.myScore    += PER_HIT; }
+  saveScore(extra);
+
+  pane('qzReveal');
+  const v = $('qzVerdict');
+  v.className = 'qz-verdict ' + (ok ? 'ok' : 'no');
+  const cur = extra ? ST.extraScore : ST.myScore;
+  v.innerHTML = ok
+    ? `✓ 정답!<small>+${PER_HIT}점 · 지금 ${cur}점</small>`
+    : (pick === undefined
+        ? `시간 초과<small>정답은 ${'①②③④'[q.ans]} 였어요 · 지금 ${cur}점</small>`
+        : `✕ 아쉬워요<small>고른 답 ${'①②③④'[pick]} · 정답은 ${'①②③④'[q.ans]} · 지금 ${cur}점</small>`);
+  const img = $('qzRevealImg');
+  if(q.i){ img.style.display=''; img.src = q.i; } else { img.style.display='none'; }
+  $('qzAnswerName').textContent = q.opts[q.ans];
+  $('qzAnswerMeta').textContent = [q.c, (q.r||'') + ' ' + (q.s||'')].join(' · ').trim();
+}
+
+function saveScore(extra){
+  const ref = doc(db,'quizRooms',ST.code,'players',ST.uid);
+  const payload = extra
+    ? { extraScore: ST.extraScore, extraMarks: ST.extraMarks.slice() }
+    : { score: ST.myScore, marks: ST.myMarks.slice() };
+  updateDoc(ref, payload).catch(()=>{});
+}
+
+/* ---------- 끝났을 때 ---------- */
+async function finishMine(extra){
+  if(!ST.isHost){ pane(extra ? 'qzWaitExtra' : 'qzWaitExtra'); $('qzExtraWho').textContent = '점수를 모으는 중이에요…'; return; }
+  // 방장이 마무리 판정
+  await new Promise(r => setTimeout(r, 1200));   // 다른 사람 점수가 도착할 여유
+  const snap = await getDocs(collection(db,'quizRooms',ST.code,'players'));
+  const players = []; snap.forEach(d => players.push({ uid:d.id, ...d.data() }));
+  if(!extra){
+    const top = Math.max(...players.map(p => p.score||0));
+    const tied = players.filter(p => (p.score||0) === top);
+    if(tied.length > 1 && top > 0){
+      try{
+        const qs = await pickQuestions(ST.room.fields || ['nature']);
+        await updateDoc(doc(db,'quizRooms',ST.code), {
+          state:'extra', extraQuestions: qs, extraStartAt: Date.now() + LEAD_MS,
+          tied: tied.map(p=>p.uid), tiedNames: tied.map(p=>p.name)
+        });
+        return;
+      }catch(e){ /* 연장전을 못 만들면 그냥 공동 1등 */ }
+    }
+  }
+  await updateDoc(doc(db,'quizRooms',ST.code), { state:'done' });
+}
+
+/* ---------- 결과 ---------- */
+async function showResult(){
+  pane('qzResult');
+  $('qzRankList').innerHTML = '<p class="qz-note">점수를 모으는 중…</p>';
+  const snap = await getDocs(collection(db,'quizRooms',ST.code,'players'));
+  const players = []; snap.forEach(d => players.push({ uid:d.id, ...d.data() }));
+  players.sort((a,b) => (b.score-a.score) || ((b.extraScore||0)-(a.extraScore||0)) || (a.joinedMs-b.joinedMs));
+
+  // 공동 순위 매기기 (본선 점수 같으면 연장전 점수로만 가름)
+  let rank = 0, prevKey = null;
+  players.forEach((p,i) => {
+    const key = p.score + '/' + (p.extraScore||0);
+    if(key !== prevKey){ rank = i + 1; prevKey = key; }
+    p.rank = rank;
+  });
+  ST.players = players;
+
+  const medal = n => n===1?'🥇':n===2?'🥈':n===3?'🥉':String(n);
+  const row = p => `<div class="qz-rank${p.uid===ST.uid?' me':''}">
+      <span class="no">${medal(p.rank)}</span>
+      <span class="nm">${esc(p.name)}${p.uid===ST.uid?' <small style="font-weight:400;color:#8a9595">(나)</small>':''}</span>
+      <span class="hit">${(p.marks||[]).filter(Boolean).length}/${QN}</span>
+      <span class="sc">${p.score}점</span>
+    </div>`;
+
+  const box = $('qzRankList');
+  const lower = players.filter(p => p.rank > 3);
+  const top3  = players.filter(p => p.rank <= 3).sort((a,b)=>b.rank-a.rank);  // 3등 → 1등
+  box.innerHTML = lower.map(row).join('');
+  let delay = 400;
+  top3.forEach(p => {
+    setTimeout(() => {
+      box.insertAdjacentHTML('afterbegin', row(p));
+      if(p.rank === 1) confetti();
+    }, delay);
+    delay += 1100;
+  });
+  renderReview('wrong');
+}
+
+function renderReview(kind){
+  $('qzTabWrong').classList.toggle('on', kind==='wrong');
+  $('qzTabHard').classList.toggle('on', kind==='hard');
+  const qs = ST.room.questions || [];
+  const box = $('qzReviewBox');
+  if(kind === 'wrong'){
+    const mine = ST.myMarks;
+    const items = qs.map((q,i)=>({q,i})).filter(x => !mine[x.i]);
+    if(!items.length){ box.innerHTML = '<p class="qz-note">틀린 문제가 없어요. 완벽합니다!</p>'; return; }
+    box.innerHTML = items.map(x => `<div class="qz-rv">
+        <div class="txt">${esc(x.q.q)}</div>
+        <div class="ans">정답 · ${esc(x.q.opts[x.q.ans])}</div>
+      </div>`).join('');
+  } else {
+    const ps = (ST.players||[]).filter(p => (p.marks||[]).length);
+    if(ps.length < 2){ box.innerHTML = '<p class="qz-note">혼자 풀어서 비교할 사람이 없어요.</p>'; return; }
+    const stat = qs.map((q,i) => ({ q, i, hit: ps.filter(p => (p.marks||[])[i]).length }));
+    stat.sort((a,b) => a.hit - b.hit);
+    box.innerHTML = stat.slice(0,3).map(x => `<div class="qz-rv">
+        <div class="rate">${x.i+1}번 문제 · ${ps.length}명 중 ${x.hit}명 정답 (${Math.round(100*x.hit/ps.length)}%)</div>
+        <div class="txt">${esc(x.q.q)}</div>
+        <div class="ans">정답 · ${esc(x.q.opts[x.q.ans])}</div>
+      </div>`).join('');
+  }
+}
+
+/* ---------- 폭죽 ---------- */
+function confetti(){
+  const cv = $('qzConfetti');
+  if(!cv) return;
+  cv.style.display = 'block';
+  const cx = cv.getContext('2d');
+  const W = cv.width  = window.innerWidth;
+  const H = cv.height = window.innerHeight;
+  const COLORS = ['#0f3d3e','#2f7d6f','#d4a637','#e8dcc3','#b04a3a','#f4efe6'];
+  const bits = [];
+  for(let i=0;i<160;i++){
+    bits.push({ x: Math.random()*W, y: -20 - Math.random()*H*0.5,
+      w: 6+Math.random()*7, h: 9+Math.random()*9,
+      vy: 2.2+Math.random()*3.2, vx: -1.4+Math.random()*2.8,
+      rot: Math.random()*Math.PI, vr: -0.12+Math.random()*0.24,
+      c: COLORS[Math.floor(Math.random()*COLORS.length)] });
+  }
+  const t0 = Date.now();
+  (function frame(){
+    const age = Date.now() - t0;
+    cx.clearRect(0,0,W,H);
+    bits.forEach(b => {
+      b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.vy += 0.028;
+      cx.save(); cx.translate(b.x,b.y); cx.rotate(b.rot);
+      cx.globalAlpha = age > 2600 ? Math.max(0, 1 - (age-2600)/1400) : 1;
+      cx.fillStyle = b.c; cx.fillRect(-b.w/2,-b.h/2,b.w,b.h); cx.restore();
+    });
+    if(age < 4000) requestAnimationFrame(frame);
+    else { cx.clearRect(0,0,W,H); cv.style.display='none'; }
+  })();
+}
+
+/* ---------- 나가기 ---------- */
+function cleanup(){
+  stopLoop();
+  if(roomUnsub){ roomUnsub(); roomUnsub = null; }
+  if(playerUnsub){ playerUnsub(); playerUnsub = null; }
+  ST = null;
+}
+window.hmQuizLeave = () => { cleanup(); pane('qzHome'); renderHome(); };
+window.hmQuizRestart = () => { cleanup(); pane('qzHome'); renderHome(); };
+window.hmQuizExit = () => {
+  cleanup();
+  $('view-quiz').style.display = 'none';
+  $('view-map').style.display  = 'flex';
+  setTimeout(()=>{ try{ window.map && window.map.invalidateSize(); }catch(e){} }, 50);
+};
+window.showQuiz = (code) => {
+  ['view-map','view-list','view-species','view-board'].forEach(v => { const e=$(v); if(e) e.style.display='none'; });
+  $('view-quiz').style.display = 'block';
+  pane('qzHome'); renderHome();
+  if(code){ $('qzJoinCode').value = code; $('qzJoinName').focus(); }
+};
+
+/* ---------- 버튼 연결 ---------- */
+$('qzCreateBtn').addEventListener('click', createRoom);
+$('qzJoinBtn').addEventListener('click', joinRoom);
+$('qzStartBtn').addEventListener('click', startGame);
+$('qzTabWrong').addEventListener('click', () => renderReview('wrong'));
+$('qzTabHard').addEventListener('click',  () => renderReview('hard'));
+$('qzCopyBtn').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?quiz=' + ST.code;
+  navigator.clipboard.writeText(link).then(
+    () => say('초대 링크를 복사했어요. 카톡이나 문자로 붙여넣으세요.'),
+    () => say('복사가 안 됐어요. 코드 ' + ST.code + ' 를 알려주세요.'));
+});
+$('qzShareBtn').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?quiz=' + ST.code;
+  if(navigator.share){
+    navigator.share({ title:'국가유산지도 퀴즈', text:'국가유산 퀴즈에 초대합니다 (코드 ' + ST.code + ')', url: link }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(link).then(
+      () => say('이 기기에서는 공유창이 없어서 링크를 복사했어요.'),
+      () => say('코드 ' + ST.code + ' 를 알려주세요.'));
+  }
+});
+
+/* ---------- 링크로 들어온 경우 ---------- */
+(function(){
+  const m = /[?&]quiz=(\d{4})/.exec(location.search);
+  if(m) setTimeout(() => window.showQuiz(m[1]), 300);
+})();
+</script>
+
+</body>
+</html>
