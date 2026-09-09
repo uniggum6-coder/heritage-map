@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v11 (2026-09-07)">
+  <meta name="hm-build" content="v12 (2026-09-09)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -770,7 +770,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v11 (2026-09-07)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v12 (2026-09-09)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2814,12 +2814,31 @@ async function pickQuestions(slugs){
     arr.forEach(x => pool.push(x));
   }
   if(pool.length < QN + 3) throw new Error('문제가 모자라요. 다른 분야를 골라주세요.');
-  const picked = shuffle(pool.slice()).slice(0, QN);
+
+  // 한 판에 같은 정답이 두 번 나오지 않게 골라낸다
+  const picked = [], used = new Set();
+  for(const x of shuffle(pool.slice())){
+    if(used.has(x.a)) continue;
+    used.add(x.a); picked.push(x);
+    if(picked.length === QN) break;
+  }
+
+  // 오답 뽑는 순서: 같은 갈래·같은 시도 → 같은 갈래 → 같은 종목 → 같은 분야
+  const galae = x => x.nc ? (x.c + '/' + x.nc) : x.c;
   return picked.map(it => {
-    // 오답 3개 — 같은 세부 분류에서 먼저 찾고, 모자라면 전체에서
-    let cand = pool.filter(x => x.c === it.c && x.a !== it.a).map(x => x.a);
-    if(cand.length < 3) cand = pool.filter(x => x.a !== it.a).map(x => x.a);
-    const wrong = shuffle([...new Set(cand)]).slice(0,3);
+    const g = galae(it);
+    const tries = [
+      x => galae(x) === g && x.r === it.r,
+      x => galae(x) === g,
+      x => x.c === it.c,
+      x => true
+    ];
+    let cand = [];
+    for(const ok of tries){
+      cand = [...new Set(pool.filter(x => x.a !== it.a && ok(x)).map(x => x.a))];
+      if(cand.length >= 3) break;
+    }
+    const wrong = shuffle(cand).slice(0,3);
     const opts  = shuffle([it.a, ...wrong]);
     return { q:it.q, c:it.c, r:it.r, s:it.s, i:it.i, opts, ans:opts.indexOf(it.a) };
   });
