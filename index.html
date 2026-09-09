@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v12 (2026-09-09)">
+  <meta name="hm-build" content="v13 (2026-09-09)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -292,10 +292,10 @@
   #rankBtn:hover{background:rgba(255,255,255,.28);}
   #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #boardBtn:hover{background:rgba(255,255,255,.28);}
-  #quizBtn{padding:8px 13px;background:#f0c454;color:#2a2a15;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
-  #quizBtn:hover{background:#f6d072;}
-  #raceBtn{padding:8px 13px;background:#7fb3a3;color:#0d2a26;border:none;border-radius:20px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
-  #raceBtn:hover{background:#93c4b5;}
+  /* 로그인 버튼은 눈에 띄게 (처음 오는 사람에게 가장 중요한 안내) */
+  #loginBtn{padding:8px 14px;background:#f0c454;color:#2a2a15;border:none;border-radius:20px;
+            font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+  #loginBtn:hover{background:#f6d072;}
   .hb-menu-wrap{position:relative;}
   #hmMenuBtn{padding:8px 13px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;
              font-size:15px;line-height:1;font-weight:700;cursor:pointer;}
@@ -371,6 +371,7 @@
   .user-chip img{width:26px;height:26px;border-radius:50%;flex:none;}
   .user-chip .u-name{font-weight:600;font-size:12.5px;}
   .user-chip .u-rank{font-weight:700;font-size:12px;opacity:.95;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+  .user-chip .rk-short{display:none;}
   .user-chip .u-rank:hover{opacity:1;}
   .mapae-badge{display:inline-flex;align-items:center;justify-content:center;gap:1px;height:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:10px;font-weight:700;margin-right:4px;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.2) inset;}
   .auth-area{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
@@ -397,6 +398,10 @@
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
     .user-chip{flex-wrap:wrap;}
+    /* 좁은 화면에서는 등급을 짧게 — 긴 닉네임이어도 화면 밖으로 안 밀리게 */
+    .user-chip .rk-full, .user-chip .rk-items{display:none;}
+    .user-chip .rk-short{display:inline;}
+    .user-chip .u-name{max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .leaflet-popup-content{max-width:calc(100vw - 70px) !important;min-width:0;}
     .leaflet-popup-content-wrapper{max-width:calc(100vw - 50px);}
   }
@@ -455,13 +460,14 @@
     </div>
     <div class="hb-actions">
       <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
-      <button id="quizBtn" data-i18n="quizBtn" class="hb-quiz" onclick="window.showQuiz && window.showQuiz()">🎯 퀴즈</button>
-      <button id="raceBtn" data-i18n="raceBtn" onclick="window.showRace && window.showRace()">🏃 팀 대결</button>
+      <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
       <div class="hb-menu-wrap">
         <button id="hmMenuBtn" aria-label="메뉴" onclick="window.hmToggleMenu && window.hmToggleMenu()">☰</button>
         <div id="hmMenu" class="hb-menu-panel">
+          <button id="quizBtn" data-i18n="quizBtn" onclick="window.hmMenuPick(function(){ window.showQuiz && window.showQuiz(); })">🎯 퀴즈</button>
+          <button id="raceBtn" data-i18n="raceBtn" onclick="window.hmMenuPick(function(){ window.showRace && window.showRace(); })">🏃 팀 대결</button>
+          <div class="hb-menu-sep"></div>
           <button id="helpBtn" data-i18n="helpBtn" onclick="window.hmMenuPick(function(){ window.showHelpModal && window.showHelpModal(); })">방문 인증 안내</button>
-          <button id="rankBtn" data-i18n="rankBtn" onclick="window.hmMenuPick(function(){ window.showHallOfFame && window.showHallOfFame(); })">🏆 명예의 전당</button>
           <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.hmMenuPick(function(){ window.showCharPicker && window.showCharPicker(); })">🎎 내 캐릭터</button>
           <button id="boardBtn" data-i18n="boardBtn" onclick="window.hmMenuPick(function(){ window.showBoard && window.showBoard(); })">💬 게시판</button>
           <div class="hb-menu-sep"></div>
@@ -484,6 +490,10 @@
   <div id="introBanner" class="intro-banner" style="display:none">
     <span data-i18n-html="introBanner">📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.</span>
     <button class="intro-close" onclick="window.dismissIntroBanner && window.dismissIntroBanner()">✕</button>
+  </div>
+  <div id="featBanner" class="intro-banner" style="display:none">
+    <span data-i18n-html="featBanner">🎯 새로 생긴 <b>퀴즈</b>와 <b>팀 대결</b>을 오른쪽 위 <b>☰</b> 메뉴에서 해보세요.</span>
+    <button class="intro-close" onclick="window.dismissFeatBanner && window.dismissFeatBanner()">✕</button>
   </div>
 </header>
 
@@ -770,7 +780,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v12 (2026-09-09)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v13 (2026-09-09)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -821,6 +831,7 @@ const I18N = {
     nickBtnLabel: '닉네임 변경',
     logoutBtnLabel: '로그아웃',
     introBanner: '📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.',
+    featBanner: '🎯 새로 생긴 <b>퀴즈</b>와 <b>팀 대결</b>을 오른쪽 위 <b>☰</b> 메뉴에서 해보세요.',
     searchTitle: '검색',
     searchPh: '이름 또는 주소로 검색',
     regionTitle: '지역',
@@ -878,6 +889,7 @@ const I18N = {
     nickBtnLabel: 'Change Nickname',
     logoutBtnLabel: 'Log Out',
     introBanner: '📍 Visit in person to <b>verify your visit</b> and level up your <b>rank</b>.',
+    featBanner: '🎯 Try the new <b>Quiz</b> and <b>Team Race</b> from the <b>☰</b> menu.',
     searchTitle: 'Search',
     searchPh: 'Search by name or address',
     regionTitle: 'Region',
@@ -935,6 +947,7 @@ const I18N = {
     nickBtnLabel: '修改昵称',
     logoutBtnLabel: '退出登录',
     introBanner: '📍 亲自前往现场即可<b>完成访问认证</b>并提升<b>等级</b>。',
+    featBanner: '🎯 请在右上角 <b>☰</b> 菜单中体验新增的<b>问答</b>和<b>团队赛</b>。',
     searchTitle: '搜索',
     searchPh: '按名称或地址搜索',
     regionTitle: '地区',
@@ -992,6 +1005,7 @@ const I18N = {
     nickBtnLabel: 'ニックネーム変更',
     logoutBtnLabel: 'ログアウト',
     introBanner: '📍 現地を訪れて<b>訪問認証</b>をすると<b>ランク</b>を上げることができます。',
+    featBanner: '🎯 新しい<b>クイズ</b>と<b>チーム対決</b>を右上の <b>☰</b> メニューからどうぞ。',
     searchTitle: '検索',
     searchPh: '名前または住所で検索',
     regionTitle: '地域',
@@ -1203,6 +1217,19 @@ window.dismissIntroBanner = function(){
   document.getElementById('introBanner').style.display = 'none';
   try{ localStorage.setItem('hm_intro_seen', '1'); }catch(e){}
 };
+window.dismissFeatBanner = function(){
+  document.getElementById('featBanner').style.display = 'none';
+  try{ localStorage.setItem('hm_feat_quiz_seen', '1'); }catch(e){}
+};
+// 퀴즈·팀 대결이 메뉴 안으로 들어갔으므로, 쓰던 분들에게도 한 번은 알린다
+(function(){
+  let seen = false;
+  try{ seen = localStorage.getItem('hm_feat_quiz_seen') === '1'; }catch(e){}
+  if(!seen){
+    const el = document.getElementById('featBanner');
+    if(el) el.style.display = 'flex';
+  }
+})();
 (function(){
   let seen = false;
   try{ seen = localStorage.getItem('hm_intro_seen') === '1'; }catch(e){}
@@ -2135,6 +2162,7 @@ window.visitedIds = visitedIds;
 let currentNickname = '';
 
 function updateAuthUI(placeCount, rank, itemCount){
+  setTimeout(() => { window.hmSyncMenuAuth && window.hmSyncMenuAuth(); }, 0);
   // 내 위치 캐릭터 잠금 해제 판단에 쓰는 인증 개수를 항상 최신으로 유지
   // (로그인/로그아웃/단일 인증/주변 일괄 인증 등 모든 경로가 이 함수를 거쳐감)
   window.hmPlaceCount = placeCount || 0;
@@ -2144,7 +2172,8 @@ function updateAuthUI(placeCount, rank, itemCount){
     const nick = (currentNickname || '닉네임 없음').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
     const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃'}[k] || k));
-    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· ${rank} (${placeCount}곳${itemNote})</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${t('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${t('logoutBtnLabel')}</button></div>`;
+    const rankShort = String(rank || '').split(' ')[0];   // '정1품 영의정' → '정1품'
+    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· <span class="rk-full">${rank}</span><span class="rk-short">${rankShort}</span> (${placeCount}곳<span class="rk-items">${itemNote}</span>)</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${t('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${t('logoutBtnLabel')}</button></div>`;
   } else {
     const t = window.hmT || ((k) => ({loginBtnLabel:'🔑 구글로 로그인'}[k] || k));
     area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">${t('loginBtnLabel')}</button>`;
@@ -3830,6 +3859,14 @@ window.addEventListener('load', function(){
     document.body.appendChild(bk);
   }
 })();
+// 로그인 상태에 맞춰 메뉴의 닉네임 변경/로그아웃 줄을 켜고 끈다.
+// 로그인은 늦게 끝나므로 메뉴를 열 때뿐 아니라 상태가 바뀔 때마다 다시 부른다.
+window.hmSyncMenuAuth = function(){
+  var on = !!document.getElementById('logoutBtn');
+  ['hmMenuNick','hmMenuLogout','hmMenuAuthSep'].forEach(function(id){
+    var e = document.getElementById(id); if(e) e.style.display = on ? '' : 'none';
+  });
+};
 function hmMenuBackdrop(on){
   var bk = document.getElementById('hmMenuBack');
   if(bk) bk.classList.toggle('on', !!on);
@@ -3839,11 +3876,7 @@ window.hmToggleMenu = function(){
   if(!m) return;
   var open = m.classList.contains('open');
   if(!open){
-    // 로그인 상태에 따라 닉네임/로그아웃 줄을 보이거나 감춘다
-    var on = !!document.getElementById('logoutBtn');
-    ['hmMenuNick','hmMenuLogout','hmMenuAuthSep'].forEach(function(id){
-      var e = document.getElementById(id); if(e) e.style.display = on ? '' : 'none';
-    });
+    window.hmSyncMenuAuth();
     // 헤더가 잘라내지 않도록 아예 본문 맨 끝으로 옮겨둔다 (한 번만)
     if(m.parentNode !== document.body) document.body.appendChild(m);
     // 화면 기준으로 자리를 잡는다
