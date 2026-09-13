@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v13 (2026-09-09)">
+  <meta name="hm-build" content="v14 (2026-09-12)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -780,7 +780,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v13 (2026-09-09)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v14 (2026-09-12)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1336,6 +1336,9 @@ function initMap(){
     }
   });
 
+  // 같은 좌표에 여러 건이 몰려 있는 자리를 미리 묶어둔다.
+  // (겹쳐 쌓인 점을 눌렀을 때 맨 위 1건만 열리지 않고 목록이 뜨게 하려고)
+  const coLocIndex = {};
   MAP_DATA.forEach((d, idx) => {
     const hid = computeHeritageId(d);
     const marker = L.circleMarker([d.la, d.lo], {
@@ -1347,6 +1350,18 @@ function initMap(){
     marker.bindTooltip(`<div class="tip-cat">${escapeHtml(catLabel(d.c))}</div><div class="tip-name">${escapeHtml(hmName(d))}</div>`, {direction:'top', offset:[0,-8], opacity:0.92, className:'marker-tip'});
     markerByHid[hid] = marker;
     allMarkers.push(marker);
+    const coKey = d.la.toFixed(6) + ',' + d.lo.toFixed(6);
+    marker._coKey = coKey;
+    (coLocIndex[coKey] || (coLocIndex[coKey] = [])).push(marker);
+    // 방문 인증한 곳은 묶음(클러스터)을 거치지 않고 개별 점으로 그려지기 때문에,
+    // 좌표가 똑같은 건이 여러 개면 점이 완전히 포개져 맨 위 1건만 눌린다.
+    // 그래서 겹친 점을 누르면 묶음과 똑같은 "이 위치에 N건" 목록을 띄운다.
+    marker.on('click', function(){
+      const sibs = visibleCoLocated(marker);
+      if(sibs.length < 2) return;   // 혼자 있는 점이면 원래대로 상세 팝업
+      map.closePopup();             // bindPopup이 방금 연 1건짜리 팝업을 닫고
+      setTimeout(function(){ openPickList(sibs, marker.getLatLng()); }, 0);
+    });
     // 여기서 바로 지도에 올리지 않는다. 초기 체크 상태(전부 해제)에 맞춰
     // 아래 applyFilters()가 표시할 마커만 골라서 올린다.
   });
@@ -1540,21 +1555,28 @@ function initMap(){
   // 지도를 열면(권한이 이미 허용돼 있는 경우) 조용히 자동으로 내 위치 표시 시작 — 거부해도 오류창 안 띄움
   startMyLocationTracking(true);
 
-  // Custom cluster click: small clusters show a pick-list (more reliable than spiderfy legs),
-  // large clusters zoom in toward their bounds.
-  clusterGroup.on('clusterclick', function(e){
-    const cluster = e.layer;
-    const children = cluster.getAllChildMarkers().slice().sort((a,b) => {
+  // 같은 좌표에 있으면서 지금 지도에 실제로 보이고 있는 것들만 골라낸다.
+  function visibleCoLocated(marker){
+    const all = coLocIndex[marker._coKey] || [];
+    if(all.length < 2) return all;
+    return all.filter(function(mm){
+      return (visitedLayer && visitedLayer.hasLayer(mm)) || (clusterGroup && clusterGroup.hasLayer(mm));
+    });
+  }
+
+  // 겹친 자리를 눌렀을 때 뜨는 "이 위치에 N건" 목록 팝업.
+  // 묶음(클러스터)을 누른 경우와, 방문 인증해서 개별로 그려진 점이 포개진 경우 양쪽에서 같이 쓴다.
+  // renderList를 함수로 저장해두면, 목록 팝업이 열려있는 채로 언어를 바꿔도(applyLanguage) 이름들을 다시 그릴 수 있음
+  function openPickList(markers, latlng){
+    const children = markers.slice().sort((a,b) => {
       const ca = a._d.c || '', cb = b._d.c || '';
       if(ca !== cb) return ca.localeCompare(cb, 'ko');
       return (a._d.n||'').localeCompare(b._d.n||'', 'ko');
     }); // 유산 종류(지정종목)별로 묶고, 같은 종류 안에서는 이름순 정렬
     window.__hmClusterChildren = children; // 현재 열린 목록의 항목들을 전역에 저장해두고 클릭 시 참조
     window.__hmClusterPopupInfo = null; // 아래에서 채움
-    // 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우(예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
-    // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
-    // renderList를 함수로 저장해두면, 목록 팝업이 열려있는 채로 언어를 바꿔도(applyLanguage) 이름들을 다시 그릴 수 있음
     const renderList = () => {
+      const visitedSet = window.visitedIds || new Set();
       let lastCat = null;
       const items = children.map((m,i) => {
         const d = m._d;
@@ -1562,8 +1584,12 @@ function initMap(){
           ? `<div style="font-size:11px;font-weight:700;color:#888;margin:${lastCat===null?'0':'10px'} 0 2px;padding-top:${lastCat===null?'0':'6px'};border-top:${lastCat===null?'none':'1px solid #eee'};">${escapeHtml(catLabel(d.c))} (${escapeHtml(hmT('catCountUnit').replace('{n}', children.filter(c=>c._d.c===d.c).length))})</div>`
           : '';
         lastCat = d.c;
+        // 이미 방문 인증한 건은 이름 앞에 ✓ 를 붙여 구분
+        const tick = (m._hid && visitedSet.has(m._hid))
+          ? '<span style="color:#1f6f6b;font-weight:800;margin-right:4px;">\u2713</span>'
+          : '';
         return `${groupHeader}<div class="cluster-pick" onclick="window.hmPickCluster(${i})" style="padding:6px 4px;border-bottom:1px solid #eee;cursor:pointer;">
-          <div style="font-size:13px;font-weight:600;">${escapeHtml(hmName(d))}</div>
+          <div style="font-size:13px;font-weight:600;">${tick}${escapeHtml(hmName(d))}</div>
         </div>`;
       }).join('');
       return `<div style="max-height:320px;overflow-y:auto;min-width:220px;">
@@ -1571,9 +1597,16 @@ function initMap(){
         ${items}
       </div>`;
     };
-    window.__hmClusterPopupInfo = { latlng: cluster.getLatLng(), render: renderList };
-    window.__hmActivePopup = L.popup({maxWidth:280}).setLatLng(cluster.getLatLng()).setContent(renderList()).openOn(map);
+    window.__hmClusterPopupInfo = { latlng: latlng, render: renderList };
+    window.__hmActivePopup = L.popup({maxWidth:280}).setLatLng(latlng).setContent(renderList()).openOn(map);
     window.__hmActivePopupRender = renderList;
+  }
+
+  // 묶음을 눌렀을 때: 최대로 확대해도 위치가 거의 겹쳐서 안 풀리는 경우
+  // (예: 큰 박물관·사찰에 유산이 수십~수백 건 몰린 경우)를 위해
+  // 건수와 상관없이 항상 이름 목록 팝업을 띄우고, 목록은 스크롤로 보게 함
+  clusterGroup.on('clusterclick', function(e){
+    openPickList(e.layer.getAllChildMarkers(), e.layer.getLatLng());
   });
   window.hmBackToClusterList = function(){
     const info = window.__hmClusterPopupInfo;
