@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v15 (2026-09-13)">
+  <meta name="hm-build" content="v17 (2026-09-13)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -780,7 +780,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v15 (2026-09-13)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v17 (2026-09-13)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2838,15 +2838,14 @@ const QN        = 10;      // 문제 수
 const REVEAL_MS = 5000;    // 정답 공개 시간
 const LEAD_MS   = 4000;    // 시작 버튼 누르고 첫 문제까지
 const PER_HIT   = 10;      // 맞히면 점수
-const SEC_CHOICES = [20, 30, 40, 60];   // 방장이 고를 수 있는 문제 시간
+const SEC_CHOICES = [30, 40, 50, 60];   // 방장이 고를 수 있는 문제 시간
 // 문제 푸는 시간은 방마다 다름 (방장이 정함)
-function ansMs(){ return ((ST && ST.room && ST.room.answerSec) || 20) * 1000; }
+function ansMs(){ return ((ST && ST.room && ST.room.answerSec) || 30) * 1000; }
 function stepMs(){ return ansMs() + REVEAL_MS; }
 
 const FIELD_DEFS = [
   { slug:'nature',     label:'자연유산',         hint:'천연기념물·명승' },
   { slug:'national',   label:'국가지정 문화유산', hint:'국보·보물·사적' },
-  { slug:'local',      label:'시도지정 문화유산', hint:'시도유형·기념물' },
   { slug:'intangible', label:'무형유산',         hint:'국가·시도무형' }
 ];
 
@@ -2989,7 +2988,7 @@ async function createRoom(){
     const qs   = await pickQuestions(slugs);
     const code = await freshCode();
     const secBtn = $('qzSecs').querySelector('.qz-sec.on');
-    const answerSec = secBtn ? Number(secBtn.dataset.sec) : 20;
+    const answerSec = secBtn ? Number(secBtn.dataset.sec) : 30;
     await setDoc(doc(db,'quizRooms',code), {
       hostUid: u.uid, hostName: name, fields: slugs, answerSec,
       state: 'waiting', createdMs: Date.now(), questions: qs
