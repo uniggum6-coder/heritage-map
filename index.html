@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v22 (2026-09-15)">
+  <meta name="hm-build" content="v23 (2026-09-15)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -464,12 +464,15 @@
       <div class="hb-menu-wrap">
         <button id="hmMenuBtn" aria-label="메뉴" onclick="window.hmToggleMenu && window.hmToggleMenu()">☰</button>
         <div id="hmMenu" class="hb-menu-panel">
+          <!-- 위에서 아래로: 내 것 → 함께 → 놀이 → 설정·나가기 -->
+          <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.hmMenuPick(function(){ window.showCharPicker && window.showCharPicker(); })">🎎 내 캐릭터</button>
+          <button id="hmMenuNick" data-i18n="nickBtnLabel" onclick="window.hmMenuPick(function(){ var b=document.getElementById('nickBtn'); b && b.click(); })">✏️ 닉네임 변경</button>
+          <div class="hb-menu-sep" id="hmMenuAuthSep"></div>
+          <button id="boardBtn" data-i18n="boardBtn" onclick="window.hmMenuPick(function(){ window.showBoard && window.showBoard(); })">💬 게시판</button>
+          <button id="helpBtn" data-i18n="helpBtn" onclick="window.hmMenuPick(function(){ window.showHelpModal && window.showHelpModal(); })">❓ 방문 인증 안내</button>
+          <div class="hb-menu-sep"></div>
           <button id="quizBtn" data-i18n="quizBtn" onclick="window.hmMenuPick(function(){ window.showQuiz && window.showQuiz(); })">🎯 퀴즈</button>
           <button id="raceBtn" data-i18n="raceBtn" onclick="window.hmMenuPick(function(){ window.showRace && window.showRace(); })">🏃 팀 대결</button>
-          <div class="hb-menu-sep"></div>
-          <button id="helpBtn" data-i18n="helpBtn" onclick="window.hmMenuPick(function(){ window.showHelpModal && window.showHelpModal(); })">방문 인증 안내</button>
-          <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.hmMenuPick(function(){ window.showCharPicker && window.showCharPicker(); })">🎎 내 캐릭터</button>
-          <button id="boardBtn" data-i18n="boardBtn" onclick="window.hmMenuPick(function(){ window.showBoard && window.showBoard(); })">💬 게시판</button>
           <div class="hb-menu-sep"></div>
           <div class="lang-switcher" id="langSwitcher">
             <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
@@ -477,9 +480,7 @@
             <button class="lang-btn" data-lang="cn" onclick="window.hmSetLang && window.hmSetLang('cn')">中</button>
             <button class="lang-btn" data-lang="jp" onclick="window.hmSetLang && window.hmSetLang('jp')">日</button>
           </div>
-          <div class="hb-menu-sep" id="hmMenuAuthSep"></div>
-          <button id="hmMenuNick" onclick="window.hmMenuPick(function(){ var b=document.getElementById('nickBtn'); b && b.click(); })">닉네임 변경</button>
-          <button id="hmMenuLogout" onclick="window.hmMenuPick(function(){ var b=document.getElementById('logoutBtn'); b && b.click(); })">로그아웃</button>
+          <button id="hmMenuLogout" data-i18n="logoutBtnLabel" onclick="window.hmMenuPick(function(){ var b=document.getElementById('logoutBtn'); b && b.click(); })">↩ 로그아웃</button>
         </div>
       </div>
       <div class="auth-area" id="authArea">
@@ -780,7 +781,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v22 (2026-09-15)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v23 (2026-09-15)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -821,14 +822,14 @@ const I18N = {
     brandTitle: '국가유산지도',
     dataSource: '데이터 출처: 국가유산청',
     bulkVerifyBtn: '📍 주변 일괄인증',
-    helpBtn: '방문 인증 안내',
+    helpBtn: '❓ 방문 인증 안내',
     rankBtn: '🏆 명예의 전당',
     charPickerBtn: '🎎 내 캐릭터',
     boardBtn: '💬 게시판',
     quizBtn: '🎯 퀴즈',
     raceBtn: '🏃 팀 대결',
     loginBtnLabel: '🔑 구글로 로그인',
-    nickBtnLabel: '닉네임 변경',
+    nickBtnLabel: '✏️ 닉네임 변경',
     nickLabel: '닉네임',
     nickPh: '닉네임',
     nickPrompt: '명예의 전당에 표시할 닉네임을 입력해주세요 (2~12자)',
@@ -837,7 +838,7 @@ const I18N = {
     nickNone: '닉네임 없음',
     nickUnset: '닉네임 미설정',
     anonName: '익명',
-    logoutBtnLabel: '로그아웃',
+    logoutBtnLabel: '↩ 로그아웃',
     introBanner: '📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.',
     featBanner: '🎯 새로 생긴 <b>퀴즈</b>와 <b>팀 대결</b>을 오른쪽 위 <b>☰</b> 메뉴에서 해보세요.',
     searchTitle: '검색',
@@ -887,14 +888,14 @@ const I18N = {
     brandTitle: 'Korea Heritage Map',
     dataSource: 'Data source: Korea Heritage Service',
     bulkVerifyBtn: '📍 Verify Nearby',
-    helpBtn: 'Visit Verification Guide',
+    helpBtn: '❓ Visit Verification Guide',
     rankBtn: '🏆 Hall of Fame',
     charPickerBtn: '🎎 My Character',
     boardBtn: '💬 Board',
     quizBtn: '🎯 Quiz',
     raceBtn: '🏃 Team Race',
     loginBtnLabel: '🔑 Sign in with Google',
-    nickBtnLabel: 'Change Nickname',
+    nickBtnLabel: '✏️ Change Nickname',
     nickLabel: 'Nickname',
     nickPh: 'Nickname',
     nickPrompt: 'Enter a nickname to show on the Hall of Fame (2\u201312 characters)',
@@ -903,7 +904,7 @@ const I18N = {
     nickNone: 'No nickname',
     nickUnset: 'Nickname not set',
     anonName: 'Anonymous',
-    logoutBtnLabel: 'Log Out',
+    logoutBtnLabel: '↩ Log Out',
     introBanner: '📍 Visit in person to <b>verify your visit</b> and level up your <b>rank</b>.',
     featBanner: '🎯 Try the new <b>Quiz</b> and <b>Team Race</b> from the <b>☰</b> menu.',
     searchTitle: 'Search',
@@ -953,14 +954,14 @@ const I18N = {
     brandTitle: '国家遗产地图',
     dataSource: '数据来源：韩国国家遗产厅',
     bulkVerifyBtn: '📍 周边一键认证',
-    helpBtn: '访问认证指南',
+    helpBtn: '❓ 访问认证指南',
     rankBtn: '🏆 名人堂',
     charPickerBtn: '🎎 我的角色',
     boardBtn: '💬 留言板',
     quizBtn: '🎯 问答',
     raceBtn: '🏃 团队赛',
     loginBtnLabel: '🔑 使用谷歌登录',
-    nickBtnLabel: '修改昵称',
+    nickBtnLabel: '✏️ 修改昵称',
     nickLabel: '昵称',
     nickPh: '昵称',
     nickPrompt: '请输入要显示在名人堂上的昵称（2~12个字）',
@@ -969,7 +970,7 @@ const I18N = {
     nickNone: '未设昵称',
     nickUnset: '未设置昵称',
     anonName: '匿名',
-    logoutBtnLabel: '退出登录',
+    logoutBtnLabel: '↩ 退出登录',
     introBanner: '📍 亲自前往现场即可<b>完成访问认证</b>并提升<b>等级</b>。',
     featBanner: '🎯 请在右上角 <b>☰</b> 菜单中体验新增的<b>问答</b>和<b>团队赛</b>。',
     searchTitle: '搜索',
@@ -1019,14 +1020,14 @@ const I18N = {
     brandTitle: '国家遺産地図',
     dataSource: 'データ出典：国家遺産庁',
     bulkVerifyBtn: '📍 周辺一括認証',
-    helpBtn: '訪問認証案内',
+    helpBtn: '❓ 訪問認証案内',
     rankBtn: '🏆 名誉の殿堂',
     charPickerBtn: '🎎 マイキャラクター',
     boardBtn: '💬 掲示板',
     quizBtn: '🎯 クイズ',
     raceBtn: '🏃 チーム対決',
     loginBtnLabel: '🔑 Googleでログイン',
-    nickBtnLabel: 'ニックネーム変更',
+    nickBtnLabel: '✏️ ニックネーム変更',
     nickLabel: 'ニックネーム',
     nickPh: 'ニックネーム',
     nickPrompt: '殿堂に表示するニックネームを入力してください（2〜12文字）',
@@ -1035,7 +1036,7 @@ const I18N = {
     nickNone: 'ニックネーム未設定',
     nickUnset: 'ニックネーム未設定',
     anonName: '匿名',
-    logoutBtnLabel: 'ログアウト',
+    logoutBtnLabel: '↩ ログアウト',
     introBanner: '📍 現地を訪れて<b>訪問認証</b>をすると<b>ランク</b>を上げることができます。',
     featBanner: '🎯 新しい<b>クイズ</b>と<b>チーム対決</b>を右上の <b>☰</b> メニューからどうぞ。',
     searchTitle: '検索',
@@ -1133,8 +1134,9 @@ function applyLanguage(lang, autoGuess){
   });
   // 로그인 상태에 따라 JS 템플릿으로 그려지는 로그인/닉네임변경/로그아웃 버튼은
   // data-i18n으로 못 잡으니 지금 떠 있는 걸 직접 다시 씀(없으면 조용히 무시)
-  const nickBtn = document.getElementById('nickBtn'); if(nickBtn) nickBtn.textContent = hmT('nickBtnLabel');
-  const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.textContent = hmT('logoutBtnLabel');
+  const hmPlain = (k) => String(hmT(k)).replace(/^[^\p{L}\p{N}]+/u, '').trim();
+  const nickBtn = document.getElementById('nickBtn'); if(nickBtn) nickBtn.textContent = hmPlain('nickBtnLabel');
+  const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.textContent = hmPlain('logoutBtnLabel');
   const loginBtnEl = document.getElementById('loginBtn'); if(loginBtnEl) loginBtnEl.textContent = hmT('loginBtnLabel');
   // 이미 만들어 둔 지역 고르는 칸의 글자도 언어에 맞춰 다시 씀
   // (값은 한국어 그대로라 고른 지역이 풀리지 않는다)
@@ -2360,7 +2362,9 @@ function updateAuthUI(placeCount, rank, itemCount){
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
     const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃', nickNone:'닉네임 없음'}[k] || k));
     const rankShort = String(rank || '').split(' ')[0];   // '정1품 영의정' → '정1품'
-    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· <span class="rk-full">${rank}</span><span class="rk-short">${rankShort}</span> (${placeCount}곳<span class="rk-items">${itemNote}</span>)</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${t('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${t('logoutBtnLabel')}</button></div>`;
+    // 머리띠는 자리가 좁아 아이콘(✏️ ↩)은 떼고 글자만 쓴다
+    const plain = (k) => String(t(k)).replace(/^[^\p{L}\p{N}]+/u, '').trim();
+    area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· <span class="rk-full">${rank}</span><span class="rk-short">${rankShort}</span> (${placeCount}곳<span class="rk-items">${itemNote}</span>)</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${plain('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${plain('logoutBtnLabel')}</button></div>`;
   } else {
     const t = window.hmT || ((k) => ({loginBtnLabel:'🔑 구글로 로그인'}[k] || k));
     area.innerHTML = `<button id="loginBtn" onclick="window.hmLogin && window.hmLogin()">${t('loginBtnLabel')}</button>`;
