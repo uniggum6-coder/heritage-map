@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v20 (2026-09-15)">
+  <meta name="hm-build" content="v21 (2026-09-15)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -780,7 +780,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v20 (2026-09-15)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v21 (2026-09-15)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1806,8 +1806,11 @@ const DISTRICT_EN = {
   "연수구":"Yeonsu-gu","여수시":"Yeosu-si","예산군":"Yesan-gun","용인시":"Yongin-si",
   "용산구":"Yongsan-gu","유성구":"Yuseong-gu",
 };
-function hmRegion(v){ return (hmLang === 'en' && REGION_EN[v]) ? REGION_EN[v] : (v || ''); }
-function hmDistrict(v){ return (hmLang === 'en' && DISTRICT_EN[v]) ? DISTRICT_EN[v] : (v || ''); }
+// 한국어가 아니면 모두 로마자로 보여준다.
+// (중국어·일본어 한자 표기는 아직 없지만, 한글보다는 로마자가 낫다.
+//  한국 도로 표지판·지하철·지도가 모두 로마자라 눈으로 맞춰볼 수 있기 때문)
+function hmRegion(v){ return (hmLang !== 'ko' && REGION_EN[v]) ? REGION_EN[v] : (v || ''); }
+function hmDistrict(v){ return (hmLang !== 'ko' && DISTRICT_EN[v]) ? DISTRICT_EN[v] : (v || ''); }
 function hmPlace(d){ return (hmRegion(d.r) + ' ' + hmDistrict(d.s)).trim(); }
 
 function hmName(d){
