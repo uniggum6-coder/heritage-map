@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v17 (2026-09-13)">
+  <meta name="hm-build" content="v18 (2026-09-15)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -571,7 +571,7 @@
           <div id="qzFields" class="qz-fields"></div>
           <p class="qz-sub" style="margin-top:14px">한 문제에 몇 초 줄까요?</p>
           <div id="qzSecs" class="qz-secs"></div>
-          <label class="qz-name-row">닉네임 <input type="text" id="qzHostName" maxlength="12" placeholder="닉네임"></label>
+          <label class="qz-name-row"><span data-i18n="nickLabel">닉네임</span> <input type="text" id="qzHostName" maxlength="12" placeholder="닉네임" data-i18n-ph="nickPh"></label>
           <button class="qz-btn qz-btn-main" id="qzCreateBtn">방 만들고 시작하기</button>
         </div>
 
@@ -579,7 +579,7 @@
           <h3>코드로 참가하기</h3>
           <div class="qz-join-row">
             <input type="text" id="qzJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
-            <input type="text" id="qzJoinName" maxlength="12" placeholder="닉네임">
+            <input type="text" id="qzJoinName" maxlength="12" placeholder="닉네임" data-i18n-ph="nickPh">
             <button class="qz-btn" id="qzJoinBtn">참가</button>
           </div>
           <p class="qz-note" id="qzKakaoNote" style="display:none">
@@ -687,7 +687,7 @@
           <h3>코드로 참가하기</h3>
           <div class="qz-join-row">
             <input type="text" id="rcJoinCode" inputmode="numeric" maxlength="4" placeholder="0000">
-            <input type="text" id="rcJoinName" maxlength="12" placeholder="닉네임">
+            <input type="text" id="rcJoinName" maxlength="12" placeholder="닉네임" data-i18n-ph="nickPh">
             <button class="qz-btn" id="rcJoinBtn">참가</button>
           </div>
         </div>
@@ -780,7 +780,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v17 (2026-09-13)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v18 (2026-09-15)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -829,6 +829,14 @@ const I18N = {
     raceBtn: '🏃 팀 대결',
     loginBtnLabel: '🔑 구글로 로그인',
     nickBtnLabel: '닉네임 변경',
+    nickLabel: '닉네임',
+    nickPh: '닉네임',
+    nickPrompt: '명예의 전당에 표시할 닉네임을 입력해주세요 (2~12자)',
+    nickTooShort: '닉네임은 2자 이상 입력해주세요.',
+    nickSaveFail: '닉네임 저장에 실패했어요: ',
+    nickNone: '닉네임 없음',
+    nickUnset: '닉네임 미설정',
+    anonName: '익명',
     logoutBtnLabel: '로그아웃',
     introBanner: '📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.',
     featBanner: '🎯 새로 생긴 <b>퀴즈</b>와 <b>팀 대결</b>을 오른쪽 위 <b>☰</b> 메뉴에서 해보세요.',
@@ -887,6 +895,14 @@ const I18N = {
     raceBtn: '🏃 Team Race',
     loginBtnLabel: '🔑 Sign in with Google',
     nickBtnLabel: 'Change Nickname',
+    nickLabel: 'Nickname',
+    nickPh: 'Nickname',
+    nickPrompt: 'Enter a nickname to show on the Hall of Fame (2\u201312 characters)',
+    nickTooShort: 'Please enter at least 2 characters.',
+    nickSaveFail: 'Could not save your nickname: ',
+    nickNone: 'No nickname',
+    nickUnset: 'Nickname not set',
+    anonName: 'Anonymous',
     logoutBtnLabel: 'Log Out',
     introBanner: '📍 Visit in person to <b>verify your visit</b> and level up your <b>rank</b>.',
     featBanner: '🎯 Try the new <b>Quiz</b> and <b>Team Race</b> from the <b>☰</b> menu.',
@@ -945,6 +961,14 @@ const I18N = {
     raceBtn: '🏃 团队赛',
     loginBtnLabel: '🔑 使用谷歌登录',
     nickBtnLabel: '修改昵称',
+    nickLabel: '昵称',
+    nickPh: '昵称',
+    nickPrompt: '请输入要显示在名人堂上的昵称（2~12个字）',
+    nickTooShort: '昵称请至少输入2个字。',
+    nickSaveFail: '昵称保存失败：',
+    nickNone: '未设昵称',
+    nickUnset: '未设置昵称',
+    anonName: '匿名',
     logoutBtnLabel: '退出登录',
     introBanner: '📍 亲自前往现场即可<b>完成访问认证</b>并提升<b>等级</b>。',
     featBanner: '🎯 请在右上角 <b>☰</b> 菜单中体验新增的<b>问答</b>和<b>团队赛</b>。',
@@ -1003,6 +1027,14 @@ const I18N = {
     raceBtn: '🏃 チーム対決',
     loginBtnLabel: '🔑 Googleでログイン',
     nickBtnLabel: 'ニックネーム変更',
+    nickLabel: 'ニックネーム',
+    nickPh: 'ニックネーム',
+    nickPrompt: '殿堂に表示するニックネームを入力してください（2〜12文字）',
+    nickTooShort: 'ニックネームは2文字以上で入力してください。',
+    nickSaveFail: 'ニックネームの保存に失敗しました: ',
+    nickNone: 'ニックネーム未設定',
+    nickUnset: 'ニックネーム未設定',
+    anonName: '匿名',
     logoutBtnLabel: 'ログアウト',
     introBanner: '📍 現地を訪れて<b>訪問認証</b>をすると<b>ランク</b>を上げることができます。',
     featBanner: '🎯 新しい<b>クイズ</b>と<b>チーム対決</b>を右上の <b>☰</b> メニューからどうぞ。',
@@ -2215,9 +2247,9 @@ function updateAuthUI(placeCount, rank, itemCount){
   const area = document.getElementById('authArea');
   if(currentUser){
     const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
-    const nick = (currentNickname || '닉네임 없음').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const nick = (currentNickname || t('nickNone')).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
-    const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃'}[k] || k));
+    const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃', nickNone:'닉네임 없음'}[k] || k));
     const rankShort = String(rank || '').split(' ')[0];   // '정1품 영의정' → '정1품'
     area.innerHTML = `<div class="user-chip">${photo}<span class="u-name">${nick}</span><span class="u-rank" onclick="window.showMyVisits && window.showMyVisits()">· <span class="rk-full">${rank}</span><span class="rk-short">${rankShort}</span> (${placeCount}곳<span class="rk-items">${itemNote}</span>)</span><button id="nickBtn" onclick="window.hmChangeNickname && window.hmChangeNickname()">${t('nickBtnLabel')}</button><button id="logoutBtn" onclick="window.hmLogout && window.hmLogout()">${t('logoutBtnLabel')}</button></div>`;
   } else {
@@ -2263,11 +2295,11 @@ window.hmLogout = () => { window.hmNickname = ''; signOut(auth); };
 
 window.hmChangeNickname = async () => {
   if(!currentUser) return;
-  const input = window.prompt('명예의 전당에 표시할 닉네임을 입력해주세요 (2~12자)', currentNickname || '');
+  const input = window.prompt(hmT('nickPrompt'), currentNickname || '');
   if(input === null) return;
   const trimmed = input.trim().slice(0, 12);
   if(trimmed.length < 2){
-    window.showMsg('닉네임은 2자 이상 입력해주세요.');
+    window.showMsg(hmT('nickTooShort'));
     return;
   }
   try{
@@ -2278,7 +2310,7 @@ window.hmChangeNickname = async () => {
     const d = uSnap.data() || {};
     updateAuthUI(d.totalVisits || 0, d.rank || rankFor(0));
   }catch(err){
-    window.showMsg('닉네임 저장에 실패했어요: ' + err.message);
+    window.showMsg(hmT('nickSaveFail') + err.message);
   }
 };
 
@@ -2306,7 +2338,7 @@ window.showHallOfFame = async () => {
       i++;
       const cls = medalCls[i-1] || '';
       const uid = docSnap.id;
-      const name = (d.nickname || '닉네임 미설정').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const name = (d.nickname || hmT('nickUnset')).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const adminBtn = isAdmin ? `<button onclick="window.hmAdminViewUserVisits('${uid}', '${name.replace(/'/g,"")}')" style="margin-left:8px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px;border:none;background:var(--navy);color:#fff;cursor:pointer;">방문기록</button>` : '';
       html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${d.rank || ''}</div></div><div class="rank-count">${total}곳${adminBtn}</div></div>`;
     });
@@ -2411,7 +2443,7 @@ async function renderBoard(){
       const p = docSnap.data();
       const id = docSnap.id;
       const date = p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-      const nick = escapeHtml(p.authorNick || '익명');
+      const nick = escapeHtml(p.authorNick || hmT('anonName'));
       const canDelete = currentUser && p.authorUid === currentUser.uid;
       const delBtn = canDelete ? `<button onclick="window.hmDeleteBoardPost('${id}')" style="margin-left:8px;font-size:11.5px;color:#c0392b;background:none;border:none;cursor:pointer;text-decoration:underline;">삭제</button>` : '';
       html += `<div class="icard" style="margin-bottom:10px;">
@@ -2442,7 +2474,7 @@ document.getElementById('boardSubmitBtn').addEventListener('click', async () => 
       title: title,
       content: content2,
       authorUid: currentUser.uid,
-      authorNick: currentNickname || currentUser.displayName || '익명',
+      authorNick: currentNickname || '',   // 비워두면 보는 사람 언어로 '익명'이 붙는다
       createdAt: Date.now()
     });
     document.getElementById('boardTitleInput').value = '';
