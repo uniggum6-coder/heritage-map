@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v26 (2026-09-18)">
+  <meta name="hm-build" content="v27 (2026-09-18)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -393,7 +393,13 @@
     border-top:1px solid var(--line);border-radius:14px 14px 0 0;
     box-shadow:0 -6px 24px rgba(0,0,0,.18);max-height:58vh;display:flex;flex-direction:column;}
   .near-panel[hidden]{display:none;}
-  .near-head{display:flex;align-items:center;gap:8px;padding:11px 14px 9px;border-bottom:1px solid var(--line);}
+  /* 위쪽 손잡이를 끌어내리거나 눌러서 목록을 접을 수 있다 */
+  .near-drag{cursor:pointer;user-select:none;-webkit-user-select:none;flex:0 0 auto;}
+  .near-grab{width:38px;height:4px;border-radius:3px;background:#d8d2c6;margin:7px auto 1px;}
+  .near-panel.near-min .near-body,
+  .near-panel.near-min .near-foot{display:none;}
+  .near-panel.near-min .near-head{border-bottom:none;}
+  .near-head{display:flex;align-items:center;gap:8px;padding:9px 14px 9px;border-bottom:1px solid var(--line);}
   .near-title{flex:1;font-size:14px;font-weight:700;color:var(--navy);min-width:0;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .near-btn-sm{background:var(--sand);border:none;border-radius:14px;padding:5px 10px;
@@ -814,7 +820,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v26 (2026-09-18)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v27 (2026-09-18)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2256,6 +2262,34 @@ function hmCollapseAside(){
 /* 내 위치와 고른 목적지를 잇는 점선. 어느 쪽이 나고 어느 방향인지 바로 보이게 한다. */
 let nearLineLayer = null;
 
+/* 목록에 담긴 50곳을 지도에도 점으로 찍는다.
+   분류를 하나도 안 골랐으면 지도에 마커가 하나도 없어서 원만 덩그러니 남는데,
+   그러면 목록과 지도가 따로 놀아 보인다. 이 점들이 둘을 이어준다. */
+let nearDotsLayer = null;
+
+function hmNearClearDots(){
+  if(nearDotsLayer && map){ try{ map.removeLayer(nearDotsLayer); }catch(e){} }
+  nearDotsLayer = null;
+}
+
+function hmNearDrawDots(rows){
+  hmNearClearDots();
+  if(!map || !rows || !rows.length) return;
+  const visited = window.visitedIds || new Set();
+  const dots = rows.map(function(r, i){
+    const d = r.m._d;
+    const isV = !!(r.m._hid && visited.has(r.m._hid));
+    const dot = L.circleMarker([d.la, d.lo], {
+      radius: 6, color: isV ? '#1f6f6b' : '#ffffff', weight: 2,
+      fillColor: markerColorFor(d), fillOpacity: .95
+    });
+    dot.bindTooltip(hmName(d), { direction:'top', offset:[0,-6] });
+    dot.on('click', function(){ window.hmNearPick(i); });
+    return dot;
+  });
+  nearDotsLayer = L.layerGroup(dots).addTo(map);
+}
+
 function hmNearClearLine(){
   if(nearLineLayer && map){ try{ map.removeLayer(nearLineLayer); }catch(e){} }
   nearLineLayer = null;
@@ -2351,6 +2385,7 @@ function hmNearRender(rows, fromCenter, lat, lon){
   }
   foot.innerHTML = (fromCenter ? '<div class="near-warn">' + escapeHtml(hmT('nearFromCenter')) + '</div>' : '')
                  + '<div class="near-note">' + escapeHtml(hmT('nearStraight')) + '</div>';
+  hmNearDrawDots(rows);
   if(rows.length){
     hmNearDrawCircle(lat, lon, rows[rows.length - 1].dist);   // 가장 먼 50번째까지가 반지름
   } else {
@@ -2379,13 +2414,46 @@ window.hmCloseNear = function(){
   const p = document.getElementById('nearPanel');
   if(p) p.hidden = true;
   hmNearClearCircle();
+  hmNearClearDots();
 };
+
+/* 목록 위쪽 손잡이: 아래로 끌면 접히고, 위로 끌거나 누르면 펼쳐진다.
+   패널 HTML이 이 스크립트보다 뒤에 있어서, 처음 열 때 한 번만 연결한다. */
+let nearDragBound = false;
+
+function hmNearBindDrag(){
+  if(nearDragBound) return;
+  const p = document.getElementById('nearPanel');
+  const head = p && p.querySelector('.near-drag');
+  if(!head) return;
+  nearDragBound = true;
+  let y0 = null;
+  const isBtn = function(t){ return !!(t && t.closest && t.closest('button')); };
+  const start = function(e, y){ if(isBtn(e.target)) { y0 = null; return; } y0 = y; };
+  const end = function(e, y){
+    if(y0 === null || isBtn(e.target)) return;
+    const dy = y - y0; y0 = null;
+    if(dy > 45) p.classList.add('near-min');            // 끌어내림 → 접기
+    else if(dy < -45) p.classList.remove('near-min');   // 끌어올림 → 펼치기
+    else p.classList.toggle('near-min');                // 그냥 누름 → 번갈아
+  };
+  head.addEventListener('touchstart', function(e){ start(e, e.touches[0].clientY); }, {passive:true});
+  head.addEventListener('touchend',   function(e){ end(e, e.changedTouches[0].clientY); });
+  head.addEventListener('mousedown',  function(e){ start(e, e.clientY); });
+  head.addEventListener('mouseup',    function(e){ end(e, e.clientY); });
+}
 
 window.hmShowNear = function(){
   const p = document.getElementById('nearPanel');
   if(!p) return;
-  if(!p.hidden){ window.hmCloseNear(); return; }   // 한 번 더 누르면 닫힘
+  if(!p.hidden){
+    // 접어둔 상태였다면 닫지 말고 다시 펼쳐준다
+    if(p.classList.contains('near-min')){ p.classList.remove('near-min'); return; }
+    window.hmCloseNear(); return;                  // 한 번 더 누르면 닫힘
+  }
   p.hidden = false;
+  p.classList.remove('near-min');
+  hmNearBindDrag();
   document.getElementById('nearTitleText').textContent = hmT('nearLocating');
   document.getElementById('nearBody').innerHTML = '<div class="near-msg">' + escapeHtml(hmT('nearLocating')) + '</div>';
   document.getElementById('nearFoot').innerHTML = '';
@@ -4451,10 +4519,13 @@ document.addEventListener('click', function(ev){
 </script>
 <!-- 내 주변: 가까운 순 목록. 폰에서는 아래에서 올라오고 넓은 화면에서는 오른쪽 아래 카드로 뜬다 -->
 <div id="nearPanel" class="near-panel" hidden>
+  <div class="near-drag">
+  <div class="near-grab"></div>
   <div class="near-head">
     <span id="nearTitleText" class="near-title"></span>
     <button class="near-btn-sm" data-i18n="nearRefresh" onclick="window.hmNearRefresh && window.hmNearRefresh()">↻ 새로고침</button>
     <button class="near-close" aria-label="close" onclick="window.hmCloseNear && window.hmCloseNear()">✕</button>
+  </div>
   </div>
   <div id="nearBody" class="near-body"></div>
   <div id="nearFoot" class="near-foot"></div>
