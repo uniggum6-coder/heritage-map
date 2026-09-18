@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v23 (2026-09-15)">
+  <meta name="hm-build" content="v24 (2026-09-18)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -128,10 +128,12 @@
   #hmLightboxRotate.on{background:rgba(255,255,255,.42);}
   #hmLightboxWait{position:absolute;color:#fff;font-size:13px;opacity:.8;}
   .popup-desc{font-size:12.5px;line-height:1.5;color:#333;}
-  .popup-transit-btn{display:block;padding:8px 6px;background:var(--navy);color:#ffffff !important;text-align:center;text-decoration:none;border-radius:6px;font-size:11.5px;font-weight:700;flex:1;}
+  /* 현장 인증 · 카카오맵 · 티맵 세 개가 좁은 팝업에서도 한 줄에 들어가야 하므로
+     글자를 줄바꿈하지 않고(nowrap) 폭을 똑같이 나눠 갖게 한다 */
+  .popup-map-btn{display:block;padding:8px 4px;background:var(--navy);color:#ffffff !important;text-align:center;text-decoration:none;border-radius:6px;font-size:11px;font-weight:700;flex:1 1 0;min-width:0;white-space:nowrap;}
   /* a 태그라 브라우저 기본 링크색이 끼어드는 경우가 있어 모든 상태에서 흰색으로 고정 */
-  .popup-transit-btn:link,.popup-transit-btn:visited,.popup-transit-btn:hover,.popup-transit-btn:active{color:#ffffff !important;text-decoration:none;}
-  .popup-transit-btn:hover{background:var(--teal);}
+  .popup-map-btn:link,.popup-map-btn:visited,.popup-map-btn:hover,.popup-map-btn:active{color:#ffffff !important;text-decoration:none;}
+  .popup-map-btn:hover{background:var(--teal);}
   .cluster-pick:hover{background:#f4efe6;}
   .cluster-pick:last-child{border-bottom:none;}
   .marker-tip{background:var(--navy);color:#fff;border:none;font-size:12px;padding:5px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);line-height:1.3;text-align:center;}
@@ -286,8 +288,8 @@
   .msg-box{background:#fff;padding:24px;border-radius:12px;max-width:360px;text-align:center;}
   .msg-box #msgText{white-space:pre-line;margin:0;line-height:1.75;word-break:keep-all;}
   .msg-box button{margin-top:14px;padding:8px 20px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;}
-  #helpBtn, #bulkVerifyBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
-  #helpBtn:hover, #bulkVerifyBtn:hover{background:rgba(255,255,255,.28);}
+  #nearBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #nearBtn:hover{background:rgba(255,255,255,.28);}
   #rankBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #rankBtn:hover{background:rgba(255,255,255,.28);}
   #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
@@ -380,11 +382,40 @@
   .user-chip #logoutBtn:hover{opacity:1;}
   .user-chip #nickBtn{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;font-size:11.5px;text-decoration:underline;padding:0;}
   .user-chip #nickBtn:hover{opacity:1;}
-  .popup-verify-btn{display:block;padding:8px 6px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;flex:1;}
+  .popup-verify-btn{display:block;padding:8px 4px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex:1 1 0;min-width:0;white-space:nowrap;}
   .popup-verify-btn:hover{background:var(--navy);}
-  .popup-verified{padding:8px 6px;background:#2e8b57;color:#fff;text-align:center;border-radius:6px;font-size:11.5px;font-weight:700;flex:1;display:flex;align-items:center;justify-content:center;}
-  .popup-btn-row{display:flex;gap:6px;margin:8px 0 12px;}
+  .popup-verified{padding:8px 4px;background:#2e8b57;color:#fff;text-align:center;border-radius:6px;font-size:11px;font-weight:700;flex:1 1 0;min-width:0;white-space:nowrap;display:flex;align-items:center;justify-content:center;}
+  .popup-btn-row{display:flex;gap:5px;margin:8px 0 12px;}
   .visited-check-icon{background:transparent;border:none;}
+
+  /* ── 내 주변 목록: 폰에서는 아래에서 올라오고, 넓은 화면에서는 오른쪽 아래 카드 ── */
+  .near-panel{position:fixed;left:0;right:0;bottom:0;z-index:98000;background:#fff;
+    border-top:1px solid var(--line);border-radius:14px 14px 0 0;
+    box-shadow:0 -6px 24px rgba(0,0,0,.18);max-height:58vh;display:flex;flex-direction:column;}
+  .near-panel[hidden]{display:none;}
+  .near-head{display:flex;align-items:center;gap:8px;padding:11px 14px 9px;border-bottom:1px solid var(--line);}
+  .near-title{flex:1;font-size:14px;font-weight:700;color:var(--navy);min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .near-btn-sm{background:var(--sand);border:none;border-radius:14px;padding:5px 10px;
+    font-size:11.5px;font-weight:600;color:var(--teal);cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .near-btn-sm:hover{background:#e9e2d4;}
+  .near-close{background:none;border:none;font-size:17px;color:var(--muted);cursor:pointer;padding:2px 4px;line-height:1;}
+  .near-body{overflow-y:auto;flex:1 1 auto;-webkit-overflow-scrolling:touch;}
+  .near-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f0ece2;cursor:pointer;}
+  .near-row:hover{background:var(--sand);}
+  .near-row:last-child{border-bottom:none;}
+  .near-dist{flex:0 0 58px;font-size:12.5px;font-weight:700;color:var(--teal);text-align:right;}
+  .near-cat{flex:0 0 auto;font-size:10.5px;font-weight:700;color:#fff;padding:2px 7px;border-radius:9px;white-space:nowrap;}
+  .near-name{flex:1;font-size:13px;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .near-tick{color:var(--teal);font-weight:800;margin-right:4px;}
+  .near-msg{padding:22px 16px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6;}
+  .near-foot{padding:8px 14px 12px;border-top:1px solid var(--line);}
+  .near-note{font-size:11px;color:var(--muted);}
+  .near-warn{font-size:11.5px;color:#a9640a;margin-bottom:4px;line-height:1.5;}
+  @media (min-width: 900px){
+    .near-panel{left:auto;right:16px;bottom:16px;width:380px;max-height:62vh;
+      border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 28px rgba(0,0,0,.20);}
+  }
 
   /* ---- 모바일 화면 대응 ---- */
   @media (max-width: 640px){
@@ -393,7 +424,7 @@
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
     .headerbar .hb-actions{flex:1 1 100%;gap:6px;justify-content:flex-start;}
-    #helpBtn, #rankBtn, #bulkVerifyBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
+    #nearBtn, #rankBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
     .lang-btn{padding:4px 8px;font-size:11px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
@@ -459,12 +490,14 @@
       <div class="brand-title"><span data-i18n="brandTitle">국가유산지도</span><span class="src-note" data-i18n="dataSource">데이터 출처: 국가유산청</span></div>
     </div>
     <div class="hb-actions">
-      <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">📍 주변 일괄인증</button>
+      <button id="nearBtn" data-i18n="nearBtn" onclick="window.hmShowNear && window.hmShowNear()">📍 내 주변</button>
       <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
       <div class="hb-menu-wrap">
         <button id="hmMenuBtn" aria-label="메뉴" onclick="window.hmToggleMenu && window.hmToggleMenu()">☰</button>
         <div id="hmMenu" class="hb-menu-panel">
-          <!-- 위에서 아래로: 내 것 → 함께 → 놀이 → 설정·나가기 -->
+          <!-- 위에서 아래로: 지도 → 내 것 → 함께 → 놀이 → 설정·나가기 -->
+          <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmMenuPick(function(){ window.hmBulkVerify && window.hmBulkVerify(); })">📍 주변 일괄인증</button>
+          <div class="hb-menu-sep"></div>
           <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.hmMenuPick(function(){ window.showCharPicker && window.showCharPicker(); })">🎎 내 캐릭터</button>
           <button id="hmMenuNick" data-i18n="nickBtnLabel" onclick="window.hmMenuPick(function(){ var b=document.getElementById('nickBtn'); b && b.click(); })">✏️ 닉네임 변경</button>
           <div class="hb-menu-sep" id="hmMenuAuthSep"></div>
@@ -781,7 +814,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v23 (2026-09-15)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v24 (2026-09-18)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -876,9 +909,18 @@ const I18N = {
     myVisitsTitle: '📍 내가 다녀온 곳',
     charTitle: '🎎 내 캐릭터 고르기',
     charDesc: '원하는 캐릭터를 자유롭게 골라보세요. 안 고르면 기본 모습 그대로예요.',
-    verifiedLabel: '✅ 인증 완료',
-    verifyBtn: '📍 현장 인증',
-    transitBtn: '🚌 대중교통 길찾기',
+    verifiedLabel: '인증 완료',
+    verifyBtn: '현장 인증',
+    kakaoBtn: '카카오맵',
+    tmapBtn: '티맵',
+    tmapMobileOnly: '티맵은 휴대폰에서만 열려요. 컴퓨터에서는 카카오맵을 눌러주세요.',
+    nearBtn: '📍 내 주변',
+    nearTitle: '내 주변 {n}곳',
+    nearStraight: '* 직선거리 기준 · 가까운 순',
+    nearLocating: '위치를 확인하는 중…',
+    nearFromCenter: '위치를 확인할 수 없어 지도 한가운데를 기준으로 찾았어요.',
+    nearEmpty: '조건에 맞는 국가유산을 찾지 못했어요. 분류 선택을 확인해 보세요.',
+    nearRefresh: '↻ 새로고침',
     backToList: '← 목록으로',
     unknownDate: '지정일 미상',
     clusterListHint: '이 위치에 {n}건이 있어요. 항목을 선택하세요.',
@@ -942,9 +984,18 @@ const I18N = {
     myVisitsTitle: '📍 Places I\'ve Visited',
     charTitle: '🎎 Choose My Character',
     charDesc: 'Freely choose any character you like. If you don\'t pick one, you\'ll keep the default look.',
-    verifiedLabel: '✅ Verified',
-    verifyBtn: '📍 Verify Visit',
-    transitBtn: '🚌 Transit Directions',
+    verifiedLabel: 'Verified',
+    verifyBtn: 'Verify',
+    kakaoBtn: 'KakaoMap',
+    tmapBtn: 'TMAP',
+    tmapMobileOnly: 'TMAP only opens on a phone. On a computer, please use KakaoMap.',
+    nearBtn: '📍 Nearby',
+    nearTitle: '{n} sites nearby',
+    nearStraight: '* Straight-line distance, nearest first',
+    nearLocating: 'Finding your location…',
+    nearFromCenter: 'Could not get your location, so this uses the centre of the map.',
+    nearEmpty: 'No heritage found. Try checking your category selection.',
+    nearRefresh: '↻ Refresh',
     backToList: '← Back to List',
     unknownDate: 'Date unknown',
     clusterListHint: 'There are {n} items at this location. Please select one.',
@@ -1008,9 +1059,18 @@ const I18N = {
     myVisitsTitle: '📍 我去过的地方',
     charTitle: '🎎 选择我的角色',
     charDesc: '请自由选择喜欢的角色。不选择的话将保持默认形象。',
-    verifiedLabel: '✅ 已认证',
-    verifyBtn: '📍 现场认证',
-    transitBtn: '🚌 公共交通路线',
+    verifiedLabel: '已认证',
+    verifyBtn: '现场认证',
+    kakaoBtn: 'Kakao地图',
+    tmapBtn: 'TMAP',
+    tmapMobileOnly: 'TMAP 仅能在手机上打开。使用电脑时请点击 Kakao 地图。',
+    nearBtn: '📍 附近',
+    nearTitle: '附近 {n} 处',
+    nearStraight: '* 直线距离 · 由近至远',
+    nearLocating: '正在确认位置…',
+    nearFromCenter: '无法获取您的位置，已改用地图中心点进行查找。',
+    nearEmpty: '未找到符合条件的国家遗产。请检查分类选择。',
+    nearRefresh: '↻ 刷新',
     backToList: '← 返回列表',
     unknownDate: '指定日期不详',
     clusterListHint: '此位置有{n}项，请选择一项。',
@@ -1074,9 +1134,18 @@ const I18N = {
     myVisitsTitle: '📍 訪れた場所',
     charTitle: '🎎 マイキャラクターを選ぶ',
     charDesc: 'お好きなキャラクターを自由に選んでください。選ばなければデフォルトのままです。',
-    verifiedLabel: '✅ 認証済み',
-    verifyBtn: '📍 現地認証',
-    transitBtn: '🚌 公共交通ルート',
+    verifiedLabel: '認証済み',
+    verifyBtn: '現地認証',
+    kakaoBtn: 'カカオマップ',
+    tmapBtn: 'TMAP',
+    tmapMobileOnly: 'TMAPはスマートフォンでのみ開きます。パソコンではカカオマップをご利用ください。',
+    nearBtn: '📍 周辺',
+    nearTitle: '周辺 {n} 件',
+    nearStraight: '* 直線距離 · 近い順',
+    nearLocating: '位置を確認しています…',
+    nearFromCenter: '位置を取得できなかったため、地図の中心を基準に探しました。',
+    nearEmpty: '条件に合う国家遺産が見つかりませんでした。分類の選択をご確認ください。',
+    nearRefresh: '↻ 更新',
     backToList: '← リストに戻る',
     unknownDate: '指定日不明',
     clusterListHint: 'この場所には{n}件あります。項目を選択してください。',
@@ -1720,6 +1789,8 @@ function initMap(){
 function buildPopup(d, hid, visited, fromList){
   const img = d.i ? `<div class="popup-img-wrap"><img class="popup-img" loading="lazy" src="${escapeHtml(d.i)}" onerror="if(!this.dataset.hmFb &amp;&amp; this.src.indexOf('/thumb/')>-1){this.dataset.hmFb='1';this.src=this.src.replace('/thumb/','/');}else{this.parentNode.style.display='none';}"><span class="popup-img-zoom"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/><path d="M10.5 7.5 v6 M7.5 10.5 h6"/></svg></span></div>` : '';
   const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
+  // 티맵은 앱 전용 주소라 앱이 깔려 있어야 열린다. 컴퓨터에서는 hmTmapClick이 막고 안내만 띄운다.
+  const tmapUrl  = `tmap://route?goalname=${encodeURIComponent(d.n)}&goalx=${d.lo}&goaly=${d.la}`;
   const verifyBtn = visited
     ? `<div class="popup-verified">${escapeHtml(hmT('verifiedLabel'))}</div>`
     : `<button class="popup-verify-btn" onclick="window.hmVerifyVisit && window.hmVerifyVisit('${hid}', ${d.la}, ${d.lo})">${escapeHtml(hmT('verifyBtn'))}</button>`;
@@ -1733,7 +1804,8 @@ function buildPopup(d, hid, visited, fromList){
     <div class="popup-meta">${escapeHtml(hmPlace(d))} · ${escapeHtml(d.d||hmT('unknownDate'))}</div>
     <div class="popup-btn-row">
       ${verifyBtn}
-      <a class="popup-transit-btn" href="${kakaoUrl}" target="_blank" rel="noopener">${escapeHtml(hmT('transitBtn'))}</a>
+      <a class="popup-map-btn" href="${kakaoUrl}" target="_blank" rel="noopener">${escapeHtml(hmT('kakaoBtn'))}</a>
+      <a class="popup-map-btn" href="${tmapUrl}" onclick="return window.hmTmapClick();">${escapeHtml(hmT('tmapBtn'))}</a>
     </div>
     ${img}
     <div class="popup-desc">${escapeHtml(d.a||'')}${hmDesc(d) ? '<br><br>'+escapeHtml(hmDesc(d)) : ''}</div>
@@ -2100,6 +2172,165 @@ function applyFilters(){
 }
 
 window.applyFilters = applyFilters;
+
+/* ── 내 주변 ────────────────────────────────────────────────────────────
+   현재 위치에서 가까운 순으로 국가유산 50곳을 찾아 목록으로 보여준다.
+   · 분류(종목) 체크는 함께 적용하지만 '지역' 선택은 일부러 무시한다.
+     서울을 골라둔 채 대전에서 이 버튼을 누르면 아무것도 안 나와 버리기 때문.
+   · 위치를 못 잡으면(실내·권한 거부) 지도 한가운데를 기준으로 대신 찾는다.
+   · 거리는 직선거리다. 실제 도로 거리·소요시간은 팝업의 카카오맵/티맵에 맡긴다. */
+const NEAR_COUNT = 50;
+
+function hmNearCtx(){
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const checkedSet = new Set([...document.querySelectorAll('.catChk:checked')].map(c => c.value));
+  return {
+    q: q, qTok: hmTokens(q),
+    checkedSet: checkedSet,
+    checkedNat: new Set([...document.querySelectorAll('.natChk:checked')].map(c => c.value)),
+    // 지도와 달리 여기서는 분류를 하나도 안 골랐으면 '전체'로 본다.
+    // 앱을 켜자마자 '내 주변'을 눌렀을 때 0건이 나오면 고장으로 보이기 때문.
+    searchAll: checkedSet.size === 0,
+    visitedSet: window.visitedIds || new Set()
+  };
+}
+
+function hmNearPasses(m, ctx){
+  const d = m._d;
+  const isVisited = !!(m._hid && ctx.visitedSet.has(m._hid));
+  if(!ctx.searchAll && !isVisited){
+    if(!ctx.checkedSet.has(d.c)) return false;
+    if(d.c === '천연기념물' && !ctx.checkedNat.has(d.nc)) return false;
+  }
+  if(ctx.q && !hmHit(ctx.qTok, d.n, d.a)) return false;
+  return true;
+}
+
+// haversineMeters는 다른 <script> 블록에 있어 이름만으로는 안 보인다. window를 통해 쓰고,
+// 혹시 없을 때를 대비해 같은 공식을 여기에 한 벌 더 둔다.
+function hmNearDist(lat, lon, la, lo){
+  if(window.haversineMeters) return window.haversineMeters(lat, lon, la, lo);
+  const R = 6371000, p = Math.PI / 180;
+  const x = 0.5 - Math.cos((la - lat) * p) / 2
+          + Math.cos(lat * p) * Math.cos(la * p) * (1 - Math.cos((lo - lon) * p)) / 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+// 1km 미만은 10m 단위, 10km 미만은 소수 한 자리, 그 위는 정수 km
+function hmFmtDist(mtr){
+  if(mtr < 1000) return Math.round(mtr / 10) * 10 + 'm';
+  if(mtr < 10000) return (Math.round(mtr / 100) / 10).toFixed(1) + 'km';
+  return Math.round(mtr / 1000) + 'km';
+}
+
+function hmNearFind(lat, lon){
+  const ctx = hmNearCtx();
+  const rows = [];
+  for(let i = 0; i < allMarkers.length; i++){
+    const m = allMarkers[i];
+    if(!hmNearPasses(m, ctx)) continue;
+    rows.push({ m: m, dist: hmNearDist(lat, lon, m._d.la, m._d.lo) });
+  }
+  rows.sort((a, b) => a.dist - b.dist);
+  return rows.slice(0, NEAR_COUNT);
+}
+
+function hmNearRender(rows, fromCenter){
+  const body = document.getElementById('nearBody');
+  const foot = document.getElementById('nearFoot');
+  const title = document.getElementById('nearTitleText');
+  if(!body || !foot || !title) return;
+  window.__hmNearRows = rows;
+  title.textContent = hmT('nearTitle').replace('{n}', rows.length);
+  if(rows.length === 0){
+    body.innerHTML = '<div class="near-msg">' + escapeHtml(hmT('nearEmpty')) + '</div>';
+  } else {
+    const visited = window.visitedIds || new Set();
+    body.innerHTML = rows.map(function(r, i){
+      const d = r.m._d;
+      const tick = (r.m._hid && visited.has(r.m._hid))
+        ? '<span class="near-tick">✓</span>' : '';
+      return '<div class="near-row" onclick="window.hmNearPick(' + i + ')">'
+           +   '<span class="near-dist">' + escapeHtml(hmFmtDist(r.dist)) + '</span>'
+           +   '<span class="near-cat" style="background:' + markerColorFor(d) + '">' + escapeHtml(catLabel(d.c)) + '</span>'
+           +   '<span class="near-name">' + tick + escapeHtml(hmName(d)) + '</span>'
+           + '</div>';
+    }).join('');
+    body.scrollTop = 0;
+  }
+  foot.innerHTML = (fromCenter ? '<div class="near-warn">' + escapeHtml(hmT('nearFromCenter')) + '</div>' : '')
+                 + '<div class="near-note">' + escapeHtml(hmT('nearStraight')) + '</div>';
+}
+
+function hmNearFromCenter(){
+  const c = map.getCenter();
+  hmNearRender(hmNearFind(c.lat, c.lng), true);
+}
+
+function hmNearLocate(){
+  if(!navigator.geolocation){ hmNearFromCenter(); return; }
+  navigator.geolocation.getCurrentPosition(
+    function(pos){ hmNearRender(hmNearFind(pos.coords.latitude, pos.coords.longitude), false); },
+    function(){ hmNearFromCenter(); },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+  );
+}
+
+window.hmCloseNear = function(){
+  const p = document.getElementById('nearPanel');
+  if(p) p.hidden = true;
+};
+
+window.hmShowNear = function(){
+  const p = document.getElementById('nearPanel');
+  if(!p) return;
+  if(!p.hidden){ window.hmCloseNear(); return; }   // 한 번 더 누르면 닫힘
+  p.hidden = false;
+  document.getElementById('nearTitleText').textContent = hmT('nearLocating');
+  document.getElementById('nearBody').innerHTML = '<div class="near-msg">' + escapeHtml(hmT('nearLocating')) + '</div>';
+  document.getElementById('nearFoot').innerHTML = '';
+  setTimeout(hmNearLocate, 0);
+};
+
+window.hmNearRefresh = function(){ hmNearLocate(); };
+
+// 목록에서 한 줄을 고르면 지도를 그리로 옮기고 상세 팝업을 연다.
+// 패널이 팝업을 가리므로 목록은 닫는다(헤더의 '내 주변'을 다시 누르면 바로 돌아온다).
+window.hmNearPick = function(idx){
+  const row = (window.__hmNearRows || [])[idx];
+  if(!row) return;
+  const m = row.m;
+  window.hmCloseNear();
+  // 좁은 화면에서는 왼쪽 검색 패널이 지도를 거의 다 가린다.
+  // 그대로 두면 팝업이 화면 밖으로 밀려 안 보이므로 먼저 접는다.
+  let wait = 160;
+  if(window.innerWidth < 900){
+    const aside = document.querySelector('#view-map aside');
+    const toggle = document.getElementById('sidebarToggle');
+    if(aside && !aside.classList.contains('collapsed')){
+      aside.classList.add('collapsed');
+      if(toggle) toggle.textContent = '\u25b6';
+      wait = 420;   // 접히는 애니메이션이 끝난 뒤에 자리를 잡아야 가운데가 맞는다
+    }
+  }
+  const renderDetail = function(){
+    return buildPopup(m._d, m._hid, (window.visitedIds || new Set()).has(m._hid), false);
+  };
+  setTimeout(function(){
+    if(map) map.invalidateSize();
+    map.setView(m.getLatLng(), Math.max(map.getZoom(), 15));
+    window.__hmActivePopup = L.popup({maxWidth:300}).setLatLng(m.getLatLng()).setContent(renderDetail()).openOn(map);
+    window.__hmActivePopupRender = renderDetail;
+  }, wait);
+};
+
+// 티맵은 앱 전용 주소라 컴퓨터에서는 아무 일도 안 일어난다.
+// 조용히 실패하면 고장으로 보이므로, 폰이 아니면 안내를 띄우고 이동을 막는다.
+window.hmTmapClick = function(){
+  if(/android|iphone|ipad|ipod/i.test(navigator.userAgent || '')) return true;
+  window.showMsg && window.showMsg(hmT('tmapMobileOnly'));
+  return false;
+};
 document.getElementById('searchBox').addEventListener('input', applyFilters);
 document.getElementById('regionSelect').addEventListener('change', () => {
   populateSubRegions(document.getElementById('regionSelect').value);
@@ -4093,5 +4324,16 @@ document.addEventListener('click', function(ev){
   hmMenuBackdrop(false);
 });
 </script>
+<!-- 내 주변: 가까운 순 목록. 폰에서는 아래에서 올라오고 넓은 화면에서는 오른쪽 아래 카드로 뜬다 -->
+<div id="nearPanel" class="near-panel" hidden>
+  <div class="near-head">
+    <span id="nearTitleText" class="near-title"></span>
+    <button class="near-btn-sm" data-i18n="nearRefresh" onclick="window.hmNearRefresh && window.hmNearRefresh()">↻ 새로고침</button>
+    <button class="near-close" aria-label="close" onclick="window.hmCloseNear && window.hmCloseNear()">✕</button>
+  </div>
+  <div id="nearBody" class="near-body"></div>
+  <div id="nearFoot" class="near-foot"></div>
+</div>
+
 </body>
 </html>
