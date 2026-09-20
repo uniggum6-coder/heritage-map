@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v28 (2026-09-18)">
+  <meta name="hm-build" content="v29 (2026-09-20)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -299,6 +299,23 @@
             font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
   #loginBtn:hover{background:#f6d072;}
   .hb-menu-wrap{position:relative;}
+  /* 지구본 = 언어 선택. 국기는 나라를 뜻하므로 언어에는 쓰지 않는다. */
+  .hb-break{display:none;}
+  #langBtn{padding:8px 11px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;
+           font-size:15px;line-height:1;cursor:pointer;flex:none;}
+  #langBtn:hover{background:rgba(255,255,255,.3);}
+  .lang-menu{display:none;position:fixed;z-index:99000;background:#fff;
+             border:1px solid var(--line,#e3ddd2);border-radius:12px;
+             box-shadow:0 8px 28px rgba(0,0,0,.22);padding:7px;min-width:150px;}
+  .lang-menu.open{display:block;}
+  .lang-opt{display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+            padding:10px 12px;border:0;background:none;border-radius:8px;cursor:pointer;
+            font-size:13.5px;font-family:inherit;color:#22302f;white-space:nowrap;}
+  .lang-opt:hover{background:#f0ece4;}
+  .lang-opt .lo-tick{width:12px;color:var(--teal,#1f6f6b);font-weight:800;visibility:hidden;}
+  .lang-opt.on{font-weight:700;}
+  .lang-opt.on .lo-tick{visibility:visible;}
+
   #hmMenuBtn{padding:8px 13px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;
              font-size:15px;line-height:1;font-weight:700;cursor:pointer;}
   #hmMenuBtn:hover{background:rgba(255,255,255,.3);}
@@ -426,11 +443,17 @@
   /* ---- 모바일 화면 대응 ---- */
   @media (max-width: 640px){
     .headerbar{flex-wrap:wrap;padding:12px 14px;gap:8px;}
-    .brand{flex:1 1 100%;min-width:0;}
+    /* 제목 옆에 버튼을 올려 헤더를 두 줄로 줄인다.
+       자리가 모자라면 flex-wrap 덕분에 알아서 세 줄로 내려간다. */
+    .brand{flex:0 1 auto;min-width:0;}
+    .hb-break{display:block;flex:1 1 100%;height:0;}
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
-    .headerbar .hb-actions{flex:1 1 100%;gap:6px;justify-content:flex-start;}
+    .headerbar .hb-actions{flex:1 1 auto;gap:6px;justify-content:flex-end;}
+    /* 사용자 칩은 늘 제 줄을 쓰고 오른쪽에 붙는다 */
+    .auth-area{flex:0 1 auto;min-width:0;}
     #nearBtn, #rankBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
+    #langBtn{padding:6px 9px;font-size:14px;}
     .lang-btn{padding:4px 8px;font-size:11px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
     .auth-area{flex-wrap:wrap;gap:6px;}
@@ -441,6 +464,15 @@
     .user-chip .u-name{max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .leaflet-popup-content{max-width:calc(100vw - 70px) !important;min-width:0;}
     .leaflet-popup-content-wrapper{max-width:calc(100vw - 50px);}
+  }
+
+  /* 제목 옆에 버튼 묶음을 올려 헤더 한 줄을 줄인다.
+     flex-basis 를 0으로 둬야 묶음이 통째로 다음 줄로 밀리지 않는다.
+     320px 같은 아주 좁은 화면에서는 오히려 줄이 늘어나므로 341px 부터만 적용한다. */
+  @media (min-width:341px) and (max-width:640px){
+    .headerbar{align-items:flex-start;}
+    .headerbar .hb-actions{flex:1 1 0;}
+    .brand{padding-top:3px;}
   }
   @keyframes hm-pulse-ring{
     0%{ transform:scale(0.5); opacity:0.9; }
@@ -496,8 +528,20 @@
       <div class="brand-title"><span data-i18n="brandTitle">국가유산지도</span><span class="src-note" data-i18n="dataSource">데이터 출처: 국가유산청</span></div>
     </div>
     <div class="hb-actions">
-      <button id="nearBtn" data-i18n="nearBtn" onclick="window.hmShowNear && window.hmShowNear()">📍 내 주변</button>
-      <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">🏆 명예의 전당</button>
+      <button id="nearBtn" data-i18n="nearBtn" onclick="window.hmShowNear && window.hmShowNear()">내 주변</button>
+      <button id="rankBtn" data-i18n="rankBtn" onclick="window.showHallOfFame && window.showHallOfFame()">명예의 전당</button>
+      <button id="langBtn" aria-label="Language" onclick="window.hmToggleLang && window.hmToggleLang()">🌐</button>
+      <div id="langMenu" class="lang-menu">
+        <button class="lang-opt" data-lang="ko" onclick="window.hmSetLang('ko')"><span class="lo-tick">✓</span>한국어</button>
+        <button class="lang-opt" data-lang="en" onclick="window.hmSetLang('en')"><span class="lo-tick">✓</span>English</button>
+        <button class="lang-opt" data-lang="cn" onclick="window.hmSetLang('cn')"><span class="lo-tick">✓</span>中文</button>
+        <button class="lang-opt" data-lang="jp" onclick="window.hmSetLang('jp')"><span class="lo-tick">✓</span>日本語</button>
+      </div>
+      <!-- 폰에서만 여기서 줄을 바꿔 [사용자][메뉴] 를 아래 줄로 내린다 -->
+      <div class="hb-break"></div>
+      <div class="auth-area" id="authArea">
+        <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
+      </div>
       <div class="hb-menu-wrap">
         <button id="hmMenuBtn" aria-label="메뉴" onclick="window.hmToggleMenu && window.hmToggleMenu()">☰</button>
         <div id="hmMenu" class="hb-menu-panel">
@@ -513,17 +557,8 @@
           <button id="quizBtn" data-i18n="quizBtn" onclick="window.hmMenuPick(function(){ window.showQuiz && window.showQuiz(); })">🎯 퀴즈</button>
           <button id="raceBtn" data-i18n="raceBtn" onclick="window.hmMenuPick(function(){ window.showRace && window.showRace(); })">🏃 팀 대결</button>
           <div class="hb-menu-sep"></div>
-          <div class="lang-switcher" id="langSwitcher">
-            <button class="lang-btn" data-lang="ko" onclick="window.hmSetLang && window.hmSetLang('ko')">한</button>
-            <button class="lang-btn" data-lang="en" onclick="window.hmSetLang && window.hmSetLang('en')">EN</button>
-            <button class="lang-btn" data-lang="cn" onclick="window.hmSetLang && window.hmSetLang('cn')">中</button>
-            <button class="lang-btn" data-lang="jp" onclick="window.hmSetLang && window.hmSetLang('jp')">日</button>
-          </div>
           <button id="hmMenuLogout" data-i18n="logoutBtnLabel" onclick="window.hmMenuPick(function(){ var b=document.getElementById('logoutBtn'); b && b.click(); })">↩ 로그아웃</button>
         </div>
-      </div>
-      <div class="auth-area" id="authArea">
-        <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
       </div>
     </div>
   </div>
@@ -820,7 +855,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v28 (2026-09-18)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v29 (2026-09-20)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -862,7 +897,7 @@ const I18N = {
     dataSource: '데이터 출처: 국가유산청',
     bulkVerifyBtn: '📍 주변 일괄인증',
     helpBtn: '❓ 방문 인증 안내',
-    rankBtn: '🏆 명예의 전당',
+    rankBtn: '명예의 전당',
     charPickerBtn: '🎎 내 캐릭터',
     boardBtn: '💬 게시판',
     quizBtn: '🎯 퀴즈',
@@ -920,7 +955,7 @@ const I18N = {
     kakaoBtn: '카카오맵',
     tmapBtn: '티맵',
     tmapMobileOnly: '티맵은 휴대폰에서만 열려요. 컴퓨터에서는 카카오맵을 눌러주세요.',
-    nearBtn: '📍 내 주변',
+    nearBtn: '내 주변',
     nearTitle: '내 주변 {n}곳',
     nearStraight: '* 직선거리 기준 · 가까운 순',
     nearLocating: '위치를 확인하는 중…',
@@ -937,7 +972,7 @@ const I18N = {
     dataSource: 'Data source: Korea Heritage Service',
     bulkVerifyBtn: '📍 Verify Nearby',
     helpBtn: '❓ Visit Verification Guide',
-    rankBtn: '🏆 Hall of Fame',
+    rankBtn: 'Hall of Fame',
     charPickerBtn: '🎎 My Character',
     boardBtn: '💬 Board',
     quizBtn: '🎯 Quiz',
@@ -995,7 +1030,7 @@ const I18N = {
     kakaoBtn: 'KakaoMap',
     tmapBtn: 'TMAP',
     tmapMobileOnly: 'TMAP only opens on a phone. On a computer, please use KakaoMap.',
-    nearBtn: '📍 Nearby',
+    nearBtn: 'Nearby',
     nearTitle: '{n} sites nearby',
     nearStraight: '* Straight-line distance, nearest first',
     nearLocating: 'Finding your location…',
@@ -1012,7 +1047,7 @@ const I18N = {
     dataSource: '数据来源：韩国国家遗产厅',
     bulkVerifyBtn: '📍 周边一键认证',
     helpBtn: '❓ 访问认证指南',
-    rankBtn: '🏆 名人堂',
+    rankBtn: '名人堂',
     charPickerBtn: '🎎 我的角色',
     boardBtn: '💬 留言板',
     quizBtn: '🎯 问答',
@@ -1070,7 +1105,7 @@ const I18N = {
     kakaoBtn: 'Kakao地图',
     tmapBtn: 'TMAP',
     tmapMobileOnly: 'TMAP 仅能在手机上打开。使用电脑时请点击 Kakao 地图。',
-    nearBtn: '📍 附近',
+    nearBtn: '附近',
     nearTitle: '附近 {n} 处',
     nearStraight: '* 直线距离 · 由近至远',
     nearLocating: '正在确认位置…',
@@ -1087,7 +1122,7 @@ const I18N = {
     dataSource: 'データ出典：国家遺産庁',
     bulkVerifyBtn: '📍 周辺一括認証',
     helpBtn: '❓ 訪問認証案内',
-    rankBtn: '🏆 名誉の殿堂',
+    rankBtn: '名誉の殿堂',
     charPickerBtn: '🎎 マイキャラクター',
     boardBtn: '💬 掲示板',
     quizBtn: '🎯 クイズ',
@@ -1145,7 +1180,7 @@ const I18N = {
     kakaoBtn: 'カカオマップ',
     tmapBtn: 'TMAP',
     tmapMobileOnly: 'TMAPはスマートフォンでのみ開きます。パソコンではカカオマップをご利用ください。',
-    nearBtn: '📍 周辺',
+    nearBtn: '周辺',
     nearTitle: '周辺 {n} 件',
     nearStraight: '* 直線距離 · 近い順',
     nearLocating: '位置を確認しています…',
@@ -1226,6 +1261,9 @@ function applyLanguage(lang, autoGuess){
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-lang') === hmLang);
   });
+  document.querySelectorAll('.lang-opt').forEach(btn => {
+    btn.classList.toggle('on', btn.getAttribute('data-lang') === hmLang);
+  });
   // "N건 표시 중" 문구도 언어에 맞게 다시 그림
   if(window.hmLastFilteredCount != null){
     const el = document.getElementById('count');
@@ -1260,7 +1298,32 @@ window.hmToggleLang = function(){
   const NEXT = { ko: 'en', en: 'cn', cn: 'jp', jp: 'ko' };
   applyLanguage(NEXT[hmLang] || 'ko');
 };
-window.hmSetLang = function(lang){ applyLanguage(lang); };
+window.hmSetLang = function(lang){
+  applyLanguage(lang);
+  var m = document.getElementById('langMenu');
+  if(m) m.classList.remove('open');
+  hmMenuBackdrop(false);
+};
+
+// 지구본을 누르면 언어 목록을 연다. ☰ 메뉴와 같은 방식으로 자리를 잡는다.
+window.hmToggleLang = function(){
+  var m = document.getElementById('langMenu');
+  if(!m) return;
+  var open = m.classList.contains('open');
+  if(!open){
+    var hm = document.getElementById('hmMenu');
+    if(hm) hm.classList.remove('open');
+    if(m.parentNode !== document.body) document.body.appendChild(m);
+    var b = document.getElementById('langBtn');
+    if(b){
+      var r = b.getBoundingClientRect();
+      m.style.top   = Math.round(r.bottom + 8) + 'px';
+      m.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+    }
+  }
+  m.classList.toggle('open', !open);
+  hmMenuBackdrop(!open);
+};
 (function(){
   let saved = null;
   try{ saved = localStorage.getItem('hmLang'); }catch(e){}
@@ -4474,7 +4537,13 @@ window.addEventListener('load', function(){
   if(!document.getElementById('hmMenuBack')){
     var bk = document.createElement('div');
     bk.id = 'hmMenuBack';
-    bk.addEventListener('click', function(){ window.hmToggleMenu(); });
+    bk.addEventListener('click', function(){
+      var lm = document.getElementById('langMenu');
+      if(lm && lm.classList.contains('open')){
+        lm.classList.remove('open'); hmMenuBackdrop(false); return;
+      }
+      window.hmToggleMenu();
+    });
     document.body.appendChild(bk);
   }
 })();
@@ -4495,6 +4564,8 @@ window.hmToggleMenu = function(){
   if(!m) return;
   var open = m.classList.contains('open');
   if(!open){
+    var lm = document.getElementById('langMenu');
+    if(lm) lm.classList.remove('open');
     window.hmSyncMenuAuth();
     // 헤더가 잘라내지 않도록 아예 본문 맨 끝으로 옮겨둔다 (한 번만)
     if(m.parentNode !== document.body) document.body.appendChild(m);
