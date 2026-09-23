@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v30 (2026-09-23)">
+  <meta name="hm-build" content="v31 (2026-09-23)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -362,6 +362,8 @@
   .intro-banner{display:flex;align-items:center;gap:12px;background:#0f6e56;color:#fff;padding:8px 20px;font-size:13px;flex-wrap:wrap;}
   .intro-banner button{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;}
   .intro-banner button:hover{background:rgba(255,255,255,.32);}
+  /* 지도 그림을 못 받았을 때만 뜨는 띠. 안내 띠와 구분되게 주황빛으로 둔다 */
+  .intro-banner.tile-warn{background:#8a4b16;}
   .intro-close{background:none !important;padding:2px 6px !important;margin-left:auto;font-size:14px !important;}
   .help-box{background:#fff;padding:22px;border-radius:12px;max-width:420px;text-align:left;max-height:82vh;overflow-y:auto;position:relative;}
   .help-box h3{margin:0 0 6px;font-size:16px;color:var(--navy);}
@@ -567,6 +569,10 @@
   <div id="introBanner" class="intro-banner" style="display:none">
     <span data-i18n-html="introBanner">📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.</span>
     <button class="intro-close" onclick="window.dismissIntroBanner && window.dismissIntroBanner()">✕</button>
+  </div>
+  <div id="tileWarn" class="intro-banner tile-warn" style="display:none">
+    <span data-i18n-html="tileWarn">⚠️ 지도 그림을 불러오지 못했어요. 인터넷 연결을 확인하거나, 와이파이 대신 데이터로 바꿔 보세요.</span>
+    <button class="intro-close" onclick="var e=document.getElementById('tileWarn'); if(e) e.style.display='none';">✕</button>
   </div>
   <div id="featBanner" class="intro-banner" style="display:none">
     <span data-i18n-html="featBanner">🎯 새로 생긴 <b>퀴즈</b>와 <b>팀 대결</b>을 오른쪽 위 <b>☰</b> 메뉴에서 해보세요.</span>
@@ -857,7 +863,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v30 (2026-09-23)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v31 (2026-09-23)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -917,6 +923,7 @@ const I18N = {
     logoutBtnLabel: '↩ 로그아웃',
     introBanner: '📍 현장에 가면 <b>방문 인증</b>을 하고 <b>등급</b>을 올릴 수 있어요.',
     featBanner: '🎯 새로 생긴 <b>퀴즈</b>와 <b>팀 대결</b>을 오른쪽 위 <b>☰</b> 메뉴에서 해보세요.',
+    tileWarn: '⚠️ 지도 그림을 불러오지 못했어요. 인터넷 연결을 확인하거나, 와이파이 대신 데이터로 바꿔 보세요.',
     searchTitle: '검색',
     searchPh: '이름 또는 주소로 검색',
     regionTitle: '지역',
@@ -992,6 +999,7 @@ const I18N = {
     logoutBtnLabel: '↩ Log Out',
     introBanner: '📍 Visit in person to <b>verify your visit</b> and level up your <b>rank</b>.',
     featBanner: '🎯 Try the new <b>Quiz</b> and <b>Team Race</b> from the <b>☰</b> menu.',
+    tileWarn: '⚠️ The map images could not be loaded. Check your internet connection, or try mobile data instead of Wi-Fi.',
     searchTitle: 'Search',
     searchPh: 'Search by name or address',
     regionTitle: 'Region',
@@ -1067,6 +1075,7 @@ const I18N = {
     logoutBtnLabel: '↩ 退出登录',
     introBanner: '📍 亲自前往现场即可<b>完成访问认证</b>并提升<b>等级</b>。',
     featBanner: '🎯 请在右上角 <b>☰</b> 菜单中体验新增的<b>问答</b>和<b>团队赛</b>。',
+    tileWarn: '⚠️ 无法加载地图图像。请检查网络连接，或尝试使用移动数据代替 Wi-Fi。',
     searchTitle: '搜索',
     searchPh: '按名称或地址搜索',
     regionTitle: '地区',
@@ -1142,6 +1151,7 @@ const I18N = {
     logoutBtnLabel: '↩ ログアウト',
     introBanner: '📍 現地を訪れて<b>訪問認証</b>をすると<b>ランク</b>を上げることができます。',
     featBanner: '🎯 新しい<b>クイズ</b>と<b>チーム対決</b>を右上の <b>☰</b> メニューからどうぞ。',
+    tileWarn: '⚠️ 地図の画像を読み込めませんでした。インターネット接続をご確認いただくか、Wi-Fi の代わりにモバイルデータをお試しください。',
     searchTitle: '検索',
     searchPh: '名前または住所で検索',
     regionTitle: '地域',
@@ -1528,10 +1538,36 @@ function initMap(){
   // 받도록(겹쳐 있어도 캐릭터 고르기가 확실히 열리도록) 별도 pane의 z-index를 markerPane(600)보다 높게 둠.
   map.createPane('myLocPane');
   map.getPane('myLocPane').style.zIndex = 650;
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // OpenStreetMap 은 a./b./c. 서브도메인 방식을 더는 권장하지 않는다.
+  // 통신사 유해차단·광고차단 앱·개인 DNS 를 쓰는 폰에서 셋 중 일부가 막혀
+  // 지도 그림만 안 나오는 일이 있어, 서브도메인 없는 주소 하나로 바꿨다.
+  const hmTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18, minZoom:6, noWrap:true,
     attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  });
+  hmTiles.addTo(map);
+  // 지도 그림이 아예 안 불러와지는 폰이 있다(망 차단, 저장공간 부족 등).
+  // 전에는 아무 안내가 없어 이용자에게는 "지도가 고장났다"로만 보였다.
+  // 한두 장 실패는 흔하므로, 한 장도 못 받은 채 여러 장 연달아 실패할 때만 알린다.
+  (function(){
+    let ok = 0, warned = false, timer = null;
+    hmTiles.on('tileload', function(){ ok++; });
+    hmTiles.on('tileerror', function(){
+      if(warned || timer) return;
+      // 실패 장수로 세면 안 된다. 처음 열리는 전국 화면은 타일이 서너 장뿐이라
+      // '몇 장 이상 실패'라는 기준에 영영 도달하지 못한다.
+      // 대신 처음 실패한 뒤 6초를 기다렸다가, 그때까지 한 장도 못 받았으면 알린다.
+      // (느린 망에서 늦게 도착하는 경우를 잘못 경고하지 않기 위한 여유이기도 하다)
+      timer = setTimeout(function(){
+        timer = null;
+        if(ok === 0 && !warned){
+          warned = true;
+          const el = document.getElementById('tileWarn');
+          if(el) el.style.display = 'flex';
+        }
+      }, 6000);
+    });
+  })();
   // spiderfy(부채꼴 펼치기) 효과를 어떤 경우에도 절대 사용하지 않도록 완전히 비활성화
   // (겹친 곳은 목록 팝업으로만 안내하므로 부채꼴은 불필요)
   L.MarkerCluster.prototype.spiderfy = function(){};
