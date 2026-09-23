@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v29 (2026-09-20)">
+  <meta name="hm-build" content="v30 (2026-09-23)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -352,9 +352,11 @@
   .rank-row.top2 .rank-medal{background:#d6d6d6;color:#444;}
   .rank-row.top3 .rank-medal{background:#e0b085;color:#5a3418;}
   .rank-info{flex:1;min-width:0;}
-  .rank-name{font-size:13.5px;font-weight:600;color:#222;}
+  .rank-name{font-size:13.5px;font-weight:600;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .rank-title{font-size:12px;color:#888;}
-  .rank-count{font-size:12.5px;font-weight:700;color:var(--teal);}
+  .rank-count{font-size:12.5px;font-weight:700;color:var(--teal);flex:none;text-align:right;white-space:nowrap;}
+  /* 유산 건수는 보조 정보라 곳 수 아래에 작게 깐다 */
+  .rc-items{display:block;font-size:10.5px;font-weight:600;color:#9aa5a5;}
   .rank-box button{margin-top:16px;width:100%;padding:10px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;font-size:13.5px;}
   .rank-empty{font-size:13px;color:#888;text-align:center;padding:20px 0;}
   .intro-banner{display:flex;align-items:center;gap:12px;background:#0f6e56;color:#fff;padding:8px 20px;font-size:13px;flex-wrap:wrap;}
@@ -855,7 +857,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v29 (2026-09-20)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v30 (2026-09-23)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2849,10 +2851,13 @@ function updateAuthUI(placeCount, rank, itemCount){
   window.hmPlaceCount = placeCount || 0;
   const area = document.getElementById('authArea');
   if(currentUser){
+    // t 는 바로 아래 nick 에서 쓰이므로 반드시 먼저 선언해야 한다.
+    // (전에는 선언보다 먼저 써서, 닉네임이 없는 계정은 ReferenceError 가 나면서
+    //  사용자 칩이 통째로 안 그려졌다)
+    const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃', nickNone:'닉네임 없음'}[k] || k));
     const photo = currentUser.photoURL ? `<img src="${currentUser.photoURL}" onerror="this.style.display='none'">` : '';
     const nick = (currentNickname || t('nickNone')).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const itemNote = (itemCount != null && itemCount !== placeCount) ? ` · 유산 ${itemCount}건` : '';
-    const t = window.hmT || ((k) => ({nickBtnLabel:'닉네임 변경', logoutBtnLabel:'로그아웃', nickNone:'닉네임 없음'}[k] || k));
     const rankShort = String(rank || '').split(' ')[0];   // '정1품 영의정' → '정1품'
     // 머리띠는 자리가 좁아 아이콘(✏️ ↩)은 떼고 글자만 쓴다
     const plain = (k) => String(t(k)).replace(/^[^\p{L}\p{N}]+/u, '').trim();
@@ -2911,9 +2916,11 @@ window.hmChangeNickname = async () => {
     await setDoc(doc(db, 'users', currentUser.uid), {nickname: trimmed}, {merge:true});
     currentNickname = trimmed;
     window.hmNickname = trimmed;
-    const uSnap = await getDoc(doc(db, 'users', currentUser.uid));
-    const d = uSnap.data() || {};
-    updateAuthUI(d.totalVisits || 0, d.rank || rankFor(0));
+    // 닉네임만 바꿨을 뿐 인증 기록은 그대로다. 지금 브라우저가 들고 있는 값으로 다시 그린다.
+    // (전에는 저장된 totalVisits(=유산 건수)를 '장소 수' 자리에 넘기고 itemCount 를 빼먹어서,
+    //  닉네임을 바꾸고 나면 "유산 N건" 이 사라지고 곳 수가 유산 건수만큼 부풀려져 보였다)
+    const placeCount = computePlaceCount();
+    updateAuthUI(placeCount, rankFor(placeCount), visitedIds.size);
   }catch(err){
     window.showMsg(hmT('nickSaveFail') + err.message);
   }
@@ -2927,25 +2934,41 @@ window.showHallOfFame = async () => {
   area.innerHTML = '<div class="rank-empty">불러오는 중…</div>';
   const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
   try{
-    const q = query(collection(db, 'users'), orderBy('totalVisits', 'desc'), limit(30));
+    // 순위는 '실제로 다녀온 장소 수' 기준이다 — 등급(품계)과 같은 기준으로 맞춘다.
+    // 전에는 totalVisits(유산 건수)로 줄을 세우고 화면에는 "N곳"이라 적어서,
+    // 박물관에서 10건을 일괄인증한 사람이 "10곳"으로 표시되고 옆의 품계와 어긋났다.
+    //
+    // 다만 Firestore 에서 곧바로 totalPlaces 로 정렬하면, 그 칸이 아직 없는 옛 계정이
+    // 결과에서 통째로 빠져버린다(정렬 기준 칸이 없는 문서는 제외되기 때문).
+    // 장소 수는 언제나 유산 건수보다 작거나 같으므로, 건수 기준으로 넉넉히 받아온 뒤
+    // 화면에서 다시 줄을 세우면 아무도 사라지지 않는다.
+    const q = query(collection(db, 'users'), orderBy('totalVisits', 'desc'), limit(100));
     const snap = await getDocs(q);
     if(snap.empty){
       area.innerHTML = '<div class="rank-empty">아직 인증 기록이 없어요. 첫 번째 인증자가 되어보세요!</div>';
       return;
     }
-    const medalCls = ['top1','top2','top3'];
-    let html = '';
-    let i = 0;
+    const rows = [];
     snap.forEach(docSnap => {
       const d = docSnap.data();
-      const total = d.totalVisits || 0;
-      if(total <= 0) return;
-      i++;
-      const cls = medalCls[i-1] || '';
-      const uid = docSnap.id;
-      const name = (d.nickname || hmT('nickUnset')).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const items = d.totalVisits || 0;
+      if(items <= 0) return;
+      // totalPlaces 가 아직 없는 옛 계정은 건수로 대신 둔다(다음 로그인 때 제대로 채워진다)
+      const places = (d.totalPlaces != null) ? d.totalPlaces : items;
+      rows.push({ uid: docSnap.id, d, items, places });
+    });
+    rows.sort((a, b) => (b.places - a.places) || (b.items - a.items));
+    const medalCls = ['top1','top2','top3'];
+    let html = '';
+    rows.slice(0, 30).forEach((r, idx) => {
+      const i = idx + 1;
+      const cls = medalCls[idx] || '';
+      const uid = r.uid;
+      const name = (r.d.nickname || hmT('nickUnset')).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const adminBtn = isAdmin ? `<button onclick="window.hmAdminViewUserVisits('${uid}', '${name.replace(/'/g,"")}')" style="margin-left:8px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px;border:none;background:var(--navy);color:#fff;cursor:pointer;">방문기록</button>` : '';
-      html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${d.rank || ''}</div></div><div class="rank-count">${total}곳${adminBtn}</div></div>`;
+      // 한 곳에서 여러 건을 인증한 경우(박물관 등)는 두 숫자가 다르므로 둘 다 보여준다
+      const itemLine = (r.items !== r.places) ? `<span class="rc-items">유산 ${r.items}건</span>` : '';
+      html += `<div class="rank-row ${cls}"><div class="rank-medal">${i}</div><div class="rank-info"><div class="rank-name">${name}</div><div class="rank-title">${r.d.rank || ''}</div></div><div class="rank-count">${r.places}곳${itemLine}${adminBtn}</div></div>`;
     });
     area.innerHTML = html || '<div class="rank-empty">아직 인증 기록이 없어요. 첫 번째 인증자가 되어보세요!</div>';
   }catch(err){
