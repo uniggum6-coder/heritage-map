@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v33 (2026-09-26)">
+  <meta name="hm-build" content="v34 (2026-09-26)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -294,6 +294,8 @@
   #rankBtn:hover{background:rgba(255,255,255,.28);}
   #boardBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #boardBtn:hover{background:rgba(255,255,255,.28);}
+  #bulkVerifyBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #bulkVerifyBtn:hover{background:rgba(255,255,255,.28);}
   /* 로그인 버튼은 눈에 띄게 (처음 오는 사람에게 가장 중요한 안내) */
   #loginBtn{padding:8px 14px;background:#f0c454;color:#2a2a15;border:none;border-radius:20px;
             font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.18);}
@@ -456,13 +458,16 @@
     /* 버튼 묶음의 껍데기만 없앤다(display:contents). 버튼들이 머리띠의 직접 자식이 되어
        줄바꿈이 '버튼 묶음 폭(228px)'이 아니라 '머리띠 전체 폭'을 기준으로 일어난다.
        덕분에 둘째 줄이 제목 아래 빈자리까지 내려와 쓸 수 있고, 머리띠 높이는 그대로다. */
-    .headerbar{gap:6px;}
+    /* 줄이 몇 개로 갈라지든 각 줄이 오른쪽에 붙게 한다. 제목만 margin-right:auto 로
+       왼쪽에 남는다. (margin-left:auto 를 버튼마다 걸면, 두 개가 같은 줄에 있을 때
+       남는 자리를 나눠 가져서 사이가 벌어진다) */
+    .headerbar{gap:6px;justify-content:flex-end;}
     .headerbar .hb-actions{display:contents;}
     .brand{margin-right:auto;}      /* 첫 줄: 제목은 왼쪽, 버튼들은 오른쪽으로 밀린다 */
-    .auth-area{margin-left:auto;}   /* 둘째 줄: 일괄인증은 왼쪽, 사용자칩·메뉴는 오른쪽 */
+
     /* 사용자 칩은 늘 제 줄을 쓰고 오른쪽에 붙는다 */
     .auth-area{flex:0 1 auto;min-width:0;}
-    #nearBtn, #rankBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
+    #nearBtn, #rankBtn, #boardBtn, #charPickerBtn, #bulkVerifyBtn{padding:6px 10px;font-size:11.5px;}
     #langBtn{padding:6px 9px;font-size:14px;}
     .lang-btn{padding:4px 8px;font-size:11px;}
     #loginBtn{padding:6px 10px;font-size:11.5px;}
@@ -476,12 +481,6 @@
     .leaflet-popup-content-wrapper{max-width:calc(100vw - 50px);}
   }
 
-  /* 320px 처럼 아주 좁은 화면에서는 메뉴 버튼이 한 줄 더 밀린다.
-     그때 왼쪽에 덩그러니 남지 않도록 메뉴에도 오른쪽 정렬을 준다.
-     (넓은 화면에서 같이 주면 사용자칩과 메뉴 사이가 벌어지므로 여기서만) */
-  @media (max-width:340px){
-    .hb-menu-wrap{margin-left:auto;}
-  }
 
   /* 제목 옆에 버튼 묶음을 올려 헤더 한 줄을 줄인다.
      flex-basis 를 0으로 둬야 묶음이 통째로 다음 줄로 밀리지 않는다.
@@ -874,7 +873,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v33 (2026-09-26)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v34 (2026-09-26)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
