@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v32 (2026-09-26)">
+  <meta name="hm-build" content="v33 (2026-09-26)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -874,7 +874,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v32 (2026-09-26)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v33 (2026-09-26)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2529,6 +2529,15 @@ window.hmCloseNear = function(){
   hmNearClearDots();
 };
 
+/* 목록을 '지우지 않고' 접었다 폈다 한다.
+   한 곳을 고를 때는 접어서 지도를 넓게 쓰고, 설명을 닫으면 다시 펼친다.
+   동그란 점선과 나머지 점들은 건드리지 않는다. */
+function hmNearMinimize(on){
+  const p = document.getElementById('nearPanel');
+  if(!p || p.hidden) return;
+  p.classList.toggle('near-min', !!on);
+}
+
 /* 목록 위쪽 손잡이: 아래로 끌면 접히고, 위로 끌거나 누르면 펼쳐진다.
    패널 HTML이 이 스크립트보다 뒤에 있어서, 처음 열 때 한 번만 연결한다. */
 let nearDragBound = false;
@@ -2588,7 +2597,10 @@ window.hmNearPick = function(idx){
   if(!row) return;
   const m = row.m;
   const origin = window.__hmNearOrigin;   // 목록을 만들 때 쓴 내 위치 (없을 수도 있다)
-  window.hmCloseNear();                   // 패널과 원을 함께 정리
+  // 전에는 여기서 hmCloseNear() 를 불러 목록·동그란 점선·점 50개를 한꺼번에 지웠다.
+  // 그러면 설명을 닫았을 때 돌아갈 자리가 없어, 다음 곳을 보려면 「내 주변」을 다시
+  // 눌러 위치를 처음부터 잡아야 했다. 이제는 목록만 접고 나머지는 그대로 둔다.
+  hmNearMinimize(true);
   hmNearClearLine();
   // 좁은 화면에서는 왼쪽 검색 패널이 지도를 거의 다 가린다. 먼저 접는다.
   const wait = 160 + hmCollapseAside();
@@ -2627,7 +2639,10 @@ window.hmNearPick = function(idx){
       if(opened) return; opened = true;
       window.__hmActivePopup = L.popup({maxWidth:300}).setLatLng(dest).setContent(renderDetail()).openOn(map);
       window.__hmActivePopupRender = renderDetail;
-      map.once('popupclose', hmNearClearLine);   // 팝업을 닫으면 점선도 지운다
+      map.once('popupclose', function(){
+        hmNearClearLine();      // 내 위치와 이 곳을 잇던 점선만 지운다
+        hmNearMinimize(false);  // 접어뒀던 목록을 다시 펼친다 — 바로 다음 곳을 고를 수 있게
+      });
     };
     map.once('moveend', openIt);
     setTimeout(openIt, FLY_SEC * 1000 + 350);
