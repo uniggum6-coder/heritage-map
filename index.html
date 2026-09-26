@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v31 (2026-09-23)">
+  <meta name="hm-build" content="v32 (2026-09-26)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -453,7 +453,13 @@
     .hb-break{display:block;flex:1 1 100%;height:0;}
     .brand .brand-title{font-size:16px;white-space:nowrap;}
     .brand .src-note{display:none;}
-    .headerbar .hb-actions{flex:1 1 auto;gap:6px;justify-content:flex-end;}
+    /* 버튼 묶음의 껍데기만 없앤다(display:contents). 버튼들이 머리띠의 직접 자식이 되어
+       줄바꿈이 '버튼 묶음 폭(228px)'이 아니라 '머리띠 전체 폭'을 기준으로 일어난다.
+       덕분에 둘째 줄이 제목 아래 빈자리까지 내려와 쓸 수 있고, 머리띠 높이는 그대로다. */
+    .headerbar{gap:6px;}
+    .headerbar .hb-actions{display:contents;}
+    .brand{margin-right:auto;}      /* 첫 줄: 제목은 왼쪽, 버튼들은 오른쪽으로 밀린다 */
+    .auth-area{margin-left:auto;}   /* 둘째 줄: 일괄인증은 왼쪽, 사용자칩·메뉴는 오른쪽 */
     /* 사용자 칩은 늘 제 줄을 쓰고 오른쪽에 붙는다 */
     .auth-area{flex:0 1 auto;min-width:0;}
     #nearBtn, #rankBtn, #boardBtn, #charPickerBtn{padding:6px 10px;font-size:11.5px;}
@@ -470,12 +476,18 @@
     .leaflet-popup-content-wrapper{max-width:calc(100vw - 50px);}
   }
 
+  /* 320px 처럼 아주 좁은 화면에서는 메뉴 버튼이 한 줄 더 밀린다.
+     그때 왼쪽에 덩그러니 남지 않도록 메뉴에도 오른쪽 정렬을 준다.
+     (넓은 화면에서 같이 주면 사용자칩과 메뉴 사이가 벌어지므로 여기서만) */
+  @media (max-width:340px){
+    .hb-menu-wrap{margin-left:auto;}
+  }
+
   /* 제목 옆에 버튼 묶음을 올려 헤더 한 줄을 줄인다.
      flex-basis 를 0으로 둬야 묶음이 통째로 다음 줄로 밀리지 않는다.
      320px 같은 아주 좁은 화면에서는 오히려 줄이 늘어나므로 341px 부터만 적용한다. */
   @media (min-width:341px) and (max-width:640px){
     .headerbar{align-items:flex-start;}
-    .headerbar .hb-actions{flex:1 1 0;}
     .brand{padding-top:3px;}
   }
   @keyframes hm-pulse-ring{
@@ -543,6 +555,7 @@
       </div>
       <!-- 폰에서만 여기서 줄을 바꿔 [사용자][메뉴] 를 아래 줄로 내린다 -->
       <div class="hb-break"></div>
+      <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmBulkVerify && window.hmBulkVerify()">주변 일괄인증</button>
       <div class="auth-area" id="authArea">
         <button id="loginBtn" data-i18n="loginBtnLabel" onclick="window.hmLogin && window.hmLogin()">🔑 구글로 로그인</button>
       </div>
@@ -550,8 +563,6 @@
         <button id="hmMenuBtn" aria-label="메뉴" onclick="window.hmToggleMenu && window.hmToggleMenu()">☰</button>
         <div id="hmMenu" class="hb-menu-panel">
           <!-- 위에서 아래로: 지도 → 내 것 → 함께 → 놀이 → 설정·나가기 -->
-          <button id="bulkVerifyBtn" data-i18n="bulkVerifyBtn" onclick="window.hmMenuPick(function(){ window.hmBulkVerify && window.hmBulkVerify(); })">📍 주변 일괄인증</button>
-          <div class="hb-menu-sep"></div>
           <button id="charPickerBtn" data-i18n="charPickerBtn" onclick="window.hmMenuPick(function(){ window.showCharPicker && window.showCharPicker(); })">🎎 내 캐릭터</button>
           <button id="hmMenuNick" data-i18n="nickBtnLabel" onclick="window.hmMenuPick(function(){ var b=document.getElementById('nickBtn'); b && b.click(); })">✏️ 닉네임 변경</button>
           <div class="hb-menu-sep" id="hmMenuAuthSep"></div>
@@ -863,7 +874,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v31 (2026-09-23)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v32 (2026-09-26)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -903,7 +914,7 @@ const I18N = {
   ko: {
     brandTitle: '국가유산지도',
     dataSource: '데이터 출처: 국가유산청',
-    bulkVerifyBtn: '📍 주변 일괄인증',
+    bulkVerifyBtn: '주변 일괄인증',
     helpBtn: '❓ 방문 인증 안내',
     rankBtn: '명예의 전당',
     charPickerBtn: '🎎 내 캐릭터',
@@ -979,7 +990,7 @@ const I18N = {
   en: {
     brandTitle: 'Korea Heritage Map',
     dataSource: 'Data source: Korea Heritage Service',
-    bulkVerifyBtn: '📍 Verify Nearby',
+    bulkVerifyBtn: 'Verify Nearby',
     helpBtn: '❓ Visit Verification Guide',
     rankBtn: 'Hall of Fame',
     charPickerBtn: '🎎 My Character',
@@ -1055,7 +1066,7 @@ const I18N = {
   cn: {
     brandTitle: '国家遗产地图',
     dataSource: '数据来源：韩国国家遗产厅',
-    bulkVerifyBtn: '📍 周边一键认证',
+    bulkVerifyBtn: '周边一键认证',
     helpBtn: '❓ 访问认证指南',
     rankBtn: '名人堂',
     charPickerBtn: '🎎 我的角色',
@@ -1131,7 +1142,7 @@ const I18N = {
   jp: {
     brandTitle: '国家遺産地図',
     dataSource: 'データ出典：国家遺産庁',
-    bulkVerifyBtn: '📍 周辺一括認証',
+    bulkVerifyBtn: '周辺一括認証',
     helpBtn: '❓ 訪問認証案内',
     rankBtn: '名誉の殿堂',
     charPickerBtn: '🎎 マイキャラクター',
