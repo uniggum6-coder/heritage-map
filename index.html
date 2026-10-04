@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v34 (2026-09-26)">
+  <meta name="hm-build" content="v35 (2026-10-04)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -497,22 +497,24 @@
     0%, 100%{ transform:scale(1); }
     50%{ transform:scale(1.12); }
   }
-  .hm-my-location{ position:relative; width:56px; height:98px; transform-origin:50% 100%; transition:transform .2s ease-out; }
+  /* 캐릭터 크기 — 아래 값들은 서로 맞물려 있다. 하나만 바꾸면 발밑 기준점이 어긋난다.
+     (전체 칸 / 주황 동그라미 / 그림 / 글씨 / 아래쪽 L.divIcon 의 iconSize·iconAnchor) */
+  .hm-my-location{ position:relative; width:45px; height:78px; transform-origin:50% 100%; transition:transform .2s ease-out; }
   .hm-my-location .hm-ring{
-    position:absolute; top:52px; left:10px; width:36px; height:36px; border-radius:50%;
+    position:absolute; top:42px; left:8px; width:29px; height:29px; border-radius:50%;
     background:rgba(255,90,31,.45); animation:hm-pulse-ring 1.6s ease-out infinite; z-index:1;
     display:flex; align-items:center; justify-content:center;
   }
-  .hm-ring-pin{ font-size:18px; line-height:1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); pointer-events:none; }
+  .hm-ring-pin{ font-size:14px; line-height:1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); pointer-events:none; }
   .hm-my-location .hm-figure{
-    position:absolute; top:0; left:6px; width:44px; height:78px;
+    position:absolute; top:0; left:5px; width:35px; height:62px;
     display:flex; align-items:flex-end; justify-content:center; z-index:2;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.6));
   }
-  .hm-my-location .hm-figure img{ width:44px; height:78px; display:block; }
+  .hm-my-location .hm-figure img{ width:35px; height:62px; display:block; }
   .hm-my-location .hm-label{
-    position:absolute; top:72px; left:0; width:56px; text-align:center; z-index:3;
-    font-size:11px; font-weight:800; color:#fff;
+    position:absolute; top:58px; left:0; width:45px; text-align:center; z-index:3;
+    font-size:10px; font-weight:800; color:#fff;
     text-shadow: -1px -1px 0 #ff5a1f, 1px -1px 0 #ff5a1f, -1px 1px 0 #ff5a1f, 1px 1px 0 #ff5a1f, 0 0 4px rgba(0,0,0,.5);
     white-space:nowrap;
   }
@@ -873,7 +875,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v34 (2026-09-26)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v35 (2026-10-04)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1762,7 +1764,7 @@ function initMap(){
       const html = '<div class="hm-my-location">' + myLocationRingHtml() +
         myLocationFigureHtml() +
         '<div class="hm-label">내 위치</div></div>';
-      const myLocIcon = L.divIcon({ html, className:'', iconSize:[56,98], iconAnchor:[28,72] });
+      const myLocIcon = L.divIcon({ html, className:'', iconSize:[45,78], iconAnchor:[22,58] });
       // 지도 위 마커를 눌러서 캐릭터를 고르는 동작은 없앰(터치할 때마다 창이 떠서 불편하다는
       // 피드백) — 캐릭터는 이제 상단 바의 "🎎 내 캐릭터" 버튼으로만 바꿀 수 있음.
       // interactive:false로 둬서 이 마커는 클릭에 반응하지 않고, 클릭은 그대로 지도(또는
