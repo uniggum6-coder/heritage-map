@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v35 (2026-10-04)">
+  <meta name="hm-build" content="v36 (2026-10-04)">
   <link rel="canonical" href="https://uniggum6-coder.github.io/heritage-map/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -875,7 +875,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v35 (2026-10-04)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v36 (2026-10-04)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1461,12 +1461,30 @@ window.dismissFeatBanner = function(){
     if(el) el.style.display = 'flex';
   }
 })();
+/* 외국에서 접속했는지 — 바깥 서비스를 부르지 않고 기기 설정만으로 판단한다.
+   언어도 한국어가 아니고 '동시에' 시간대도 한국이 아닐 때만 '외국'으로 본다.
+   둘 중 하나만 보면 폰을 영어로 쓰는 한국 거주자나, 한국에 온 외국인 관광객까지
+   걸러져 버린다. 관광객은 실제로 현장에 가서 인증할 수 있으므로 걸러지면 안 된다.
+   판단이 안 되는 경우에는 '한국'으로 보고 지금까지와 똑같이 띄운다. */
+function hmIsAbroad(){
+  try{
+    if(hmLang === 'ko') return false;
+    const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '');
+    if(!tz || tz === 'Asia/Seoul' || tz === 'Asia/Pyongyang') return false;
+    return true;
+  }catch(e){ return false; }
+}
+window.hmIsAbroad = hmIsAbroad;
+
 (function(){
   let seen = false;
   try{ seen = localStorage.getItem('hm_intro_seen') === '1'; }catch(e){}
   if(!seen){
     document.getElementById('introBanner').style.display = 'flex';
-    document.getElementById('helpOverlay').style.display = 'flex';
+    // 방문 인증은 현장에 직접 가야 쓸 수 있는 기능이다. 외국에 계신 분께는
+    // 「방문 인증이 뭔가요?」 창이 가로막기만 하므로 띄우지 않는다.
+    // (가는 띠와 ☰ 메뉴의 안내는 그대로라, 보고 싶으면 언제든 열 수 있다)
+    if(!hmIsAbroad()) document.getElementById('helpOverlay').style.display = 'flex';
     try{ localStorage.setItem('hm_intro_seen', '1'); }catch(e){}
   }
 })();
