@@ -1,8 +1,1 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "io.github.uniggum6_coder.twa",
-        "sha256_cert_fingerprints": ["D3:E5:AE:81:66:F4:BB:1F:9A:9E:F6:76:F2:16:50:D3:E2:D5:72:60:F8:7A:CF:86:B8:E2:6D:D5:7E:9F:A1:10"]
-      }
-    }]
+[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "io.github.uniggum6_coder.twa", "sha256_cert_fingerprints": ["4F:70:D8:12:EC:68:3E:ED:17:83:AF:72:4B:6E:7F:90:E9:22:95:56:CA:68:BD:C1:C9:B0:B2:8A:02:83:CC:A6", "D3:E5:AE:81:66:F4:BB:1F:9A:9E:F6:76:F2:16:50:D3:E2:D5:72:60:F8:7A:CF:86:B8:E2:6D:D5:7E:9F:A1:10"]}}]
