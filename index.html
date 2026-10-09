@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v36 (2026-10-04)">
+  <meta name="hm-build" content="v37 (2026-10-09)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -875,7 +875,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v36 (2026-10-04)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v37 (2026-10-09)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -905,6 +905,21 @@
 <script src="data_map_additions.js"></script>
 <script>MAP_DATA.push(...MAP_DATA_ADDITIONS);</script>
 <script src="data_species.js"></script>
+<script src="data_plant_sub.js"></script>
+<script>
+// 천연기념물 식물에 공식 세부분야(nc2)를 붙인다.
+// 자생지와 분포한계지는 국가유산청 분류표와 같이 한 칸으로 합쳐 보여준다.
+(function(){
+  if(typeof PLANT_SUB === "undefined") return;
+  for(let i = 0; i < MAP_DATA.length; i++){
+    const d = MAP_DATA[i];
+    if(d.c !== "천연기념물" || d.nc !== "식물") continue;
+    const raw = PLANT_SUB[d.n];
+    if(!raw) continue;
+    d.nc2 = (raw === "자생지" || raw === "분포한계지") ? "자생지·분포한계지" : raw;
+  }
+})();
+</script>
 <script src="quiz_manifest.js"></script>
 <script>
 // ---- 영문판(언어 전환) ----
@@ -1371,6 +1386,10 @@ const TN_SUB_COLORS = {
   "동물":"#1b4332", "식물":"#52b788", "지질·지형":"#b08968", "천연보호구역":"#264653", "미분류":"#8d99ae"
 };
 const TN_SUBCATS = ["동물","식물","지질·지형","천연보호구역"];
+// 식물은 체크박스가 세부분야(노거수·수림지…)로 나뉘어 있으므로
+// 거르기를 할 때는 nc 대신 nc2 를 본다. nc2 가 없으면 예전처럼 nc 를 쓴다.
+const PLANT_SUBCATS = ["노거수","수림지","마을숲","희귀식물","자생지·분포한계지"];
+function hmNatKey(d){ return (d.nc === "식물" && d.nc2) ? d.nc2 : d.nc; }
 function markerColorFor(d){
   if(d.c === '천연기념물') return TN_SUB_COLORS[d.nc] || TN_SUB_COLORS['미분류'];
   return colorFor(d.c);
@@ -1418,7 +1437,11 @@ const CAT_I18N = {
   // 아래 둘은 국가유산청 공식 지정종목명이 아니라 이 지도가 붙인 설명 문구라, 다른 화면 UI 글자와
   // 같은 방식으로 자연스럽게 번역함(공식 용어 검증 대상 아님)
   "서식지·번식지·도래지·사육지": { en: "Habitat / Breeding Ground / Wintering Site / Farm", cn: "栖息地·繁殖地·越冬地·饲养地", jp: "生息地・繁殖地・飛来地・飼育地" },
-  "자생지·군락지": { en: "Native Habitat / Colony", cn: "自生地·群落地", jp: "自生地・群落地" },
+  "노거수": { en: "Old Great Tree", cn: "古树名木", jp: "老巨樹" },
+  "수림지": { en: "Woodland", cn: "树林地", jp: "樹林地" },
+  "마을숲": { en: "Village Grove", cn: "村落林", jp: "村の森" },
+  "희귀식물": { en: "Rare Plant", cn: "稀有植物", jp: "希少植物" },
+  "자생지·분포한계지": { en: "Native Habitat / Distribution Limit", cn: "自生地·分布界限地", jp: "自生地・分布限界地" },
   "종 지정": { en: "Species-level Designation", cn: "物种指定", jp: "種指定" }
 };
 function catLabel(name){
@@ -2091,7 +2114,7 @@ function populateFilters(){
         const natWrap = document.createElement('div');
         natWrap.style.cssText = 'display:none;padding:2px 0 4px 26px;';
 
-        const SUB_LABELS = { '동물':'서식지·번식지·도래지·사육지', '식물':'자생지·군락지' };
+        const SUB_LABELS = { '동물':'서식지·번식지·도래지·사육지' };
         ['동물','식물'].forEach(nc => {
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           const spCount = (typeof SPECIES_DATA !== 'undefined') ? SPECIES_DATA.filter(s => s.g === nc).length : 0;
@@ -2112,9 +2135,20 @@ function populateFilters(){
           const kidWrap = document.createElement('div');
           kidWrap.style.cssText = 'display:none;padding-left:16px;';
           if(ncCount > 0){
-            const ncLabel = document.createElement('label');
-            ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
-            kidWrap.appendChild(ncLabel);
+            // 식물은 국가유산청 분류표대로 5개로 나눈다.
+            // (노거수 / 수림지 / 마을숲 / 희귀식물 / 자생지·분포한계지)
+            // 동물은 예전처럼 한 줄이다.
+            const kids = (nc === '식물') ? PLANT_SUBCATS : [nc];
+            kids.forEach(sub => {
+              const subCount = (nc === '식물')
+                ? uniqCount(d => d.c === '천연기념물' && d.nc === '식물' && d.nc2 === sub)
+                : ncCount;
+              if(subCount === 0) return;
+              const txt = (nc === '식물') ? sub : SUB_LABELS[nc];
+              const ncLabel = document.createElement('label');
+              ncLabel.innerHTML = `<input type="checkbox" class="natChk" data-parent="${nc}" value="${sub}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${txt}">${catLabel(txt)}</span> <span style="color:#999">(${subCount})</span>`;
+              kidWrap.appendChild(ncLabel);
+            });
           }
           if(spCount > 0){
             const spLabel = document.createElement('label');
@@ -2139,7 +2173,7 @@ function populateFilters(){
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           if(ncCount === 0) return;
           const ncLabel = document.createElement('label');
-          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
+          ncLabel.innerHTML = `<input type="checkbox" class="natChk" data-parent="${nc}" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
           natWrap.appendChild(ncLabel);
         });
 
@@ -2180,7 +2214,7 @@ function populateFilters(){
   // 동물/식물 상위 체크박스: 자기 하위 항목(서식지·자생지)을 함께 켜고 끈다.
   document.querySelectorAll('.natParentChk').forEach(pchk => pchk.addEventListener('change', () => {
     const nc = pchk.dataset.nc;
-    document.querySelectorAll(`.natChk[value="${nc}"]`).forEach(n => { n.checked = pchk.checked; });
+    document.querySelectorAll(`.natChk[data-parent="${nc}"]`).forEach(n => { n.checked = pchk.checked; });
     const natChk = document.querySelector('.catChk[value="천연기념물"]');
     if(natChk){
       const anyChecked = [...document.querySelectorAll('.natChk')].some(n => n.checked);
@@ -2192,7 +2226,7 @@ function populateFilters(){
   // 하위 항목이 바뀌면 상위(동물/식물) 체크박스 상태도 맞춰준다.
   function syncNatParents(){
     document.querySelectorAll('.natParentChk').forEach(pchk => {
-      const kids = [...document.querySelectorAll(`.natChk[value="${pchk.dataset.nc}"]`)];
+      const kids = [...document.querySelectorAll(`.natChk[data-parent="${pchk.dataset.nc}"]`)];
       if(kids.length) pchk.checked = kids.some(k => k.checked);
     });
   }
@@ -2290,7 +2324,7 @@ function applyFilters(){
       // (체크를 먼저 해야만 검색이 되면 "검색이 안 된다"고 느끼게 됨)
       if(!searchAll && !isVisited){
         if(!checkedSet.has(d.c)) continue;
-        if(d.c === '천연기념물' && !checkedNat.has(d.nc)) continue;
+        if(d.c === '천연기념물' && !checkedNat.has(hmNatKey(d))) continue;
       }
       if(region && d.r !== region) continue;
       if(subRegion && d.s !== subRegion) continue;
@@ -2337,7 +2371,7 @@ function hmNearPasses(m, ctx){
   const isVisited = !!(m._hid && ctx.visitedSet.has(m._hid));
   if(!ctx.searchAll && !isVisited){
     if(!ctx.checkedSet.has(d.c)) return false;
-    if(d.c === '천연기념물' && !ctx.checkedNat.has(d.nc)) return false;
+    if(d.c === '천연기념물' && !ctx.checkedNat.has(hmNatKey(d))) return false;
   }
   if(ctx.q && !hmHit(ctx.qTok, d.n, d.a)) return false;
   return true;
