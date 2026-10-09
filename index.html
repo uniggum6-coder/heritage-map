@@ -919,6 +919,15 @@
     if(!raw) continue;
     d.nc2 = (raw === "자생지" || raw === "분포한계지") ? "자생지·분포한계지" : raw;
   }
+  // 종 지정(제주의 한란)도 같은 표를 쓴다. 이쪽은 data_species.js 에 있다.
+  if(typeof SPECIES_DATA !== "undefined"){
+    for(let i = 0; i < SPECIES_DATA.length; i++){
+      const sp = SPECIES_DATA[i];
+      const raw = PLANT_SUB[sp.n];
+      if(!raw) continue;
+      sp.nc2 = (raw === "자생지" || raw === "분포한계지") ? "자생지·분포한계지" : raw;
+    }
+  }
 })();
 </script>
 <script src="quiz_manifest.js"></script>
@@ -1433,9 +1442,9 @@ const CAT_I18N = {
   "천연보호구역": { en: "Nature Reserve", cn: "天然保护区", jp: "天然保護区域" },
   // 아래 둘은 국가유산청 공식 지정종목명이 아니라 이 지도가 붙인 설명 문구라, 다른 화면 UI 글자와
   // 같은 방식으로 자연스럽게 번역함(공식 용어 검증 대상 아님)
-  "서식지·번식지·도래지·사육지": { en: "Habitat / Breeding Ground / Wintering Site / Farm", cn: "栖息地·繁殖地·越冬地·饲养地", jp: "生息地・繁殖地・飛来地・飼育地" },
-  "노거수·수림지·마을숲·희귀식물·자생지·분포한계지": { en: "Old Trees / Woodlands / Village Groves / Rare Plants / Native Habitats", cn: "古树·树林地·村落林·稀有植物·自生地·分布界限地", jp: "老巨樹・樹林地・村の森・希少植物・自生地・分布限界地" },
-  "화석·암석·광물·지형지질일반·천연동굴": { en: "Fossils / Rocks & Minerals / Landforms / Natural Caves", cn: "化石·岩石矿物·地形地质·天然洞穴", jp: "化石・岩石鉱物・地形地質・天然洞窟" },
+  "서식지, 번식지, 도래지, 사육지": { en: "Habitats, Breeding Grounds, Wintering Sites, Farms", cn: "栖息地, 繁殖地, 越冬地, 饲养地", jp: "生息地, 繁殖地, 飛来地, 飼育地" },
+  "노거수, 수림지, 마을숲, 희귀식물, 자생지·분포한계지": { en: "Old Trees, Woodlands, Village Groves, Rare Plants, Native Habitats", cn: "古树名木, 树林地, 村落林, 稀有植物, 自生地·分布界限地", jp: "老巨樹, 樹林地, 村の森, 希少植物, 自生地・分布限界地" },
+  "화석, 암석·광물, 지형·지질 일반, 천연동굴": { en: "Fossils, Rocks & Minerals, Landforms, Natural Caves", cn: "化石, 岩石·矿物, 地形地质一般, 天然洞穴", jp: "化石, 岩石・鉱物, 地形地質一般, 天然洞窟" },
   // 아래는 점을 눌렀을 때 뜨는 리본에 쓰는 국가유산청 공식 세부분야 이름이다.
   "노거수": { en: "Old Great Tree", cn: "古树名木", jp: "老巨樹" },
   "수림지": { en: "Woodland", cn: "树林地", jp: "樹林地" },
@@ -2120,9 +2129,9 @@ function populateFilters(){
         // 창에는 한 줄씩만 둔다. 무엇이 들어있는지는 줄 이름으로 알려준다.
         // 어느 것이 노거수인지 화석인지는 지도에서 점을 눌러야 보인다.
         const SUB_LABELS = {
-          '동물':'서식지·번식지·도래지·사육지',
-          '식물':'노거수·수림지·마을숲·희귀식물·자생지·분포한계지',
-          '지질·지형':'화석·암석·광물·지형지질일반·천연동굴'
+          '동물':'서식지, 번식지, 도래지, 사육지',
+          '식물':'노거수, 수림지, 마을숲, 희귀식물, 자생지·분포한계지',
+          '지질·지형':'화석, 암석·광물, 지형·지질 일반, 천연동굴'
         };
         ['동물','식물','지질·지형'].forEach(nc => {
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
@@ -2804,7 +2813,7 @@ function renderSpecies(){
     const simg = d.i ? `<img class="hm-zoomable" loading="lazy" src="${escapeHtml(d.i)}" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">` : '';
     div.innerHTML = `
       ${simg}
-      <span class="tag" style="background:${TN_SUB_COLORS[d.g]||'#8d99ae'}">${escapeHtml(d.c)} · ${escapeHtml(d.g)}</span>
+      <span class="tag" style="background:${TN_SUB_COLORS[d.g]||'#8d99ae'}">${escapeHtml(d.c)} · ${escapeHtml(catLabel(d.nc2 || d.g))}</span>
       <h4>${escapeHtml(d.n)}</h4>
       <div class="meta">${escapeHtml(hmPlace(d))}</div>
       <div class="desc">${escapeHtml(d.e||'')}</div>
