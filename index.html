@@ -906,6 +906,7 @@
 <script>MAP_DATA.push(...MAP_DATA_ADDITIONS);</script>
 <script src="data_species.js"></script>
 <script src="data_plant_sub.js"></script>
+<script src="data_geo_sub.js"></script>
 <script>
 // 천연기념물 식물에 국가유산청 공식 세부분야(nc2)를 붙인다.
 // 분류 창에는 쓰지 않는다. 지도에서 점을 눌렀을 때 초록 리본에만 보인다.
@@ -918,6 +919,15 @@
     const raw = PLANT_SUB[d.n];
     if(!raw) continue;
     d.nc2 = (raw === "자생지" || raw === "분포한계지") ? "자생지·분포한계지" : raw;
+  }
+  // 지질도 같은 방식으로 붙인다. 이쪽은 검토 전 초안이다.
+  if(typeof GEO_SUB !== "undefined"){
+    for(let i = 0; i < MAP_DATA.length; i++){
+      const d = MAP_DATA[i];
+      if(d.c !== "천연기념물" || d.nc !== "지질·지형") continue;
+      const sub = GEO_SUB[d.n];
+      if(sub) d.nc2 = sub;
+    }
   }
   // 종 지정(제주의 한란)도 같은 표를 쓴다. 이쪽은 data_species.js 에 있다.
   if(typeof SPECIES_DATA !== "undefined"){
@@ -1444,13 +1454,17 @@ const CAT_I18N = {
   // 같은 방식으로 자연스럽게 번역함(공식 용어 검증 대상 아님)
   "서식지, 번식지, 도래지, 사육지": { en: "Habitats, Breeding Grounds, Wintering Sites, Farms", cn: "栖息地, 繁殖地, 越冬地, 饲养地", jp: "生息地, 繁殖地, 飛来地, 飼育地" },
   "노거수, 수림지, 마을숲, 희귀식물, 자생지·분포한계지": { en: "Old Trees, Woodlands, Village Groves, Rare Plants, Native Habitats", cn: "古树名木, 树林地, 村落林, 稀有植物, 自生地·分布界限地", jp: "老巨樹, 樹林地, 村の森, 希少植物, 自生地・分布限界地" },
-  "화석, 암석·광물, 지형·지질 일반, 천연동굴": { en: "Fossils, Rocks & Minerals, Landforms, Natural Caves", cn: "化石, 岩石·矿物, 地形地质一般, 天然洞穴", jp: "化石, 岩石・鉱物, 地形地質一般, 天然洞窟" },
+  "화석, 암석·광물, 지형지질일반, 천연동굴": { en: "Fossils, Rocks & Minerals, Landforms, Natural Caves", cn: "化石, 岩石·矿物, 地形地质一般, 天然洞穴", jp: "化石, 岩石・鉱物, 地形地質一般, 天然洞窟" },
   // 아래는 점을 눌렀을 때 뜨는 리본에 쓰는 국가유산청 공식 세부분야 이름이다.
   "노거수": { en: "Old Great Tree", cn: "古树名木", jp: "老巨樹" },
   "수림지": { en: "Woodland", cn: "树林地", jp: "樹林地" },
   "마을숲": { en: "Village Grove", cn: "村落林", jp: "村の森" },
   "희귀식물": { en: "Rare Plant", cn: "稀有植物", jp: "希少植物" },
   "자생지·분포한계지": { en: "Native Habitat / Distribution Limit", cn: "自生地·分布界限地", jp: "自生地・分布限界地" },
+  "화석": { en: "Fossil", cn: "化石", jp: "化石" },
+  "암석·광물": { en: "Rock / Mineral", cn: "岩石·矿物", jp: "岩石・鉱物" },
+  "지형지질일반": { en: "Landform / Geology", cn: "地形地质一般", jp: "地形地質一般" },
+  "천연동굴": { en: "Natural Cave", cn: "天然洞穴", jp: "天然洞窟" },
   "종 지정": { en: "Species-level Designation", cn: "物种指定", jp: "種指定" }
 };
 function catLabel(name){
@@ -2131,7 +2145,7 @@ function populateFilters(){
         const SUB_LABELS = {
           '동물':'서식지, 번식지, 도래지, 사육지',
           '식물':'노거수, 수림지, 마을숲, 희귀식물, 자생지·분포한계지',
-          '지질·지형':'화석, 암석·광물, 지형·지질 일반, 천연동굴'
+          '지질·지형':'화석, 암석·광물, 지형지질일반, 천연동굴'
         };
         ['동물','식물','지질·지형'].forEach(nc => {
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
