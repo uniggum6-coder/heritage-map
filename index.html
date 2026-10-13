@@ -907,6 +907,7 @@
 <script src="data_species.js"></script>
 <script src="data_plant_sub.js"></script>
 <script src="data_geo_sub.js"></script>
+<script src="data_fix_coords.js"></script>
 <script>
 // 천연기념물 식물에 국가유산청 공식 세부분야(nc2)를 붙인다.
 // 분류 창에는 쓰지 않는다. 지도에서 점을 눌렀을 때 초록 리본에만 보인다.
@@ -919,6 +920,17 @@
     const raw = PLANT_SUB[d.n];
     if(!raw) continue;
     d.nc2 = (raw === "자생지" || raw === "분포한계지") ? "자생지·분포한계지" : raw;
+  }
+  // 좌표가 엉뚱하게 찍힌 건을 바로잡는다. 다른 칸은 건드리지 않는다.
+  if(typeof FIX_COORDS !== "undefined"){
+    for(let i = 0; i < MAP_DATA.length; i++){
+      const d = MAP_DATA[i];
+      const fx = FIX_COORDS[d.n];
+      if(!fx) continue;
+      d.la = fx[0];
+      d.lo = fx[1];
+      d.fixedLoc = 1;
+    }
   }
   // 지질도 같은 방식으로 붙인다. 이쪽은 검토 전 초안이다.
   if(typeof GEO_SUB !== "undefined"){
