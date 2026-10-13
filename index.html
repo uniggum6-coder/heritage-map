@@ -932,6 +932,18 @@
       d.fixedLoc = 1;
     }
   }
+  // 지역(시도·시군구)이 잘못 적힌 것을 바로잡는다.
+  // 지역 고르기 목록을 만들기 전에 해야 하므로 여기서 한다.
+  if(typeof FIX_REGION !== "undefined"){
+    for(let i = 0; i < MAP_DATA.length; i++){
+      const d = MAP_DATA[i];
+      const fr = FIX_REGION[d.n];
+      if(!fr) continue;
+      d.r = fr[0];
+      d.s = fr[1];
+      d.fixedRegion = 1;
+    }
+  }
   // 지질도 같은 방식으로 붙인다. 이쪽은 검토 전 초안이다.
   if(typeof GEO_SUB !== "undefined"){
     for(let i = 0; i < MAP_DATA.length; i++){
