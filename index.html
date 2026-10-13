@@ -2090,8 +2090,13 @@ function updateCount(n){
   // 처음에는 아무 분류도 체크돼 있지 않다. 그때 "0건"만 뜨면 고장난 것처럼 보이므로
   // 무엇을 해야 하는지 안내 문구를 대신 보여준다.
   const sb = document.getElementById('searchBox');
+  const rg = document.getElementById('regionSelect');
+  const sg = document.getElementById('subRegionSelect');
+  // 지역을 골랐을 때도 '종류를 선택하세요' 가 뜨면 고장처럼 보인다.
   const anyChecked = document.querySelector('.catChk:checked') !== null
-                     || (sb && sb.value.trim() !== '');
+                     || (sb && sb.value.trim() !== '')
+                     || (rg && rg.value !== '')
+                     || (sg && sg.value !== '');
   const el = document.getElementById('count');
   if(!anyChecked){ el.textContent = hmT('pickHint'); window.hmNothingPicked = true; return; }
   window.hmNothingPicked = false;
@@ -2328,7 +2333,9 @@ function applyFilters(){
     const checked = [...document.querySelectorAll('.catChk:checked')].map(c=>c.value);
     const checkedSet = new Set(checked);
     const checkedNat = new Set([...document.querySelectorAll('.natChk:checked')].map(c=>c.value));
-    const searchAll = !!q && checkedSet.size === 0;
+    // 분류를 하나도 안 골랐더라도, 지역이나 검색어를 골랐으면 전체에서 찾아준다.
+    // (예전에는 분류 체크가 비어 있으면 지역을 골라도 한 건도 안 나왔다)
+    const searchAll = checkedSet.size === 0 && (!!q || !!region || !!subRegion);
 
     // 내가 방문한 곳은 분류 체크와 상관없이 항상 지도에 표시한다.
     // (체크를 하나도 안 한 상태로 지도를 열어도 내 발자취는 보이도록)
