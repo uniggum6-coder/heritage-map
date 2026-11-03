@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v38 (2026-10-13)">
+  <meta name="hm-build" content="v39 (2026-11-03)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -288,6 +288,11 @@
   .msg-box{background:#fff;padding:24px;border-radius:12px;max-width:360px;text-align:center;}
   .msg-box #msgText{white-space:pre-line;margin:0;line-height:1.75;word-break:keep-all;}
   .msg-box button{margin-top:14px;padding:8px 20px;border:none;background:var(--navy);color:#fff;border-radius:8px;cursor:pointer;}
+  /* 지도 오른쪽 위의 [일반/위성] 전환 단추 */
+  .hm-basectl a{display:block;width:auto;min-width:46px;height:30px;line-height:30px;padding:0 10px;
+    font-size:12.5px;font-weight:700;color:#1d2b2b;background:#fff;text-align:center;
+    text-decoration:none;white-space:nowrap;}
+  .hm-basectl a:hover{background:#f2f6f6;}
   #nearBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #nearBtn:hover{background:rgba(255,255,255,.28);}
   #rankBtn{padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
@@ -875,7 +880,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v38 (2026-10-13)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v39 (2026-11-03)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1036,6 +1041,8 @@ const I18N = {
     kakaoBtn: '카카오맵',
     tmapBtn: '티맵',
     tmapMobileOnly: '티맵은 휴대폰에서만 열려요. 컴퓨터에서는 카카오맵을 눌러주세요.',
+    baseStd: '일반',
+    baseSat: '위성',
     nearBtn: '내 주변',
     nearTitle: '내 주변 {n}곳',
     nearStraight: '* 직선거리 기준 · 가까운 순',
@@ -1112,6 +1119,8 @@ const I18N = {
     kakaoBtn: 'KakaoMap',
     tmapBtn: 'TMAP',
     tmapMobileOnly: 'TMAP only opens on a phone. On a computer, please use KakaoMap.',
+    baseStd: 'Map',
+    baseSat: 'Satellite',
     nearBtn: 'Nearby',
     nearTitle: '{n} sites nearby',
     nearStraight: '* Straight-line distance, nearest first',
@@ -1188,6 +1197,8 @@ const I18N = {
     kakaoBtn: 'Kakao地图',
     tmapBtn: 'TMAP',
     tmapMobileOnly: 'TMAP 仅能在手机上打开。使用电脑时请点击 Kakao 地图。',
+    baseStd: '普通',
+    baseSat: '卫星',
     nearBtn: '附近',
     nearTitle: '附近 {n} 处',
     nearStraight: '* 直线距离 · 由近至远',
@@ -1264,6 +1275,8 @@ const I18N = {
     kakaoBtn: 'カカオマップ',
     tmapBtn: 'TMAP',
     tmapMobileOnly: 'TMAPはスマートフォンでのみ開きます。パソコンではカカオマップをご利用ください。',
+    baseStd: '標準',
+    baseSat: '衛星',
     nearBtn: '周辺',
     nearTitle: '周辺 {n} 件',
     nearStraight: '* 直線距離 · 近い順',
@@ -1342,6 +1355,9 @@ function applyLanguage(lang, autoGuess){
       if(o.value) o.textContent = hmDistrict(o.value);
     });
   }catch(e){}
+  // 지도 오른쪽 위의 [일반/위성] 단추는 지도를 만든 뒤에 생기므로 data-i18n 으로 못 잡는다.
+  // (페이지가 처음 열릴 때는 아직 없어서 조용히 지나간다)
+  try{ if(window.hmUpdateBaseBtn) window.hmUpdateBaseBtn(); }catch(e){}
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-lang') === hmLang);
   });
@@ -1639,26 +1655,120 @@ function initMap(){
   // 받도록(겹쳐 있어도 캐릭터 고르기가 확실히 열리도록) 별도 pane의 z-index를 markerPane(600)보다 높게 둠.
   map.createPane('myLocPane');
   map.getPane('myLocPane').style.zIndex = 650;
-  // OpenStreetMap 은 a./b./c. 서브도메인 방식을 더는 권장하지 않는다.
-  // 통신사 유해차단·광고차단 앱·개인 DNS 를 쓰는 폰에서 셋 중 일부가 막혀
-  // 지도 그림만 안 나오는 일이 있어, 서브도메인 없는 주소 하나로 바꿨다.
-  const hmTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18, minZoom:6, noWrap:true,
-    attribution: '&copy; OpenStreetMap contributors'
+  // ── 배경지도 ────────────────────────────────────────────
+  // 국토교통부 브이월드(WMTS)를 기본 배경지도로 쓴다.
+  //   · 국내 보안관리규정에 맞게 처리된 국가 공간정보다. 외국 지도와 달리
+  //     군사·보안시설이 규정대로 가려져 있다.
+  //   · 한글 지명 표기가 정확하고, 답사에 필요한 상세 수준을 갖추고 있다.
+  // 인증키는 지도 타일 주소에 들어가므로 어차피 브라우저에 그대로 보이는 값이다.
+  // heritagemap.co.kr 도메인에 묶여 있어 다른 사이트에서는 쓰지 못한다.
+  const VWORLD_KEY = '619093BB-C6F2-4A99-81E2-077A7E973171';
+  // WMTS 주소 형식: .../{key}/{layer}/{tileMatrix}/{tileRow}/{tileCol}.{tileType}
+  // tileRow 가 Y, tileCol 이 X 다. OpenStreetMap 과 같은 방식이라 그대로 끼운다.
+  function vwUrl(layer, ext){
+    return 'https://api.vworld.kr/req/wmts/1.0.0/' + VWORLD_KEY + '/' + layer + '/{z}/{y}/{x}.' + (ext || 'png');
+  }
+  const HM_ATTR_VW  = '&copy; <a href="https://www.vworld.kr" target="_blank" rel="noopener">국토교통부 브이월드</a>';
+  const HM_ATTR_OSM = '&copy; OpenStreetMap contributors';
+
+  // 일반 지도. 브이월드 Base 는 6~19단계를 지원한다(예전 OSM 설정은 18까지였다).
+  const vwBase = L.tileLayer(vwUrl('Base'), {
+    maxZoom: 19, minZoom: 6, noWrap: true, attribution: HM_ATTR_VW
   });
-  hmTiles.addTo(map);
+  // 위성 보기는 두 겹이다. Satellite(jpeg) 만 쓰면 지명이 하나도 안 나오므로
+  // 그 위에 Hybrid(지명·경계, png)를 덮는다.
+  const vwSat = L.tileLayer(vwUrl('Satellite', 'jpeg'), {
+    maxZoom: 19, minZoom: 6, noWrap: true, attribution: HM_ATTR_VW, zIndex: 1
+  });
+  const vwLabel = L.tileLayer(vwUrl('Hybrid'), {
+    maxZoom: 19, minZoom: 6, noWrap: true, zIndex: 2
+  });
+  const vwSatGroup = L.layerGroup([vwSat, vwLabel]);
+  // 브이월드가 안 될 때 돌아갈 자리. OSM 타일은 18단계까지만 있으므로
+  // maxNativeZoom 으로 막아두면 19단계에서도 빈 칸 대신 확대해 보여준다.
+  const osmTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, maxNativeZoom: 18, minZoom: 6, noWrap: true, attribution: HM_ATTR_OSM
+  });
+
+  let hmBaseMode = 'base';   // 'base'(일반) | 'sat'(위성)
+  let hmUsingOSM = false;    // 브이월드가 죽어 OSM 으로 되돌아갔는가
+  vwBase.addTo(map);
+
+  // 일반 / 위성 전환 단추. 지도 오른쪽 위에 둔다(확대 단추는 왼쪽 위라 겹치지 않는다).
+  const hmBaseCtl = L.control({ position: 'topright' });
+  hmBaseCtl.onAdd = function(){
+    const d = L.DomUtil.create('div', 'leaflet-bar hm-basectl');
+    d.innerHTML = '<a href="#" id="hmBaseToggle" role="button"></a>';
+    L.DomEvent.disableClickPropagation(d);
+    L.DomEvent.on(d, 'click', function(e){ L.DomEvent.preventDefault(e); hmSetBase(hmBaseMode === 'base' ? 'sat' : 'base'); });
+    return d;
+  };
+  hmBaseCtl.addTo(map);
+
+  // 단추에는 '지금 누르면 바뀔 모습'을 적는다. 일반을 보고 있으면 '위성'이라고 쓴다.
+  window.hmUpdateBaseBtn = function(){
+    const a = document.getElementById('hmBaseToggle');
+    if(!a) return;
+    const key = (hmBaseMode === 'base') ? 'baseSat' : 'baseStd';
+    a.textContent = hmT(key);
+    a.title = a.textContent;
+    a.style.display = hmUsingOSM ? 'none' : '';   // OSM 으로 되돌아갔으면 위성이 없으니 숨긴다
+  };
+
+  function hmSetBase(mode){
+    if(hmUsingOSM) return;
+    hmBaseMode = (mode === 'sat') ? 'sat' : 'base';
+    if(hmBaseMode === 'sat'){
+      if(map.hasLayer(vwBase)) map.removeLayer(vwBase);
+      vwSatGroup.addTo(map);
+    }else{
+      if(map.hasLayer(vwSatGroup)) map.removeLayer(vwSatGroup);
+      vwBase.addTo(map);
+    }
+    try{ localStorage.setItem('hmBaseMode', hmBaseMode); }catch(e){}
+    window.hmUpdateBaseBtn();
+  }
+  window.hmSetBase = hmSetBase;
+  try{ if(localStorage.getItem('hmBaseMode') === 'sat') hmSetBase('sat'); }catch(e){}
+  window.hmUpdateBaseBtn();
+
+  // 브이월드가 응답하지 않으면(점검·인증키 만료·망 차단 등) OpenStreetMap 으로 되돌린다.
+  // 이용자에게는 지도가 꺼지지 않는 것이 가장 중요하다. 최악이라도 예전과 같아질 뿐이다.
+  function hmFallbackToOSM(){
+    if(hmUsingOSM) return;
+    hmUsingOSM = true;
+    if(map.hasLayer(vwBase)) map.removeLayer(vwBase);
+    if(map.hasLayer(vwSatGroup)) map.removeLayer(vwSatGroup);
+    osmTiles.addTo(map);
+    window.hmUpdateBaseBtn();
+  }
+
   // 지도 그림이 아예 안 불러와지는 폰이 있다(망 차단, 저장공간 부족 등).
   // 전에는 아무 안내가 없어 이용자에게는 "지도가 고장났다"로만 보였다.
-  // 한두 장 실패는 흔하므로, 한 장도 못 받은 채 여러 장 연달아 실패할 때만 알린다.
+  // 한두 장 실패는 흔하므로, 한 장도 못 받은 채 여러 장 연달아 실패할 때만 움직인다.
   (function(){
+    // ① 브이월드 감시 → 실패하면 OSM 으로 갈아끼운다
+    let vwOk = 0, vwTimer = null;
+    function watchVW(layer){
+      layer.on('tileload', function(){ vwOk++; });
+      layer.on('tileerror', function(){
+        if(hmUsingOSM || vwTimer) return;
+        // 실패 장수로 세면 안 된다. 처음 열리는 전국 화면은 타일이 서너 장뿐이라
+        // '몇 장 이상 실패'라는 기준에 영영 도달하지 못한다.
+        // 대신 처음 실패한 뒤 6초를 기다렸다가, 그때까지 한 장도 못 받았으면 움직인다.
+        vwTimer = setTimeout(function(){
+          vwTimer = null;
+          if(vwOk === 0) hmFallbackToOSM();
+        }, 6000);
+      });
+    }
+    watchVW(vwBase); watchVW(vwSat);
+
+    // ② OSM 까지 안 되면 그때는 예전처럼 안내만 띄운다
     let ok = 0, warned = false, timer = null;
-    hmTiles.on('tileload', function(){ ok++; });
-    hmTiles.on('tileerror', function(){
+    osmTiles.on('tileload', function(){ ok++; });
+    osmTiles.on('tileerror', function(){
       if(warned || timer) return;
-      // 실패 장수로 세면 안 된다. 처음 열리는 전국 화면은 타일이 서너 장뿐이라
-      // '몇 장 이상 실패'라는 기준에 영영 도달하지 못한다.
-      // 대신 처음 실패한 뒤 6초를 기다렸다가, 그때까지 한 장도 못 받았으면 알린다.
-      // (느린 망에서 늦게 도착하는 경우를 잘못 경고하지 않기 위한 여유이기도 하다)
       timer = setTimeout(function(){
         timer = null;
         if(ok === 0 && !warned){
