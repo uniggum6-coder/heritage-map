@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v39 (2026-11-03)">
+  <meta name="hm-build" content="v40 (2026-11-03)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -880,7 +880,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v39 (2026-11-03)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v40 (2026-11-03)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1443,13 +1443,19 @@ const CAT_COLORS = {
 function colorFor(cat){ return CAT_COLORS[cat] || "#555"; }
 function uniqCount(filterFn){ return new Set(MAP_DATA.filter(filterFn).map(d=>d.n)).size; }
 
+// 아래 두 색표는 지도에서는 더 쓰지 않는다(v40부터 묶음 3색으로 통일).
+// 혹시 되돌릴 일이 있을까 싶어 값만 남겨 둔다.
 const TN_SUB_COLORS = {
   "동물":"#1b4332", "식물":"#52b788", "지질·지형":"#b08968", "천연보호구역":"#264653", "미분류":"#8d99ae"
 };
 const TN_SUBCATS = ["동물","식물","지질·지형","천연보호구역"];
+// 지도의 점·묶음 동그라미는 큰 묶음 세 가지 색만 쓴다.
+//   예전에는 종목마다 색이 달라 15가지였는데, 서로 너무 비슷한 짝이 많아
+//   (식물과 명승, 동물과 천연보호구역 등) 작은 점에서는 구분이 안 됐다.
+//   색으로 14가지를 가르는 것은 사람 눈의 한계를 넘는 일이라 그만두었다.
+//   세부 종목은 왼쪽 목록에서 켜고 끄고, 점을 누르면 팝업이 알려준다.
 function markerColorFor(d){
-  if(d.c === '천연기념물') return TN_SUB_COLORS[d.nc] || TN_SUB_COLORS['미분류'];
-  return colorFor(d.c);
+  return groupColorFor(d.c);
 }
 
 const CAT_GROUPS = {
@@ -2267,7 +2273,7 @@ function populateFilters(){
     present.forEach(c => {
       const label = document.createElement('label');
       label.style.paddingLeft = '10px';
-      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}"> <span class="cat-swatch" style="background:${colorFor(c)}"></span> <span class="i18n-cat" data-cat="${c}">${catLabel(c)}</span> <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
+      label.innerHTML = `<input type="checkbox" class="catChk" data-group="${groupName}" value="${c}"> <span class="i18n-cat" data-cat="${c}">${catLabel(c)}</span> <span style="color:#999">(${uniqCount(d=>d.c===c)})</span>`;
       subWrap.appendChild(label);
 
       if(c === '천연기념물'){
@@ -2297,7 +2303,7 @@ function populateFilters(){
           // 4가지(동물/식물/지질·지형/천연보호구역)가 같은 층으로 보이도록 굵기를 통일하고,
           // 동물·식물의 세부 항목은 평소엔 접어둔다(▶ 눌러 펼침).
           const header = document.createElement('label');
-          header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
+          header.innerHTML = `<input type="checkbox" class="natParentChk" data-nc="${nc}"> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount + spCount})</span>`;
           const subArrow = document.createElement('span');
           subArrow.textContent = '▶';
           subArrow.style.cssText = 'cursor:pointer;font-size:10px;color:#999;margin-left:4px;transition:transform .2s;';
@@ -2308,13 +2314,13 @@ function populateFilters(){
           kidWrap.style.cssText = 'display:none;padding-left:16px;';
           if(ncCount > 0){
             const ncLabel = document.createElement('label');
-            ncLabel.innerHTML = `<input type="checkbox" class="natChk" data-parent="${nc}" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
+            ncLabel.innerHTML = `<input type="checkbox" class="natChk" data-parent="${nc}" value="${nc}"> <span class="i18n-cat" data-cat="${SUB_LABELS[nc]}">${catLabel(SUB_LABELS[nc])}</span> <span style="color:#999">(${ncCount})</span>`;
             kidWrap.appendChild(ncLabel);
           }
           if(spCount > 0){
             const spLabel = document.createElement('label');
             spLabel.style.cssText = 'cursor:pointer;';
-            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="종 지정">${catLabel('종 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
+            spLabel.innerHTML = `<input type="checkbox" checked disabled> <span class="i18n-cat" data-cat="종 지정">${catLabel('종 지정')}</span> <span style="color:#999">(${spCount})</span> <span style="color:#999;font-size:10px;margin-left:4px;">▶</span>`;
             spLabel.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); window.showSpeciesList(nc); });
             kidWrap.appendChild(spLabel);
           }
@@ -2334,7 +2340,7 @@ function populateFilters(){
           const ncCount = uniqCount(d => d.c === '천연기념물' && d.nc === nc);
           if(ncCount === 0) return;
           const ncLabel = document.createElement('label');
-          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="cat-swatch" style="background:${TN_SUB_COLORS[nc]}"></span> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
+          ncLabel.innerHTML = `<input type="checkbox" class="natChk" value="${nc}"> <span class="i18n-cat" data-cat="${nc}">${catLabel(nc)}</span> <span style="color:#999">(${ncCount})</span>`;
           natWrap.appendChild(ncLabel);
         });
 
@@ -2969,7 +2975,7 @@ function renderSpecies(){
     const simg = d.i ? `<img class="hm-zoomable" loading="lazy" src="${escapeHtml(d.i)}" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">` : '';
     div.innerHTML = `
       ${simg}
-      <span class="tag" style="background:${TN_SUB_COLORS[d.g]||'#8d99ae'}">${escapeHtml(d.c)} · ${escapeHtml(catLabel(d.nc2 || d.g))}</span>
+      <span class="tag" style="background:${groupColorFor(d.c)}">${escapeHtml(d.c)} · ${escapeHtml(catLabel(d.nc2 || d.g))}</span>
       <h4>${escapeHtml(d.n)}</h4>
       <div class="meta">${escapeHtml(hmPlace(d))}</div>
       <div class="desc">${escapeHtml(d.e||'')}</div>
