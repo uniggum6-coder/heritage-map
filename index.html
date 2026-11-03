@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v41 (2026-11-03)">
+  <meta name="hm-build" content="v42 (2026-11-03)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -100,7 +100,7 @@
   /* 지도 점·묶음 동그라미를 바탕에서 떠 보이게 하는 옅은 그림자.
      브이월드 베이지 바탕과 위성사진 위에서 점이 묻히지 않도록 넣었다.
      점이 아주 많이 보이는 화면에서 느려지면 이 두 줄만 지우면 된다. */
-  .hm-dot{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.45));}
+  .hm-dot{filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));}
   /* 묶음 동그라미는 이미 자기 box-shadow 를 가지고 있어 따로 손대지 않는다. */
   .cat-swatch{width:11px;height:11px;border-radius:3px;flex:none;}
   .group-swatch{width:16px;height:16px;border-radius:4px;flex:none;}
@@ -885,7 +885,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v41 (2026-11-03)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v42 (2026-11-03)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1828,7 +1828,7 @@ function initMap(){
     // 테두리를 3으로 올리고 바깥에 옅은 그림자를 둬서 지도 위에 떠 보이게 한다.
     // (위성 보기에서는 바탕이 어둡고 복잡해 그림자가 특히 필요하다)
     const marker = L.circleMarker([d.la, d.lo], {
-      radius:10, fillColor: markerColorFor(d), color:"#fff", weight:3, fillOpacity:1, opacity:1,
+      radius:10, fillColor: markerColorFor(d), color:"#fff", weight:4, fillOpacity:1, opacity:1,
       className:'hm-dot'
     });
     marker._d = d;
@@ -2623,7 +2623,7 @@ function hmNearDrawDots(rows){
     const d = r.m._d;
     const isV = !!(r.m._hid && visited.has(r.m._hid));
     const dot = L.circleMarker([d.la, d.lo], {
-      radius: 6, color: isV ? '#1f6f6b' : '#ffffff', weight: 2.5,
+      radius: 6, color: isV ? '#1f6f6b' : '#ffffff', weight: 3,
       fillColor: markerColorFor(d), fillOpacity: .95, className:'hm-dot'
     });
     dot.bindTooltip(hmName(d), { direction:'top', offset:[0,-6] });
