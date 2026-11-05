@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v42 (2026-11-03)">
+  <meta name="hm-build" content="v43 (2026-11-05)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,11 +97,11 @@
   select{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;}
   .cat-list input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex:none;}
   .cat-list label{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;cursor:pointer;}
-  /* 지도 점·묶음 동그라미를 바탕에서 떠 보이게 하는 옅은 그림자.
-     브이월드 베이지 바탕과 위성사진 위에서 점이 묻히지 않도록 넣었다.
-     점이 아주 많이 보이는 화면에서 느려지면 이 두 줄만 지우면 된다. */
-  .hm-dot{filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));}
-  /* 묶음 동그라미는 이미 자기 box-shadow 를 가지고 있어 따로 손대지 않는다. */
+  /* v43에서 점 그림자를 뺐다(사용자 요청).
+     점이 바탕에서 떠 보이게 하는 역할은 흰 테두리 4가 맡는다.
+     다시 넣고 싶으면 아래 한 줄의 주석을 풀면 된다.
+     .hm-dot{filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));}
+     묶음 동그라미는 원래부터 자기 box-shadow 를 가지고 있어 손대지 않는다. */
   .cat-swatch{width:11px;height:11px;border-radius:3px;flex:none;}
   .group-swatch{width:16px;height:16px;border-radius:4px;flex:none;}
   #resetBtn{margin-top:14px;width:100%;padding:9px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
@@ -885,7 +885,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v42 (2026-11-03)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v43 (2026-11-05)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
