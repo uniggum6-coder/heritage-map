@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v45 (2026-11-05)">
+  <meta name="hm-build" content="v46 (2026-11-05)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
   <!-- 유산 사진은 국가유산청 서버(www.khs.go.kr)에서 받아온다.
        첫 사진을 열 때 그제서야 주소 찾기 → 연결 → 암호화 악수를 하느라
@@ -108,6 +108,12 @@
      다시 넣고 싶으면 아래 한 줄의 주석을 풀면 된다.
      .hm-dot{filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));}
      묶음 동그라미는 원래부터 자기 box-shadow 를 가지고 있어 손대지 않는다. */
+  /* 브이월드 Base 의 누런 바탕을 걷어내 길을 또렷하게, 바탕을 밝게 만든다.
+     지도 그림(타일)에만 걸리고 유산 점·글씨·팝업에는 영향이 없다.
+     위성 보기에서는 이 class 를 떼어 원본 그대로 보여준다.
+     숫자를 손보면 세기를 바꿀 수 있다 — 채도 / 밝기 / 대비 순.
+     되돌리려면 아래 한 줄만 지우면 된다. */
+  .hm-tone .leaflet-tile-pane{filter:saturate(1.45) brightness(1.07) contrast(1.1);}
   .cat-swatch{width:11px;height:11px;border-radius:3px;flex:none;}
   .group-swatch{width:16px;height:16px;border-radius:4px;flex:none;}
   #resetBtn{margin-top:14px;width:100%;padding:9px;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
@@ -894,7 +900,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v45 (2026-11-05)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v46 (2026-11-05)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1691,16 +1697,11 @@ function initMap(){
   const HM_ATTR_VW  = '&copy; <a href="https://www.vworld.kr" target="_blank" rel="noopener">국토교통부 브이월드</a>';
   const HM_ATTR_OSM = '&copy; OpenStreetMap contributors';
 
-  // 일반 지도는 브이월드 'white' 를 쓴다.
-  //   'Base' 는 바탕이 베이지색으로 진해서, 그 위에 올린 유산 점이 묻혀 보였다.
-  //   'white' 는 바탕이 흰색에 가깝고 지도 선이 연해서 점이 잘 드러난다.
-  //   (예전 OpenStreetMap 느낌에 가깝다)
-  // white 는 18단계까지만 있다. 지도 자체는 19까지 당길 수 있게 두고,
-  // maxNativeZoom 으로 18단계 그림을 늘려 쓰게 한다(빈 칸이 생기지 않는다).
-  // 다시 베이지 바탕으로 돌리려면 아래 'white' 를 'Base' 로 바꾸고
-  // maxNativeZoom 줄을 지우면 된다.
-  const vwBase = L.tileLayer(vwUrl('white'), {
-    maxZoom: 19, maxNativeZoom: 18, minZoom: 6, noWrap: true, attribution: HM_ATTR_VW
+  // 일반 지도는 브이월드 'Base'. 'white' 도 써봤지만 산·물길이 거의 안 보여
+  // 답사 지도로는 쓸 수 없었다. Base 는 지형이 잘 보이는 대신 바탕이 누렇다.
+  // 그 누런 기는 지도를 바꾸지 않고 아래 hm-tone 색보정으로 걷어낸다.
+  const vwBase = L.tileLayer(vwUrl('Base'), {
+    maxZoom: 19, minZoom: 6, noWrap: true, attribution: HM_ATTR_VW
   });
   // 위성 보기는 두 겹이다. Satellite(jpeg) 만 쓰면 지명이 하나도 안 나오므로
   // 그 위에 Hybrid(지명·경계, png)를 덮는다.
@@ -1720,6 +1721,14 @@ function initMap(){
   let hmBaseMode = 'base';   // 'base'(일반) | 'sat'(위성)
   let hmUsingOSM = false;    // 브이월드가 죽어 OSM 으로 되돌아갔는가
   vwBase.addTo(map);
+  // 색 보정은 브이월드 일반 지도에만 건다.
+  // 위성사진에 걸면 색이 과장돼 보이고, OSM 은 원래 밝아서 더 밝히면 하얘진다.
+  function hmApplyTone(){
+    const el = map.getContainer();
+    if(!el) return;
+    el.classList.toggle('hm-tone', !hmUsingOSM && hmBaseMode === 'base');
+  }
+  hmApplyTone();
 
   // 일반 / 위성 전환 단추. 지도 오른쪽 위에 둔다(확대 단추는 왼쪽 위라 겹치지 않는다).
   const hmBaseCtl = L.control({ position: 'topright' });
@@ -1753,6 +1762,7 @@ function initMap(){
       vwBase.addTo(map);
     }
     try{ localStorage.setItem('hmBaseMode', hmBaseMode); }catch(e){}
+    hmApplyTone();
     window.hmUpdateBaseBtn();
   }
   window.hmSetBase = hmSetBase;
@@ -1767,6 +1777,7 @@ function initMap(){
     if(map.hasLayer(vwBase)) map.removeLayer(vwBase);
     if(map.hasLayer(vwSatGroup)) map.removeLayer(vwSatGroup);
     osmTiles.addTo(map);
+    hmApplyTone();
     window.hmUpdateBaseBtn();
   }
 
