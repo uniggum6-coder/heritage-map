@@ -5,7 +5,7 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v44 (2026-11-05)">
+  <meta name="hm-build" content="v45 (2026-11-05)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
   <!-- 유산 사진은 국가유산청 서버(www.khs.go.kr)에서 받아온다.
        첫 사진을 열 때 그제서야 주소 찾기 → 연결 → 암호화 악수를 하느라
@@ -894,7 +894,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v44 (2026-11-05)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v45 (2026-11-05)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -1691,9 +1691,16 @@ function initMap(){
   const HM_ATTR_VW  = '&copy; <a href="https://www.vworld.kr" target="_blank" rel="noopener">국토교통부 브이월드</a>';
   const HM_ATTR_OSM = '&copy; OpenStreetMap contributors';
 
-  // 일반 지도. 브이월드 Base 는 6~19단계를 지원한다(예전 OSM 설정은 18까지였다).
-  const vwBase = L.tileLayer(vwUrl('Base'), {
-    maxZoom: 19, minZoom: 6, noWrap: true, attribution: HM_ATTR_VW
+  // 일반 지도는 브이월드 'white' 를 쓴다.
+  //   'Base' 는 바탕이 베이지색으로 진해서, 그 위에 올린 유산 점이 묻혀 보였다.
+  //   'white' 는 바탕이 흰색에 가깝고 지도 선이 연해서 점이 잘 드러난다.
+  //   (예전 OpenStreetMap 느낌에 가깝다)
+  // white 는 18단계까지만 있다. 지도 자체는 19까지 당길 수 있게 두고,
+  // maxNativeZoom 으로 18단계 그림을 늘려 쓰게 한다(빈 칸이 생기지 않는다).
+  // 다시 베이지 바탕으로 돌리려면 아래 'white' 를 'Base' 로 바꾸고
+  // maxNativeZoom 줄을 지우면 된다.
+  const vwBase = L.tileLayer(vwUrl('white'), {
+    maxZoom: 19, maxNativeZoom: 18, minZoom: 6, noWrap: true, attribution: HM_ATTR_VW
   });
   // 위성 보기는 두 겹이다. Satellite(jpeg) 만 쓰면 지명이 하나도 안 나오므로
   // 그 위에 Hybrid(지명·경계, png)를 덮는다.
