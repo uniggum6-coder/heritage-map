@@ -5,8 +5,14 @@
   <meta name="description" content="천연기념물, 명승, 사적 등 전국 국가유산의 위치를 지도에서 한눈에 확인하세요. 문화유산·자연유산 검색과 현장 방문 인증 기능을 제공합니다.">
   <meta name="keywords" content="국가유산지도, 천연기념물 지도, 명승 지도, 국가유산, 문화유산, 자연유산, 사적">
   <meta name="robots" content="index, follow">
-  <meta name="hm-build" content="v43 (2026-11-05)">
+  <meta name="hm-build" content="v44 (2026-11-05)">
   <link rel="canonical" href="https://heritagemap.co.kr/">
+  <!-- 유산 사진은 국가유산청 서버(www.khs.go.kr)에서 받아온다.
+       첫 사진을 열 때 그제서야 주소 찾기 → 연결 → 암호화 악수를 하느라
+       0.3~0.5초가 그냥 날아간다. 페이지를 열 때 미리 연결을 터놓으면
+       팝업을 눌렀을 때 곧바로 사진만 받아오면 된다. -->
+  <link rel="preconnect" href="https://www.khs.go.kr" crossorigin>
+  <link rel="dns-prefetch" href="//www.khs.go.kr">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light only">
@@ -112,7 +118,10 @@
   .popup-cat{display:inline-block;font-size:11px;font-weight:700;color:#fff;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
   .popup-title{font-size:15px;font-weight:700;margin:0 0 4px;}
   .popup-meta{font-size:12px;color:var(--muted);margin:0 0 6px;}
-  .popup-img{width:100%;height:110px;object-fit:cover;border-radius:6px;display:block;cursor:zoom-in;}
+  /* 사진이 도착하기 전까지 회색 바탕을 깔아 자리를 잡아둔다.
+     예전에는 빈 공간이었다가 사진이 툭 나타나 팝업이 덜컹거렸다. */
+  .popup-img{width:100%;height:110px;object-fit:cover;border-radius:6px;display:block;cursor:zoom-in;
+    background:#e6e9e8;}
   .popup-img-wrap{position:relative;margin-bottom:6px;line-height:0;}
   .popup-img-zoom{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;
     background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;pointer-events:none;
@@ -885,7 +894,7 @@
     </div>
   </div>
   <div class="rank-note" style="margin-top:10px" data-i18n-html="helpNote">📍 박물관처럼 유산이 한곳에 몰려있으면 "주변 일괄인증" 버튼으로 한번에 인증할 수 있어요. 다만 등급은 <b>유산 개수가 아니라 실제로 다녀온 장소 개수</b>로 매겨져요 — 한 곳에서 10건을 인증해도 등급상으로는 "1곳"이에요.<br><br>구글 계정으로 로그인하면 바로 시작할 수 있어요.</div>
-  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v43 (2026-11-05)</div>
+  <div style="text-align:center;font-size:11px;color:#c0c8c8;margin-top:12px">버전 v44 (2026-11-05)</div>
   <button data-i18n="btnGotIt" onclick="document.getElementById('helpOverlay').style.display='none'">확인했어요</button>
 </div></div>
 
@@ -2123,7 +2132,7 @@ function initMap(){
 }
 
 function buildPopup(d, hid, visited, fromList){
-  const img = d.i ? `<div class="popup-img-wrap"><img class="popup-img" loading="lazy" src="${escapeHtml(d.i)}" onerror="if(!this.dataset.hmFb &amp;&amp; this.src.indexOf('/thumb/')>-1){this.dataset.hmFb='1';this.src=this.src.replace('/thumb/','/');}else{this.parentNode.style.display='none';}"><span class="popup-img-zoom"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/><path d="M10.5 7.5 v6 M7.5 10.5 h6"/></svg></span></div>` : '';
+  const img = d.i ? `<div class="popup-img-wrap"><img class="popup-img" loading="eager" fetchpriority="high" decoding="async" src="${escapeHtml(hmImgUrl(d.i))}" onerror="if(!this.dataset.hmFb &amp;&amp; this.src.indexOf('/thumb/')>-1){this.dataset.hmFb='1';this.src=this.src.replace('/thumb/','/');}else{this.parentNode.style.display='none';}"><span class="popup-img-zoom"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/><path d="M10.5 7.5 v6 M7.5 10.5 h6"/></svg></span></div>` : '';
   const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(d.n)},${d.la},${d.lo}`;
   // 티맵은 앱 전용 주소라 앱이 깔려 있어야 열린다. 컴퓨터에서는 hmTmapClick이 막고 안내만 띄운다.
   const tmapUrl  = `tmap://route?goalname=${encodeURIComponent(d.n)}&goalx=${d.lo}&goaly=${d.la}`;
@@ -2146,6 +2155,13 @@ function buildPopup(d, hid, visited, fromList){
     ${img}
     <div class="popup-desc">${escapeHtml(d.a||'')}${hmDesc(d) ? '<br><br>'+escapeHtml(hmDesc(d)) : ''}</div>
   </div>`;
+}
+// 원본 사진 주소가 http:// 로 되어 있다(10,280건 전부).
+// https 페이지에서 http 사진을 부르면 브라우저가 https 로 바꿔 다시 잡는다.
+// 처음부터 https 로 적어 그 단계를 없앤다.
+function hmImgUrl(u){
+  if(!u) return '';
+  return String(u).replace(/^http:\/\//i, 'https://');
 }
 function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 // 영문 이름/설명이 있는 항목(현재 천연기념물 379건)에 한해 언어 토글이 'en'일 때 영문을 표시하고,
@@ -2926,7 +2942,7 @@ function renderIntangible(){
   filtered.forEach(d => {
     const div = document.createElement('div');
     div.className = 'icard';
-    const img = d.i ? `<img src="${escapeHtml(d.i)}" onerror="this.style.display='none'">` : '';
+    const img = d.i ? `<img loading="lazy" decoding="async" src="${escapeHtml(hmImgUrl(d.i))}" onerror="this.style.display='none'">` : '';
     div.innerHTML = `
       ${img}
       <span class="tag">${escapeHtml(d.c)}</span>
@@ -2981,7 +2997,7 @@ function renderSpecies(){
   filtered.forEach(d => {
     const div = document.createElement('div');
     div.className = 'icard';
-    const simg = d.i ? `<img class="hm-zoomable" loading="lazy" src="${escapeHtml(d.i)}" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">` : '';
+    const simg = d.i ? `<img class="hm-zoomable" loading="lazy" decoding="async" src="${escapeHtml(hmImgUrl(d.i))}" onerror="var s=this.src; if(s.indexOf('/thumb/')>-1){ this.src=s.replace('/thumb/','/'); } else { this.style.display='none'; }">` : '';
     div.innerHTML = `
       ${simg}
       <span class="tag" style="background:${groupColorFor(d.c)}">${escapeHtml(d.c)} · ${escapeHtml(catLabel(d.nc2 || d.g))}</span>
